@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "quantum-drift-scheduler"
+version = "0.1.0"
+description = "A research prototype for exploring drift-aware quantum experiment scheduling."
+readme = "README.md"
+authors = [{ name = "Quantum Drift Scheduler Contributors" }]
+requires-python = ">=3.9"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
