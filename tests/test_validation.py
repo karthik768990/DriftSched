@@ -76,3 +76,4 @@ def test_timestamp_ordering_violation():
     )
     errors = validate_record(record)
     assert any("Timestamp ordering violation" in e for e in errors)
+

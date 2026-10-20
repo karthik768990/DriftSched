@@ -44,3 +44,4 @@ class ParseErrorRecord:
     source_location: str
     raw_content: str
     error_message: str
+

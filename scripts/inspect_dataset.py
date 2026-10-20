@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dataset Inspection Script.
+"""Dataset Inspection Script for DriftSched.
 
 Inspects quantum experiment datasets and outputs a structured summary report.
 Does not print entire arrays to avoid terminal clutter on large datasets.
@@ -18,9 +18,9 @@ from quantum_drift_scheduler.data.parser import DatasetParser
 
 def inspect_dataset(file_path: Path) -> None:
     """Parses and prints a concise inspection report of the dataset."""
-    print("=" * 70)
+    print("=" * 80)
     print(" QUANTUM EXPERIMENT DATASET INSPECTION REPORT")
-    print("=" * 70)
+    print("=" * 80)
     print(f"File path: {file_path.resolve()}")
 
     if not file_path.exists():
@@ -48,19 +48,37 @@ def inspect_dataset(file_path: Path) -> None:
         max_time = max(all_times) if all_times else 0.0
 
         print(f"\nRecord & Observation Metrics:")
-        print(f" - Unique circuit labels ({len(unique_labels)}): {unique_labels[:10]}{'...' if len(unique_labels) > 10 else ''}")
-        print(f" - Total observations across all circuits: {sum(obs_counts):,}")
-        print(f" - Observations per record: min={min(obs_counts)}, max={max(obs_counts)}, avg={sum(obs_counts)/len(records):.1f}")
-        print(f" - Global timestamp range: [{min_time:.3f}, {max_time:.3f}] (duration: {max_time - min_time:.3f})")
+        print(f" - Number of parsed records:     {len(records)}")
+        print(f" - Number of distinct labels:    {len(unique_labels)}")
+        print(f" - Total observations:           {sum(obs_counts):,}")
+        print(f" - Observations per record:      min={min(obs_counts)}, max={max(obs_counts)}, avg={sum(obs_counts)/len(records):.1f}")
+        print(f" - Global timestamp range:       [{min_time:.3f}, {max_time:.3f}] seconds (duration: {max_time - min_time:.3f} s)")
 
         # Repetition summary
         records_with_reps = [r for r in records if r.repetitions is not None]
-        print(f" - Records containing repetition counts: {len(records_with_reps)} / {len(records)}")
+        print(f" - Records with repetition info: {len(records_with_reps)} / {len(records)}")
+
+        print("\nAll Distinct Circuit Labels & Per-Circuit Metrics:")
+        print("-" * 80)
+        print(f"{'#':<3} {'Circuit Label':<18} {'Obs':<6} {'Time Range (s)':<24} {'Outcome 1s (prop)':<20} {'Outcome 0s (prop)':<20}")
+        print("-" * 80)
+        for i, r in enumerate(records, 1):
+            n_obs = len(r.outcomes)
+            n_ones = sum(r.outcomes)
+            n_zeros = n_obs - n_ones
+            p_one = n_ones / n_obs if n_obs > 0 else 0.0
+            p_zero = n_zeros / n_obs if n_obs > 0 else 0.0
+            t_min = min(r.times)
+            t_max = max(r.times)
+            time_str = f"[{t_min:.3f}, {t_max:.3f}]"
+            ones_str = f"{n_ones} ({p_one:.4f})"
+            zeros_str = f"{n_zeros} ({p_zero:.4f})"
+            print(f"{i:<3} {r.circuit_label:<18} {n_obs:<6} {time_str:<24} {ones_str:<20} {zeros_str:<20}")
 
         # Preview of parsed records
-        print("\nRecord Preview (first 3 records):")
-        print("-" * 70)
-        for i, r in enumerate(records[:3], 1):
+        print("\nRecord Sample Preview (first 2 records):")
+        print("-" * 80)
+        for i, r in enumerate(records[:2], 1):
             time_preview = f"[{', '.join(f'{t:.3f}' for t in r.times[:5])}{'...' if len(r.times) > 5 else ''}]"
             outcome_preview = f"[{', '.join(str(o) for o in r.outcomes[:5])}{'...' if len(r.outcomes) > 5 else ''}]"
             reps_preview = (
@@ -74,13 +92,11 @@ def inspect_dataset(file_path: Path) -> None:
             print(f"    Times:       {time_preview} (range: {min(r.times):.3f} -> {max(r.times):.3f})")
             print(f"    Outcomes:    {outcome_preview}")
             print(f"    Repetitions: {reps_preview}")
-            if r.metadata:
-                print(f"    Metadata:    {r.metadata}")
             print()
 
     if errors:
         print("\nErrors / Inconsistencies Encountered (showing first 5):")
-        print("-" * 70)
+        print("-" * 80)
         for i, err in enumerate(errors[:5], 1):
             print(f"[{i}] Location: {err.source_location}")
             print(f"    Message:  {err.error_message}")
@@ -90,7 +106,7 @@ def inspect_dataset(file_path: Path) -> None:
         if len(errors) > 5:
             print(f"... and {len(errors) - 5} more errors.")
 
-    print("=" * 70)
+    print("=" * 80)
 
 
 def main():

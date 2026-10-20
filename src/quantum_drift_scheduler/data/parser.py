@@ -496,3 +496,4 @@ def parse_dataset_file(
     """Convenience helper to parse a dataset file."""
     parser = DatasetParser(validate=validate)
     return parser.parse_file(filepath)
+
