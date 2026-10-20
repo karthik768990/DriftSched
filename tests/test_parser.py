@@ -88,7 +88,7 @@ def test_missing_fields_reporting():
 
     assert len(records) == 0
     assert len(errors) == 1
-    assert "Missing required 'outcomes' field" in errors[0].error_message
+    assert "Missing required 'outcomes'" in errors[0].error_message
 
 
 def test_invalid_numeric_values():

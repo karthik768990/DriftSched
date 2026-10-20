@@ -30,10 +30,11 @@ from quantum_drift_scheduler.data.models import CircuitExperimentRecord, ParseEr
 from quantum_drift_scheduler.data.validation import validate_record
 
 
-def _parse_numbers_from_string(raw_val: str) -> List[Union[int, float]]:
+def _parse_numbers_from_string(raw_val: str) -> Union[int, float, List[Union[int, float]]]:
     """Extracts numbers from a line or bracketed string.
 
     Handles space-separated numbers, comma-separated numbers, or Python/JSON array literals.
+    Returns scalar int/float if input has no brackets and contains only a single number.
     """
     raw_val = raw_val.strip()
     if not raw_val:
@@ -49,20 +50,24 @@ def _parse_numbers_from_string(raw_val: str) -> List[Union[int, float]]:
             pass
 
     # Fast space/comma tokenization
-    # Splits on whitespace or commas
-    tokens = re.split(r"[\s,]+", raw_val.strip("[]()"))
+    tokens = [t for t in re.split(r"[\s,]+", raw_val.strip("[]()")) if t]
+    if not tokens:
+        return []
+
     numbers: List[Union[int, float]] = []
     for tok in tokens:
-        if not tok:
-            continue
         try:
             if "." in tok or "e" in tok.lower():
                 numbers.append(float(tok))
             else:
                 numbers.append(int(tok))
         except ValueError:
-            # Keep string if non-numeric token encountered
             numbers.append(tok)  # type: ignore
+
+    # If input was not bracketed and only contains one number, return scalar
+    if len(numbers) == 1 and not (raw_val.startswith(("[", "(")) and raw_val.endswith(("]", ")"))):
+        return numbers[0]
+
     return numbers
 
 
@@ -115,12 +120,13 @@ class DatasetParser:
         if non_comment_lines and all(l.startswith("{") and l.endswith("}") for l in non_comment_lines):
             return self._parse_jsonl(lines, source_identifier)
 
-        # 3. pyGSTi / block format check
-        # A pyGSTi file typically has lines starting with 'times:' and 'outcomes:'
-        has_times_tag = any(re.match(r"^\s*times\s*:", l, re.IGNORECASE) for l in lines)
-        has_outcomes_tag = any(re.match(r"^\s*outcomes\s*:", l, re.IGNORECASE) for l in lines)
+        # 3. Block format check (has key-value tags like times: / outcomes: / circuit:)
+        has_block_tags = any(
+            re.match(r"^\s*(times|time|outcomes|outcome|circuit|circuit_label)\s*:", l, re.IGNORECASE)
+            for l in lines
+        )
 
-        if has_times_tag and has_outcomes_tag:
+        if has_block_tags:
             return self._parse_block_format(lines, source_identifier)
 
         # 4. Fallback: Delimited table (CSV/TSV/whitespace separated rows)
@@ -176,7 +182,15 @@ class DatasetParser:
 
             # Check numeric types
             try:
-                times = [float(t) for t in times_val]
+                if isinstance(times_val, (int, float)):
+                    times = [float(times_val)]
+                elif isinstance(times_val, list):
+                    times = [float(t) for t in times_val]
+                else:
+                    errors.append(ParseErrorRecord(loc, raw_summary, f"Cannot parse times: {times_val}"))
+                    current_data.clear()
+                    current_label = None
+                    return
             except (ValueError, TypeError) as e:
                 errors.append(ParseErrorRecord(loc, raw_summary, f"Non-numeric value in times: {e}"))
                 current_data.clear()
@@ -184,7 +198,15 @@ class DatasetParser:
                 return
 
             try:
-                outcomes = [int(o) for o in outcomes_val]
+                if isinstance(outcomes_val, (int, float)):
+                    outcomes = [int(outcomes_val)]
+                elif isinstance(outcomes_val, list):
+                    outcomes = [int(o) for o in outcomes_val]
+                else:
+                    errors.append(ParseErrorRecord(loc, raw_summary, f"Cannot parse outcomes: {outcomes_val}"))
+                    current_data.clear()
+                    current_label = None
+                    return
             except (ValueError, TypeError) as e:
                 errors.append(ParseErrorRecord(loc, raw_summary, f"Invalid integer value in outcomes: {e}"))
                 current_data.clear()
@@ -227,14 +249,12 @@ class DatasetParser:
         for line_num, line in enumerate(lines, 1):
             stripped = line.strip()
 
-            # Skip comments or empty lines
             if not stripped:
                 continue
 
             if stripped.startswith("#"):
                 continue
 
-            # Check for tagged lines (times:, outcomes:, repetitions:, circuit:)
             tag_match = re.match(r"^([a-zA-Z0-9_\-]+)\s*[:=]\s*(.*)$", stripped)
             if tag_match:
                 tag = tag_match.group(1).lower()
@@ -252,11 +272,8 @@ class DatasetParser:
                 elif tag in ("repetitions", "reps", "shots"):
                     current_data["repetitions"] = _parse_numbers_from_string(val_str)
                 else:
-                    # Other tags stored in metadata if needed
                     current_data[tag] = val_str
             else:
-                # If the line does not have a tag and is not a comment:
-                # It is a circuit label line (e.g. `Gx(Gw)Gy` or `Gx(Gw)^2Gy`)
                 if current_label is not None or current_data:
                     flush_record(block_start_line)
                 block_start_line = line_num
@@ -316,7 +333,6 @@ class DatasetParser:
     def _parse_tabular(
         self, lines: List[str], source_id: str
     ) -> Tuple[List[CircuitExperimentRecord], List[ParseErrorRecord]]:
-        """Parses tabular format where each line contains: circuit, time, outcome, [repetitions]."""
         records: List[CircuitExperimentRecord] = []
         errors: List[ParseErrorRecord] = []
 
@@ -412,7 +428,6 @@ class DatasetParser:
     def _dict_to_record(
         self, d: Dict[str, Any], loc: str
     ) -> Tuple[Optional[CircuitExperimentRecord], Optional[ParseErrorRecord]]:
-        """Converts an extracted dictionary into a typed CircuitExperimentRecord."""
         circ = d.get("circuit") or d.get("circuit_label") or d.get("label")
         if not circ:
             return None, ParseErrorRecord(loc, str(d), "Missing required 'circuit' or 'circuit_label' field.")
