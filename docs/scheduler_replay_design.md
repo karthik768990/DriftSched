@@ -2,89 +2,117 @@
 
 **Project:** DriftSched (Drift-Aware Quantum Experiment Scheduling)
 **Code:** `src/quantum_drift_scheduler/scheduling/`, `scripts/run_scheduler_replay.py`
-**Status:** Implemented: recorded-trace queue and pairing simulator
+**Status:** Implemented: slot-based queue and pair scheduler (supersedes the earlier immediate-pairing replay)
 
-> This replay pairs observed historical shots. It measures actual timestamp
-> separation and queue behaviour; it does not predict outcomes under a
-> counterfactual reordered physical experiment.
+> These are replay scheduling metrics on recorded outcomes. They measure slot and
+> time separation and queue behaviour of observed historical shots; they do not
+> predict outcomes under a counterfactual reordered physical experiment.
+
+## 0. Why the earlier model was replaced
+
+The first version paired shots the instant a compatible partner was pending and had a
+policy called `minimum-recorded-gap`. It had no service slots, so it could not express
+the scheduler semantics DriftSched needs: one shot per slot, and a comparison pair that
+runs as an atomic consecutive block. An immediate historical pairing is not equivalent
+to consecutive pair execution, so that model and policy name were removed. The parser,
+registry, trace loaders and custom-input format are unchanged.
 
 ## 1. Input event model
 
-A **shot** is one recorded observation, represented as a `ShotArrival`:
+A **shot** is one recorded observation (`ShotArrival`): `shot_id`, `arrival_time`
+(seconds), `circuit`, binary `outcome`, `repetitions`, `source_index`, `input_source`.
+Queue order is `(arrival_time, source_index, shot_id)`.
 
-| Field | Meaning |
-|---|---|
-| `shot_id` | Stable unique id within a trace (`rec-00000042`, `custom-00000007`) |
-| `arrival_time` | Recorded timestamp (seconds) at which the shot becomes available to the scheduler |
-| `circuit` | Circuit label, verbatim |
-| `outcome` | Binary outcome, 0 or 1 |
-| `repetitions` | Repetition count recorded with the observation |
-| `source_index` | Zero-based position in the original source order |
-| `input_source` | Identifier of the input (project-relative path when inside the project) |
+- **Default dataset** (`load_recorded_trace`): `data/dataset.txt` parsed with the existing
+  parser and flattened into one stream ordered by arrival time, then source index, then
+  circuit. 84,000 shots (14 circuits x 6,000). The dataset is never modified.
+- **Custom input** (`load_custom_trace`): CSV content in a `.txt` file whose first line is
+  exactly `arrival_time,circuit,outcome,repetitions` (`data/inputs/input.txt.example`).
+  Row order is meaningful and never sorted; every validation error names the line.
+- **Repetitions are not expanded.** The parser does not define whether a binary outcome
+  with a repetition count above 1 means identical shots or an aggregate, so each
+  observation stays one shot carrying its `repetitions` value. All Ramsey repetitions
+  equal 1.
 
-Queue order is always `(arrival_time, source_index, shot_id)`.
+## 2. Service model
 
-**Default dataset mode** (`load_recorded_trace`) parses `data/dataset.txt` with the existing parser and flattens its 14 circuit records into one stream ordered by arrival time, then original source index (record order, then observation order), then circuit label. The dataset is never modified. It yields 84,000 shots (14 circuits x 6,000).
+The device executes **one logical shot per service slot**. A `SlotSchedule` fixes
+`start_time`, `slot_seconds` and `total_slots`; slot `s` starts at
+`start_time + s * slot_seconds`, and that is the execution time of a shot run in it. A shot
+can execute in slot `s` only if it has arrived by that start time.
 
-**Repetitions are not expanded.** The dataset format pairs a single binary outcome with a repetition count, and the parser does not define whether that means identical repeated shots or an aggregate. Expanding would invent data, so each observation stays one `ShotArrival` carrying its `repetitions` value. Every observation in the Ramsey dataset has repetitions equal to 1, so the 84,000 physical shots are preserved exactly.
+`build_slot_schedule` (default `slots_per_shot = 1.0`) uses `ceil(slots_per_shot * N)`
+slots, with slot 0 at the first arrival and the last slot at the last arrival. With the
+default there is exactly one slot per source shot, so no policy can execute more shots than
+the trace holds. Every policy receives the same schedule.
 
-**Custom input mode** (`load_custom_trace`) reads CSV content stored in a `.txt` file whose first line is exactly `arrival_time,circuit,outcome,repetitions` (example: `data/inputs/input.txt.example`). Validation: finite non-negative `arrival_time`; non-decreasing time order (the file is never sorted; row order breaks ties); `circuit` non-empty and in the compatibility registry; `outcome` exactly `0` or `1`; `repetitions` a positive integer; no blank required values, blank lines, wrong field counts, malformed CSV or header deviations. Every error names the file and line.
+## 3. Pair-request workload
 
-## 2. Single-use shot consumption
+Comparisons are prebuilt as **pair requests**, independent of any policy or drift
+information (`build_pair_requests`). Circuits present in the trace are ordered by wait
+length `k`. The i-th shot of every circuit forms acquisition round `i`. Round `r` uses
+perfect matching `r mod (n - 1)` of a round-robin (circle-method) tournament; each matched
+pair of circuits yields one request pairing their round-`r` shots. For the 14 Ramsey
+circuits the 13 matchings partition all 91 pairs, so each pair recurs every 13 rounds and
+each shot belongs to exactly one request. A pair not marked `compatible` produces no
+request, and the simulator re-validates every request against the registry before running.
 
-A **completed comparison** consumes exactly two shots. A consumed shot is removed from the pending queue permanently and can never be used again. The simulator enforces this independently of the policy: it rejects a policy decision that reuses a consumed shot, selects a non-pending shot, pairs a shot with itself or with another shot of the same circuit, or selects a pair whose registry status is not `compatible` or which is absent from the registry. Only `compatible` pairs from `data/compatibility_registry.csv` can complete. Compatibility is never inferred from drift diagnostics.
-
-## 3. Queue and pairing lifecycle
-
-At each distinct arrival timestamp `t`:
-
-1. Every shot arriving at `t` is added to the pending queue.
-2. The active policy is asked for a pair. A pair is completed at simulator time `t` and removed from the queue.
-3. Step 2 repeats until the policy returns no pair.
-4. The simulator advances to the next arrival timestamp.
-5. At the end of the trace, remaining pending shots are reported as unmatched.
-
-Each `CompletedComparison` stores both shot ids, circuits, outcomes and arrival times, the policy name, and:
-
-- `timestamp_separation = abs(arrival_time_a - arrival_time_b)`;
-- `completion_time` = the simulator time at which the pair was formed;
-- per-shot waiting time = `completion_time - arrival_time`;
-- `observed_difference = outcome_a - outcome_b` (an observed recorded result only).
-
-Shot `a` is the one that sorts first by the queue order, so outputs have a deterministic explicit order. The canonical (sorted) circuit pair is used only for counting and registry lookup; each shot keeps its own identity.
+Requests carry `first` (smaller `k`) and `second` (larger `k`), `ready_time` (the later
+arrival) and a stable id `req-r<round>-<position>`. Round indices can be supplied so a
+sub-trace keeps the full trace's alignment (used for the holdout partition).
 
 ## 4. Policies
 
-Policies implement `PairingPolicy` (`name` and `select_pair(pending, registry, now)`), so later policies plug in without simulator changes.
+| Policy | Dispatch unit | Rule |
+|---|---|---|
+| `arrival-order` | individual shot | Execute the oldest arrived, unexecuted shot each slot; never idle while a shot is pending. A request completes as a comparison once both its shots have executed, so the two shots are generally not adjacent. |
+| `consecutive-pair` | atomic pair block | Dispatch the ready request with the earliest request arrival time (tie-breakers below) as a two-slot block, lower `k` first. |
+| `drift-aware` | atomic pair block | Same block semantics, ranked by frozen learned priority (see `docs/holdout_and_drift_aware_design.md`). |
 
-- **`ArrivalOrderPolicy`** (FIFO baseline): finds the oldest pending shot that has any compatible pending counterpart and pairs it with the oldest compatible pending shot. A shot with no counterpart stays pending.
-- **`MinimumRecordedGapPolicy`**: among all compatible pending pairs, chooses the one with the smallest recorded timestamp separation. Ties break by earlier maximum arrival time, earlier minimum arrival time, source indices, then shot ids. (For a given gap, equal maximum arrival implies equal minimum arrival, so that tie-break step never decides on its own.) It uses recorded timestamps only to assess pairing quality on the recorded trace.
+**Atomic block:** the first circuit runs in slot `s`, the second in slot `s + 1`, and no
+other shot runs between them. **Strict idling:** if no request is ready, the slot idles; a
+pair policy never executes a lone shot. A block needs two remaining slots; with one slot
+left the slot idles.
 
-**Extension point for a drift-aware policy:** implement `PairingPolicy` and pass it to `run_simulation`. A drift-aware policy may use empirical diagnostics (for example the windowed mean |Z|) to rank candidate pairs, but only among pairs the registry marks `compatible`. It must not relabel compatibility.
+**Request tie-breakers** (`request_order_key`): earlier request arrival time, then lower
+sorted wait-length tuple `(min k, max k)`, then earlier source indices, then request id.
 
-## 5. Metrics
+**Extension point:** a pair policy implements `request_key(request)` (lowest key
+dispatches); a shot policy implements `shot_key(shot)`. Policies never see compatibility
+decisions: the workload and simulator enforce them.
 
-`compute_metrics` reports: total input shots, completed comparisons, consumed and unmatched shots, completion rate (completed comparisons divided by `floor(total_input_shots / 2)`), mean/median/maximum/95th-percentile timestamp separation, the same four statistics for per-shot waiting time (two values per comparison), mean absolute and signed mean observed outcome difference, completed comparisons per canonical circuit pair, and unmatched shots per circuit. Percentiles use linear interpolation between order statistics. Statistics that are undefined (empty result, or a zero denominator for the completion rate) are `None` and print as `n/a`.
+## 5. Single-use consumption and guards
 
-No comparison-error, uncertainty or hardware-performance metric is reported in this phase.
+Every shot executes at most once and is consumed by at most one comparison, even when a
+custom workload lists a shot in several requests (stale requests are skipped). The
+simulator rejects: duplicate shot or request ids, requests referencing shots outside the
+trace, requests pairing a circuit with itself, pairs absent from the registry, pairs whose
+status is not `compatible`, requests listing the larger `k` first, non-binary outcomes,
+out-of-order traces and unknown circuits.
 
-## 6. Fairness conditions
+## 6. Metrics
 
-- Every policy runs on the same input trace and the same shot budget (`2 * completed + unmatched == total input shots` is tested for each policy).
-- Each source shot is used at most once.
-- Only registry-`compatible` pairs complete.
-- Behaviour is deterministic: the same trace and policy always give the same result.
+`compute_metrics` reports source shots, total slots, executed/unexecuted shots, idle
+slots, completed comparisons, executed-but-unpaired shots, completion rate (completed /
+`floor(source shots / 2)`), and mean/median/95th-percentile/maximum of execution-slot
+separation, execution-time separation (`abs(execution_time_a - execution_time_b)`) and
+per-shot queue waiting time (`execution_time - arrival_time`, over executed shots). It also
+reports completed comparisons per canonical circuit pair and the mean absolute and signed
+**observed historical outcome difference** `outcome_a - outcome_b`, with `a` the smaller
+wait length regardless of execution order, so the value is comparable across policies. That
+difference is a recorded value, not a physical comparison error. Percentiles use linear
+interpolation; undefined statistics are `None` (printed `n/a`).
 
-On the recorded Ramsey trace the two baselines are close, because shots arrive one at a time and a pair completes as soon as a compatible partner is pending. The pending queue therefore rarely holds a real choice, except when several shots share one timestamp. This is a property of the trace, not a defect in either policy.
+## 7. Fairness conditions
 
-## 7. Boundary with the later counterfactual holdout phase
+All policies run on identical shots, an identical slot schedule, an identical prebuilt
+request workload and the same registry; the drift-aware policy additionally reads one frozen
+priority table. Behaviour is deterministic. A shot at the very end of the grid can lack a
+second slot, so pair policies may leave a few tail shots unexecuted; this is reported, not
+hidden.
 
-This phase evaluates pairing and queue behaviour on shots that were actually recorded. Pairing shots out of their recorded time order does not tell us what hardware would have measured had those experiments been scheduled differently. Not in this phase:
+## 8. Boundary with counterfactual claims
 
-- a time-based train/test holdout;
-- a physical drift model or oracle, or outcome interpolation;
-- counterfactual rescheduling claims;
-- a drift-aware priority policy;
-- comparison-error or uncertainty-improvement claims.
-
-Those belong to the later holdout-model phase, which must define explicitly how outcomes under a changed schedule are modelled.
+This phase replays shots that were actually recorded, in a different execution order. It
+does not model what hardware would have measured under that order. Counterfactual
+hardware-performance or comparison-error claims need a later drift/outcome model.

@@ -7,6 +7,7 @@ influence scheduling priority in later phases.
 """
 
 import csv
+import re
 from dataclasses import dataclass
 from enum import Enum
 from itertools import combinations
@@ -72,6 +73,22 @@ class CompatibilityPair:
     def key(self) -> FrozenSet[str]:
         """Unordered identity of the pair."""
         return frozenset((self.circuit_a, self.circuit_b))
+
+
+_RAMSEY_LABEL = re.compile(r"^Gx\(Gw\)(?:\^([0-9]+))?Gy$")
+
+
+def wait_length(circuit: str) -> int:
+    """Wait length k of a Ramsey circuit label ``Gx(Gw)^kGy`` (``Gx(Gw)Gy`` is k = 1).
+
+    Raises:
+        ValueError: the label is not a Ramsey label with a positive k.
+    """
+    match = _RAMSEY_LABEL.match(circuit)
+    k = (int(match.group(1)) if match.group(1) else 1) if match else 0
+    if k < 1:
+        raise ValueError(f"Cannot determine wait length k from circuit label {circuit!r}")
+    return k
 
 
 def ramsey_circuit_labels() -> Tuple[str, ...]:

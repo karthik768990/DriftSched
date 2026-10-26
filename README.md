@@ -33,11 +33,18 @@ quantum-drift-scheduler/
 │       ├── __init__.py            # Package initialization
 │       ├── config.py              # Path and global configuration
 │       ├── scheduling/            # Recorded-trace queue and pairing simulator
-│       │   ├── models.py          # ShotArrival, CompletedComparison, SimulationResult/Metrics
+│       │   ├── models.py          # ShotArrival, SlotSchedule, PairRequest, CompletedComparison, results
 │       │   ├── trace.py           # Recorded and custom replay trace loaders
-│       │   ├── policies.py        # PairingPolicy interface, arrival-order, minimum-recorded-gap
-│       │   ├── simulator.py       # Queue simulator (run_simulation)
-│       │   └── metrics.py         # compute_metrics
+│       │   ├── workload.py        # Round-robin pair-request workload and slot schedule
+│       │   ├── policies.py        # arrival-order and consecutive-pair policies
+│       │   ├── drift_aware.py     # DriftAwarePairPolicy (frozen-priority pair dispatch)
+│       │   ├── simulator.py       # Slot-based simulator (run_simulation)
+│       │   └── metrics.py         # compute_metrics and report formatting
+│       ├── analysis/
+│       │   ├── windowing.py       # Windowed stats and pairwise drift diagnostics
+│       │   ├── holdout.py         # Chronological train/holdout split
+│       │   └── priorities.py      # Training-only pair priority learning and artifact I/O
+│       ├── evaluation.py          # Holdout evaluation pipeline
 │       └── data/
 │           ├── __init__.py        # Data module exports
 │           ├── models.py          # Dataclasses: CircuitExperimentRecord & ParseErrorRecord
@@ -48,12 +55,16 @@ quantum-drift-scheduler/
 │   ├── test_compatibility.py      # Unit tests for the compatibility registry
 │   ├── test_parser.py             # Unit tests for dataset parser
 │   ├── test_scheduling_trace.py   # Trace loading and custom-input validation
-│   ├── test_scheduler_policies.py # Pairing policies and tie-breaking
-│   ├── test_scheduler_simulator.py# Simulator, metrics and replay CLI
+│   ├── test_scheduler_policies.py # Workload, schedule and ordering keys
+│   ├── test_scheduler_simulator.py# Slot simulator, metrics and replay CLI
+│   ├── test_holdout.py            # Chronological split
+│   ├── test_priorities.py         # Training-only priority learning
+│   ├── test_drift_aware_policy.py # Drift-aware policy, evaluation and holdout CLI
 │   └── test_validation.py         # Unit tests for data validation rules
 └── scripts/
     ├── inspect_dataset.py         # Dataset inspection and summary CLI tool
-    └── run_scheduler_replay.py    # Recorded-trace scheduler replay CLI
+    ├── run_scheduler_replay.py    # Baseline slot-based replay CLI
+    └── run_holdout_evaluation.py  # Holdout learning + three-policy evaluation CLI
 ```
 
 ---
@@ -163,7 +174,7 @@ Unknown pairs raise `UnknownPairError` and self-pairs raise `ValueError`; nothin
 
 ## 7. Recorded-trace scheduler replay
 
-A queue-based simulator pairs compatible single shots from a recorded trace under a pairing policy. Each completed comparison consumes exactly two shots whose circuits are `compatible` in `data/compatibility_registry.csv`, and every source shot is used at most once. Design details are in `docs/scheduler_replay_design.md`.
+A slot-based simulator replays recorded shots through a scheduling policy. The device executes **one logical shot per service slot**. A prebuilt, policy-independent workload of comparison requests (round-robin over the 14 Ramsey circuits, so all 91 pairs recur) defines which two shots are compared; only `compatible` pairs from `data/compatibility_registry.csv` can complete, and every shot is executed and consumed at most once. Details: `docs/scheduler_replay_design.md`.
 
 **Limitation:**
 
@@ -175,8 +186,9 @@ counterfactual reordered physical experiment.
 
 ### Policies
 
-- `arrival-order`: FIFO baseline. The oldest pending shot with a compatible counterpart is paired with the oldest compatible pending shot.
-- `minimum-recorded-gap`: pairs the compatible pending pair with the smallest recorded timestamp separation (ties: earlier max arrival, earlier min arrival, source indices, shot ids).
+- `arrival-order`: individual-shot FIFO baseline. A comparison completes when both of its shots have executed; they are generally not adjacent.
+- `consecutive-pair`: pair-aware baseline. Dispatches the ready request with the earliest request arrival time as an atomic two-slot block (lower wait length first, the second circuit in the immediately following slot, nothing in between). If no pair is ready the slot idles.
+- `drift-aware`: same atomic dispatch, ranked by learned priority. It needs training-derived priorities, so it runs through the holdout evaluation (section 8).
 
 ### Custom input schema
 
@@ -206,21 +218,38 @@ Invalid files are rejected with line-specific errors. A copyable example is `dat
 ```powershell
 # Default: replay data/dataset.txt (84,000 shots)
 python scripts/run_scheduler_replay.py --policy arrival-order
-python scripts/run_scheduler_replay.py --policy minimum-recorded-gap
+python scripts/run_scheduler_replay.py --policy consecutive-pair
 
 # Custom input (copy the example first)
 Copy-Item data/inputs/input.txt.example data/inputs/input.txt
 python scripts/run_scheduler_replay.py --input data/inputs/input.txt --policy arrival-order
 
-# Optional result artifact (.csv: one row per comparison; .json: metrics + comparisons + unmatched shots)
-python scripts/run_scheduler_replay.py --policy arrival-order --output result.json
+# Optional: service slots per source shot (default 1.0) and a result artifact (.csv or .json)
+python scripts/run_scheduler_replay.py --policy consecutive-pair --slots-per-shot 1.5 --output result.json
 ```
 
-The report prints the input source, policy, shot counts, completion rate, timestamp-separation and waiting-time statistics (mean, median, 95th percentile, max), observed outcome-difference statistics (`outcome_a - outcome_b`, where `a` is the earlier shot), counts per circuit pair, and unmatched shots per circuit. Invalid input exits nonzero with a readable message.
+The report lists the input source, policy, slot budget, executed/unexecuted shots, idle slots, completed comparisons, completion rate, slot and time separation of the paired shots, per-shot queue waiting time, observed outcome-difference statistics, and comparisons per circuit pair. Invalid input exits nonzero with a readable message.
 
 ---
 
-## 8. Running Tests
+## 8. Holdout evaluation and drift-aware scheduling
+
+Compatibility and priority are different. **Compatibility** is the researcher decision in the registry: all 91 pairs are `compatible`, and no drift score changes that. **Priority** only decides which compatible comparison to run first.
+
+```powershell
+python scripts/run_holdout_evaluation.py --train-fraction 0.75 --window-seconds 600
+python scripts/run_holdout_evaluation.py --output data/derived/holdout_evaluation.json
+```
+
+**What is learned from training (first 75% of the time span):** for every compatible pair, windowed pairwise drift diagnostics (`mean_abs_d`, RMS, `mean_abs_z`, valid transitions) give `priority_score = 1.0 / (mean_abs_z + 1e-12)`. A pair with too little valid training data scores `0.0` but stays compatible and schedulable. The frozen table is written to `data/derived/pair_priorities.json` (git-ignored; regenerate with the command above).
+
+**What is evaluated in holdout (final 25%):** `arrival-order`, `consecutive-pair` and `drift-aware` run on the identical holdout shots, slot budget and request workload, using the same frozen priority table. Holdout data never influences priorities (enforced by `LeakageError` and tested). Options: `--dataset`, `--slots-per-shot`, `--min-valid-transitions`, `--priorities-output`. Design: `docs/holdout_and_drift_aware_design.md`.
+
+**Scientific limitation:** the results are *held-out replay scheduling metrics* on recorded outcomes. They do not predict counterfactual hardware outcomes, and the observed historical outcome difference is not a physical comparison error. Counterfactual hardware-performance claims require a later drift/outcome model.
+
+---
+
+## 9. Running Tests
 
 Execute unit tests using `pytest`:
 

@@ -1,146 +1,105 @@
-"""Pairing policies for the recorded-trace queue simulator.
+"""Scheduling policies for the slot-based simulator.
 
-A policy answers one question: given the pending queue, which two compatible shots
-should be completed next (or none)? The simulator calls ``select_pair`` repeatedly
-at each arrival timestamp until it returns ``None``.
+Two dispatch units exist, matching the required scheduler semantics:
 
-Extension point for a future drift-aware policy: implement ``PairingPolicy`` (a
-``name`` attribute and ``select_pair``) and pass an instance to ``run_simulation``.
-Policies must be deterministic and must only return pending, distinct shots whose
-circuit pair is ``compatible`` in the registry; the simulator verifies this and
-raises ``SimulationError`` otherwise. Compatibility is a registry property; a
-drift-aware policy may use empirical diagnostics for priority only, never to
-override compatibility.
+* ``"shot"`` policies (``arrival-order``) execute individual shots, one per service
+  slot, in the order given by ``shot_key`` (lowest first).
+* ``"pair"`` policies (``consecutive-pair``, ``drift-aware``) dispatch a ready
+  comparison request as a two-shot atomic block: the first circuit executes in one
+  slot and the second in the immediately following slot, with nothing in between. If
+  no request is ready, the slot idles (strict idling): a pair policy never executes a
+  lone shot.
+
+A pair policy defines ``request_key(request)``: the simulator always dispatches the
+ready, still-unexecuted request with the lowest key. Keys must be deterministic,
+immutable and totally ordered (end with ``request_id``). This is the extension point
+for new pair policies; compatibility is enforced by the workload and the simulator,
+never by a policy.
 """
 
-from typing import Optional, Protocol, Tuple, runtime_checkable
+from typing import Protocol, Tuple, runtime_checkable
 
-from quantum_drift_scheduler.data.compatibility import CompatibilityRegistry, UnknownPairError
-from quantum_drift_scheduler.scheduling.models import PendingQueue, ShotArrival
-
-ShotPair = Tuple[ShotArrival, ShotArrival]
+from quantum_drift_scheduler.scheduling.models import PairRequest, ShotArrival
 
 ARRIVAL_ORDER = "arrival-order"
-MINIMUM_RECORDED_GAP = "minimum-recorded-gap"
-POLICY_NAMES: Tuple[str, ...] = (ARRIVAL_ORDER, MINIMUM_RECORDED_GAP)
+CONSECUTIVE_PAIR = "consecutive-pair"
+DRIFT_AWARE = "drift-aware"
+BASELINE_POLICY_NAMES: Tuple[str, ...] = (ARRIVAL_ORDER, CONSECUTIVE_PAIR)
+POLICY_NAMES: Tuple[str, ...] = (ARRIVAL_ORDER, CONSECUTIVE_PAIR, DRIFT_AWARE)
 
 
 @runtime_checkable
-class PairingPolicy(Protocol):
-    """Interface every pairing policy implements."""
+class ShotPolicy(Protocol):
+    """Individual-shot dispatch policy."""
 
     name: str
+    dispatch_unit: str  # "shot"
 
-    def select_pair(
-        self, pending: PendingQueue, registry: CompatibilityRegistry, now: float
-    ) -> Optional[ShotPair]:
-        """Return the next two shots to pair, or ``None`` if no pair should complete now.
-
-        Args:
-            pending: Pending, unconsumed shots (read-only for the policy).
-            registry: Compatibility registry.
-            now: Current simulator time (the current arrival timestamp).
-        """
+    def shot_key(self, shot: ShotArrival) -> tuple:
+        """Sort key among arrived, unexecuted shots; the lowest key executes next."""
         ...
 
 
-def circuits_compatible(registry: CompatibilityRegistry, circuit_a: str, circuit_b: str) -> bool:
-    """True if two distinct circuits form a registry-``compatible`` pair.
+@runtime_checkable
+class PairPolicy(Protocol):
+    """Atomic two-slot pair dispatch policy."""
 
-    Same-circuit shots are never paired, and pairs absent from the registry are not
-    compatible; this never defaults to ``True``.
+    name: str
+    dispatch_unit: str  # "pair"
+
+    def request_key(self, request: PairRequest) -> tuple:
+        """Sort key among ready requests; the lowest key dispatches next."""
+        ...
+
+
+def request_order_key(request: PairRequest) -> tuple:
+    """Deterministic request order shared by the pair policies.
+
+    1. earlier pair-request arrival time (when both shots have arrived);
+    2. lower sorted wait-length tuple ``(min(k_a, k_b), max(k_a, k_b))``;
+    3. earlier source indices ``(min, max)``;
+    4. stable request id.
     """
-    if circuit_a == circuit_b:
-        return False
-    try:
-        return registry.is_compatible(circuit_a, circuit_b)
-    except UnknownPairError:
-        return False
-
-
-def _ordered(first: ShotArrival, second: ShotArrival) -> ShotPair:
-    return (first, second) if first.sort_key <= second.sort_key else (second, first)
+    ks = sorted((request.wait_length_first, request.wait_length_second))
+    sources = sorted((request.first.source_index, request.second.source_index))
+    return (request.ready_time, (ks[0], ks[1]), (sources[0], sources[1]), request.request_id)
 
 
 class ArrivalOrderPolicy:
-    """FIFO baseline.
+    """Individual-shot FIFO baseline.
 
-    Takes the oldest pending shot that has any compatible pending counterpart and
-    pairs it with the oldest compatible pending shot. Shots with no counterpart stay
-    pending. Because compatibility depends only on circuits, this is evaluated on
-    each circuit's oldest pending shot.
+    Executes the oldest arrived, unexecuted shot in every slot (ties: source index,
+    then shot id) and never idles while a shot is pending. A workload request completes
+    as a comparison when both of its shots have executed, so the two shots of a
+    comparison are generally not adjacent in execution order.
     """
 
     name = ARRIVAL_ORDER
+    dispatch_unit = "shot"
 
-    def select_pair(
-        self, pending: PendingQueue, registry: CompatibilityRegistry, now: float
-    ) -> Optional[ShotPair]:
-        circuits = pending.circuits()
-        best: Optional[ShotPair] = None
-        for circuit in circuits:
-            head = pending.head(circuit)
-            partner: Optional[ShotArrival] = None
-            for other in circuits:
-                if not circuits_compatible(registry, circuit, other):
-                    continue
-                candidate = pending.head(other)
-                if partner is None or candidate.sort_key < partner.sort_key:
-                    partner = candidate
-            if partner is None:
-                continue
-            if best is None or head.sort_key < best[0].sort_key:
-                best = (head, partner)
-        return best
+    def shot_key(self, shot: ShotArrival) -> tuple:
+        return shot.sort_key
 
 
-class MinimumRecordedGapPolicy:
-    """Close-together baseline on the recorded trace.
+class ConsecutivePairPolicy:
+    """Pair-aware baseline without drift information.
 
-    Picks the compatible pending pair with the smallest ``abs`` difference of recorded
-    arrival timestamps. Ties break by earlier maximum arrival time, earlier minimum
-    arrival time, source indices, then shot ids. It uses recorded timestamps only to
-    assess pairing quality on the recorded trace; it does not predict what hardware
-    would have measured at a different time.
+    Dispatches the ready request with the earliest pair-request arrival time (see
+    ``request_order_key``) as an atomic consecutive two-slot block, lower wait length
+    first.
     """
 
-    name = MINIMUM_RECORDED_GAP
+    name = CONSECUTIVE_PAIR
+    dispatch_unit = "pair"
 
-    def select_pair(
-        self, pending: PendingQueue, registry: CompatibilityRegistry, now: float
-    ) -> Optional[ShotPair]:
-        circuits = pending.circuits()
-        best_key = None
-        best_pair: Optional[ShotPair] = None
-        for i, circuit_a in enumerate(circuits):
-            for circuit_b in circuits[i + 1:]:
-                if not circuits_compatible(registry, circuit_a, circuit_b):
-                    continue
-                small, large = sorted(
-                    (circuit_a, circuit_b), key=lambda c: len(pending.shots_for(c))
-                )
-                for shot in pending.shots_for(small):
-                    for other in pending.nearest(large, shot.arrival_time):
-                        first, second = _ordered(shot, other)
-                        key = (
-                            abs(first.arrival_time - second.arrival_time),
-                            max(first.arrival_time, second.arrival_time),
-                            min(first.arrival_time, second.arrival_time),
-                            first.source_index,
-                            second.source_index,
-                            first.shot_id,
-                            second.shot_id,
-                        )
-                        if best_key is None or key < best_key:
-                            best_key = key
-                            best_pair = (first, second)
-        return best_pair
+    def request_key(self, request: PairRequest) -> tuple:
+        return request_order_key(request)
 
 
-def make_policy(name: str) -> PairingPolicy:
-    """Build a built-in policy from its CLI name."""
+def make_baseline_policy(name: str):
+    """Build a baseline policy from its CLI name."""
     if name == ARRIVAL_ORDER:
         return ArrivalOrderPolicy()
-    if name == MINIMUM_RECORDED_GAP:
-        return MinimumRecordedGapPolicy()
-    raise ValueError(f"Unknown policy {name!r}; expected one of: {', '.join(POLICY_NAMES)}")
+    if name == CONSECUTIVE_PAIR:
+        return ConsecutivePairPolicy()
+    raise ValueError(f"Unknown policy {name!r}; expected one of: {', '.join(BASELINE_POLICY_NAMES)}")

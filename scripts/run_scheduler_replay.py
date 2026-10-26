@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
-"""Replay a recorded shot trace through a pairing policy and report queue metrics.
+"""Replay a recorded shot trace through a baseline slot-based scheduling policy.
 
-This replay pairs observed historical shots. It measures actual timestamp separation
-and queue behaviour; it does not predict outcomes under a counterfactual reordered
-physical experiment.
+Policies: ``arrival-order`` (individual-shot FIFO) and ``consecutive-pair`` (atomic
+two-slot pair blocks). The drift-aware policy needs training-derived priorities and is
+run by ``scripts/run_holdout_evaluation.py``.
+
+These are replay scheduling metrics on recorded outcomes. They do not predict outcomes
+under a counterfactual reordered physical experiment.
 """
 
 import argparse
@@ -19,20 +22,23 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 from quantum_drift_scheduler.config import DEFAULT_CONFIG
 from quantum_drift_scheduler.data.compatibility import CompatibilityError, load_compatibility_registry
 from quantum_drift_scheduler.scheduling import (
-    POLICY_NAMES,
+    BASELINE_POLICY_NAMES,
+    DEFAULT_SLOTS_PER_SHOT,
     SchedulingError,
     SimulationMetrics,
     SimulationResult,
     compute_metrics,
+    format_metrics,
     load_custom_trace,
     load_recorded_trace,
-    make_policy,
+    make_baseline_policy,
     run_simulation,
 )
 
 COMPARISON_COLUMNS = (
     "comparison_id",
     "policy_name",
+    "request_id",
     "shot_id_a",
     "shot_id_b",
     "circuit_a",
@@ -42,53 +48,36 @@ COMPARISON_COLUMNS = (
     "observed_difference",
     "arrival_time_a",
     "arrival_time_b",
-    "timestamp_separation",
+    "slot_a",
+    "slot_b",
+    "slot_separation",
+    "execution_time_a",
+    "execution_time_b",
+    "time_separation",
+    "completion_slot",
     "completion_time",
     "waiting_time_a",
     "waiting_time_b",
 )
 
 LIMITATION = (
-    "This replay pairs observed historical shots. It measures actual timestamp\n"
-    "separation and queue behaviour; it does not predict outcomes under a\n"
-    "counterfactual reordered physical experiment."
+    "These are replay scheduling metrics on recorded outcomes. They measure slot and time\n"
+    "separation and queue behaviour of observed historical shots; they do not predict\n"
+    "outcomes under a counterfactual reordered physical experiment."
 )
-
-
-def _fmt(value: Optional[float], digits: int = 6) -> str:
-    return "n/a" if value is None else f"{value:.{digits}f}"
 
 
 def format_report(result: SimulationResult, metrics: SimulationMetrics) -> str:
     lines = [
         "=" * 78,
-        " DRIFTSCHED RECORDED-TRACE SCHEDULER REPLAY",
+        " DRIFTSCHED SLOT-BASED SCHEDULER REPLAY",
         "=" * 78,
         f"Input source:            {result.input_source or '(empty trace)'}",
         f"Policy:                  {result.policy_name}",
-        f"Input shots:             {metrics.total_input_shots}",
-        f"Completed comparisons:   {metrics.completed_comparisons}",
-        f"Consumed shots:          {metrics.consumed_shots}",
-        f"Unmatched shots:         {metrics.unmatched_shots}",
-        f"Completion rate:         {_fmt(metrics.completion_rate)}",
-        "",
-        "Timestamp separation of paired shots (s):",
-        f"  mean={_fmt(metrics.separation_mean)}  median={_fmt(metrics.separation_median)}  "
-        f"p95={_fmt(metrics.separation_p95)}  max={_fmt(metrics.separation_max)}",
-        "Per-shot waiting time (s):",
-        f"  mean={_fmt(metrics.waiting_mean)}  median={_fmt(metrics.waiting_median)}  "
-        f"p95={_fmt(metrics.waiting_p95)}  max={_fmt(metrics.waiting_max)}",
-        "Observed outcome difference (outcome_a - outcome_b, a = earlier shot):",
-        f"  mean absolute={_fmt(metrics.mean_absolute_observed_difference)}  "
-        f"signed mean={_fmt(metrics.mean_signed_observed_difference)}",
-        "",
-        f"Completed comparisons by circuit pair ({len(metrics.pair_counts)} pairs):",
+        f"Slot length (s):         {result.schedule.slot_seconds:.6f}",
+        f"Workload requests:       {result.workload_requests}",
     ]
-    for a, b, n in metrics.pair_counts:
-        lines.append(f"  {a} | {b}: {n}")
-    lines.append(f"Unmatched shots by circuit ({len(metrics.unmatched_by_circuit)} circuits):")
-    for circuit, n in metrics.unmatched_by_circuit:
-        lines.append(f"  {circuit}: {n}")
+    lines += format_metrics(metrics)
     lines += ["", LIMITATION, "=" * 78]
     return "\n".join(lines)
 
@@ -106,11 +95,18 @@ def write_output(path: Path, result: SimulationResult, metrics: SimulationMetric
             "input_source": result.input_source,
             "policy": result.policy_name,
             "limitation": LIMITATION.replace("\n", " "),
+            "schedule": asdict(result.schedule),
             "metrics": asdict(metrics),
             "comparisons": [
-                {**asdict(c), "observed_difference": c.observed_difference} for c in result.comparisons
+                {
+                    **asdict(c),
+                    "slot_separation": c.slot_separation,
+                    "time_separation": c.time_separation,
+                    "observed_difference": c.observed_difference,
+                }
+                for c in result.comparisons
             ],
-            "unmatched_shots": [asdict(s) for s in result.unmatched_shots],
+            "unexecuted_shots": [asdict(s) for s in result.unexecuted_shots],
         }
         with open(path, "w", encoding="utf-8", newline="") as handle:
             json.dump(payload, handle, indent=2)
@@ -121,16 +117,22 @@ def write_output(path: Path, result: SimulationResult, metrics: SimulationMetric
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Replay a recorded shot trace through a pairing policy.",
+        description="Replay a recorded shot trace through a baseline scheduling policy.",
         epilog=LIMITATION,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--policy", required=True, choices=POLICY_NAMES, help="Pairing policy.")
+    parser.add_argument("--policy", required=True, choices=BASELINE_POLICY_NAMES, help="Scheduling policy.")
     parser.add_argument(
         "--input",
         type=Path,
         default=None,
         help="Custom replay input (CSV in .txt). Default: replay data/dataset.txt.",
+    )
+    parser.add_argument(
+        "--slots-per-shot",
+        type=float,
+        default=DEFAULT_SLOTS_PER_SHOT,
+        help="Service slots per source shot (default: %(default)s).",
     )
     parser.add_argument("--output", type=Path, default=None, help="Optional .csv or .json result artifact.")
     return parser
@@ -151,7 +153,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     "(copy data/inputs/input.txt.example to create a custom input)"
                 )
             trace = load_custom_trace(args.input, registry)
-        result = run_simulation(trace, registry, make_policy(args.policy))
+        result = run_simulation(
+            trace, registry, make_baseline_policy(args.policy), slots_per_shot=args.slots_per_shot
+        )
         metrics = compute_metrics(result)
         print(format_report(result, metrics))
         if args.output is not None:

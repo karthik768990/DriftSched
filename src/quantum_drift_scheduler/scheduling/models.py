@@ -1,15 +1,18 @@
-"""Domain models for the recorded-trace queue and pairing simulator.
+"""Domain models for the slot-based queue and pair scheduler.
 
-Pair ordering convention: within a ``CompletedComparison``, shot ``a`` is always the
-shot that sorts first by ``(arrival_time, source_index, shot_id)``; shot ``b`` is the
-other one. The observed comparison value is ``outcome_a - outcome_b``.
+Service model: the device executes one logical shot per service slot. Slot ``s``
+starts at ``schedule.slot_time(s)``. A shot may execute in slot ``s`` only if it has
+arrived by that slot's start time.
+
+Canonical pair orientation: within a pair request or completed comparison, shot
+``a`` / ``first`` is the circuit with the smaller wait length ``k`` and shot ``b`` /
+``second`` the larger. The observed comparison value is ``outcome_a - outcome_b``
+regardless of execution order, so it is comparable across policies.
 """
 
-from bisect import bisect_left
+import math
 from dataclasses import dataclass
-from typing import Dict, Iterator, List, Optional, Tuple
-
-ShotKey = Tuple[float, int, str]
+from typing import Optional, Tuple
 
 
 class SchedulingError(ValueError):
@@ -22,6 +25,9 @@ class TraceError(SchedulingError):
 
 class SimulationError(SchedulingError):
     """Raised when a simulation input or policy decision is invalid."""
+
+
+ShotKey = Tuple[float, int, str]
 
 
 @dataclass(frozen=True)
@@ -53,16 +59,79 @@ class ShotArrival:
 
 
 @dataclass(frozen=True)
-class CompletedComparison:
-    """A completed comparison consuming exactly two compatible shots.
+class SlotSchedule:
+    """Fixed service-slot grid: ``total_slots`` slots, ``slot_seconds`` apart."""
 
-    Shot ``a`` sorts before shot ``b`` by ``ShotArrival.sort_key``.
-    ``observed_difference`` is ``outcome_a - outcome_b`` and is an observed
-    recorded result only, not a physical prediction.
+    start_time: float
+    slot_seconds: float
+    total_slots: int
+
+    def __post_init__(self) -> None:
+        if not (math.isfinite(self.slot_seconds) and self.slot_seconds > 0.0):
+            raise SimulationError(f"slot_seconds must be positive and finite, got {self.slot_seconds}")
+        if self.total_slots < 0:
+            raise SimulationError(f"total_slots must be non-negative, got {self.total_slots}")
+
+    def slot_time(self, slot: int) -> float:
+        """Start time (seconds) of ``slot``; this is the execution time of a shot run in it."""
+        return self.start_time + slot * self.slot_seconds
+
+
+@dataclass(frozen=True)
+class PairRequest:
+    """A prebuilt request to compare two compatible shots.
+
+    ``first`` has the smaller wait length and executes first in a pair block.
+    ``ready_time`` (the pair-request arrival time) is the later of the two arrivals.
+    """
+
+    request_id: str
+    first: ShotArrival
+    second: ShotArrival
+    wait_length_first: int
+    wait_length_second: int
+
+    @property
+    def ready_time(self) -> float:
+        return max(self.first.arrival_time, self.second.arrival_time)
+
+    @property
+    def shot_ids(self) -> Tuple[str, str]:
+        return (self.first.shot_id, self.second.shot_id)
+
+    @property
+    def pair_key(self) -> Tuple[str, str]:
+        """Canonical circuit pair (smaller wait length first)."""
+        return (self.first.circuit, self.second.circuit)
+
+
+@dataclass(frozen=True)
+class ExecutedShot:
+    """A shot that executed in a service slot."""
+
+    shot_id: str
+    circuit: str
+    arrival_time: float
+    slot: int
+    execution_time: float
+
+    @property
+    def waiting_time(self) -> float:
+        return self.execution_time - self.arrival_time
+
+
+@dataclass(frozen=True)
+class CompletedComparison:
+    """A completed comparison consuming exactly two executed shots.
+
+    Shot ``a`` has the smaller wait length. ``observed_difference`` is
+    ``outcome_a - outcome_b``: an observed recorded value only, not a physical
+    prediction or comparison error.
     """
 
     comparison_id: int
     policy_name: str
+    request_id: str
     shot_id_a: str
     shot_id_b: str
     circuit_a: str
@@ -71,10 +140,28 @@ class CompletedComparison:
     outcome_b: int
     arrival_time_a: float
     arrival_time_b: float
-    timestamp_separation: float
+    slot_a: int
+    slot_b: int
+    execution_time_a: float
+    execution_time_b: float
+    completion_slot: int
     completion_time: float
-    waiting_time_a: float
-    waiting_time_b: float
+
+    @property
+    def slot_separation(self) -> int:
+        return abs(self.slot_a - self.slot_b)
+
+    @property
+    def time_separation(self) -> float:
+        return abs(self.execution_time_a - self.execution_time_b)
+
+    @property
+    def waiting_time_a(self) -> float:
+        return self.execution_time_a - self.arrival_time_a
+
+    @property
+    def waiting_time_b(self) -> float:
+        return self.execution_time_b - self.arrival_time_b
 
     @property
     def observed_difference(self) -> int:
@@ -86,8 +173,7 @@ class CompletedComparison:
 
     @property
     def pair_key(self) -> Tuple[str, str]:
-        """Canonical (sorted) circuit pair, for registry lookup and counting only."""
-        return (min(self.circuit_a, self.circuit_b), max(self.circuit_a, self.circuit_b))
+        return (self.circuit_a, self.circuit_b)
 
 
 @dataclass(frozen=True)
@@ -96,126 +182,46 @@ class SimulationResult:
 
     input_source: str
     policy_name: str
-    input_shots: int
+    source_shots: int
+    schedule: SlotSchedule
+    executed: Tuple[ExecutedShot, ...]
     comparisons: Tuple[CompletedComparison, ...]
-    unmatched_shots: Tuple[ShotArrival, ...]
+    unexecuted_shots: Tuple[ShotArrival, ...]
+    idle_slots: int
+    workload_requests: int
+
+
+@dataclass(frozen=True)
+class SummaryStats:
+    """Mean, median, 95th percentile and maximum; every field is ``None`` for no data."""
+
+    mean: Optional[float]
+    median: Optional[float]
+    p95: Optional[float]
+    maximum: Optional[float]
 
 
 @dataclass(frozen=True)
 class SimulationMetrics:
-    """Summary metrics for a ``SimulationResult``.
+    """Held-out replay scheduling metrics for one ``SimulationResult``.
 
-    Statistics that are undefined for an empty result are ``None``.
-    ``pair_counts`` rows are ``(circuit_a, circuit_b, count)`` over canonical
-    (lexicographically sorted) circuit pairs; ``unmatched_by_circuit`` rows are
-    ``(circuit, count)``. Both are sorted deterministically.
+    ``completion_rate`` is completed comparisons divided by
+    ``floor(source_shots / 2)`` (``None`` when that is zero). ``pair_counts`` rows are
+    ``(circuit_a, circuit_b, count)`` over canonical pairs.
     """
 
-    total_input_shots: int
+    source_shots: int
+    total_slots: int
+    executed_shots: int
+    unexecuted_shots: int
+    idle_slots: int
     completed_comparisons: int
     consumed_shots: int
-    unmatched_shots: int
+    executed_unpaired_shots: int
     completion_rate: Optional[float]
-    separation_mean: Optional[float]
-    separation_median: Optional[float]
-    separation_max: Optional[float]
-    separation_p95: Optional[float]
-    waiting_mean: Optional[float]
-    waiting_median: Optional[float]
-    waiting_max: Optional[float]
-    waiting_p95: Optional[float]
+    slot_separation: SummaryStats
+    time_separation: SummaryStats
+    waiting_time: SummaryStats
     mean_absolute_observed_difference: Optional[float]
     mean_signed_observed_difference: Optional[float]
     pair_counts: Tuple[Tuple[str, str, int], ...]
-    unmatched_by_circuit: Tuple[Tuple[str, int], ...]
-
-
-class PendingQueue:
-    """Pending, unconsumed shots grouped by circuit and ordered by ``sort_key``.
-
-    Shots must be added in non-decreasing ``sort_key`` order (the simulator
-    guarantees this), so each per-circuit list stays sorted and supports binary
-    search by arrival time.
-    """
-
-    def __init__(self) -> None:
-        self._keys: Dict[str, List[ShotKey]] = {}
-        self._shots: Dict[str, List[ShotArrival]] = {}
-        self._size = 0
-
-    def __len__(self) -> int:
-        return self._size
-
-    def __contains__(self, shot: object) -> bool:
-        if not isinstance(shot, ShotArrival):
-            return False
-        keys = self._keys.get(shot.circuit)
-        if not keys:
-            return False
-        i = bisect_left(keys, shot.sort_key)
-        return i < len(keys) and self._shots[shot.circuit][i] == shot
-
-    def add(self, shot: ShotArrival) -> None:
-        keys = self._keys.setdefault(shot.circuit, [])
-        shots = self._shots.setdefault(shot.circuit, [])
-        if keys and shot.sort_key < keys[-1]:
-            raise SimulationError(
-                f"Shot {shot.shot_id!r} arrives out of order relative to the pending queue"
-            )
-        keys.append(shot.sort_key)
-        shots.append(shot)
-        self._size += 1
-
-    def remove(self, shot: ShotArrival) -> None:
-        if shot not in self:
-            raise SimulationError(f"Shot {shot.shot_id!r} is not pending (already consumed?)")
-        keys = self._keys[shot.circuit]
-        i = bisect_left(keys, shot.sort_key)
-        del keys[i]
-        del self._shots[shot.circuit][i]
-        self._size -= 1
-        if not keys:
-            del self._keys[shot.circuit]
-            del self._shots[shot.circuit]
-
-    def circuits(self) -> Tuple[str, ...]:
-        """Circuits that currently have pending shots, sorted by label."""
-        return tuple(sorted(self._shots))
-
-    def shots_for(self, circuit: str) -> Tuple[ShotArrival, ...]:
-        """Pending shots of one circuit in queue order."""
-        return tuple(self._shots.get(circuit, ()))
-
-    def head(self, circuit: str) -> ShotArrival:
-        """Oldest pending shot of ``circuit``."""
-        return self._shots[circuit][0]
-
-    def nearest(self, circuit: str, arrival_time: float) -> Iterator[ShotArrival]:
-        """Pending shots of ``circuit`` at the closest arrival time at or below and at or above ``arrival_time``.
-
-        Yields every shot sharing the closest earlier timestamp and every shot sharing
-        the closest later-or-equal timestamp, so callers can apply exact tie-breaking.
-        """
-        keys = self._keys.get(circuit)
-        if not keys:
-            return
-        shots = self._shots[circuit]
-        idx = bisect_left(keys, (arrival_time,))
-        if idx < len(keys):
-            t = keys[idx][0]
-            j = idx
-            while j < len(keys) and keys[j][0] == t:
-                yield shots[j]
-                j += 1
-        if idx > 0:
-            t = keys[idx - 1][0]
-            j = idx - 1
-            while j >= 0 and keys[j][0] == t:
-                yield shots[j]
-                j -= 1
-
-    def all_shots(self) -> Tuple[ShotArrival, ...]:
-        """Every pending shot in global queue order."""
-        merged = [s for shots in self._shots.values() for s in shots]
-        merged.sort(key=lambda s: s.sort_key)
-        return tuple(merged)

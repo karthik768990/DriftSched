@@ -1,4 +1,4 @@
-"""Tests for the queue simulator, metrics and the replay CLI."""
+"""Tests for the slot-based simulator, metrics and the baseline replay CLI."""
 
 import csv
 import importlib.util
@@ -14,246 +14,256 @@ from quantum_drift_scheduler.data.compatibility import (
     load_compatibility_registry,
 )
 from quantum_drift_scheduler.scheduling import (
-    POLICY_NAMES,
-    ShotArrival,
+    ArrivalOrderPolicy,
+    ConsecutivePairPolicy,
     SimulationError,
+    SlotSchedule,
+    build_pair_requests,
     compute_metrics,
     load_recorded_trace,
-    make_policy,
     percentile,
     run_simulation,
 )
-from _sched_helpers import make_registry, make_trace
+from quantum_drift_scheduler.scheduling.workload import make_request
+from _sched_helpers import label, make_registry, make_trace, ramsey_registry
 
 ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = ROOT / "scripts" / "run_scheduler_replay.py"
+POLICIES = (ArrivalOrderPolicy, ConsecutivePairPolicy)
 
 
-def run(rows, policy="arrival-order", registry=None):
-    registry = registry or make_registry()
-    return run_simulation(make_trace(rows), registry, make_policy(policy))
+def grid(total_slots, slot_seconds=1.0, start=0.0):
+    return SlotSchedule(start_time=start, slot_seconds=slot_seconds, total_slots=total_slots)
 
 
-# ---------------------------------------------------------------- lifecycle
+def requests_of(trace, pairs):
+    """Explicit workload: ``pairs`` are (index, index) positions in ``trace``."""
+    return tuple(make_request(f"r{i}", trace[a], trace[b]) for i, (a, b) in enumerate(pairs))
 
 
-def test_empty_input():
-    result = run([])
-    assert result.input_shots == 0
-    assert result.comparisons == ()
-    assert result.unmatched_shots == ()
-    m = compute_metrics(result)
-    assert m.completed_comparisons == 0
-    assert m.completion_rate is None
-    assert m.separation_mean is None and m.waiting_p95 is None
-    assert m.mean_signed_observed_difference is None
-    assert m.pair_counts == () and m.unmatched_by_circuit == ()
+def execution_order(result):
+    return [(e.slot, e.circuit) for e in sorted(result.executed, key=lambda e: e.slot)]
 
 
-def test_one_shot_input_is_unmatched():
-    result = run([(1.0, "A", 1)])
-    assert result.comparisons == ()
-    assert [s.shot_id for s in result.unmatched_shots] == ["s0000"]
-    m = compute_metrics(result)
-    assert m.unmatched_shots == 1
-    assert m.completion_rate is None  # floor(1/2) == 0 possible comparisons
-    assert m.unmatched_by_circuit == (("A", 1),)
+# ---------------------------------------------------------------- pair-aware semantics
 
 
-@pytest.mark.parametrize("policy", POLICY_NAMES)
-def test_odd_number_of_compatible_shots(policy):
-    result = run([(0.0, "A", 1), (1.0, "B", 0), (2.0, "C", 1)], policy)
-    assert len(result.comparisons) == 1
-    assert len(result.unmatched_shots) == 1
-    m = compute_metrics(result)
-    assert m.total_input_shots == 3
-    assert m.consumed_shots == 2
-    assert m.completion_rate == 1.0  # 1 of floor(3/2) == 1
+def test_consecutive_pair_dispatches_atomic_two_slot_blocks():
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0), (0.0, 4, 1), (0.0, 8, 0)])
+    requests = requests_of(trace, [(0, 1), (2, 3)])
+    result = run_simulation(trace, ramsey_registry(), ConsecutivePairPolicy(), grid(4), requests)
+    assert execution_order(result) == [(0, label(1)), (1, label(2)), (2, label(4)), (3, label(8))]
+    assert [(c.slot_a, c.slot_b) for c in result.comparisons] == [(0, 1), (2, 3)]
+    assert all(c.slot_separation == 1 for c in result.comparisons)
+    assert result.idle_slots == 0 and not result.unexecuted_shots
 
 
-@pytest.mark.parametrize("policy", POLICY_NAMES)
-def test_same_circuit_only_queue_never_pairs(policy):
-    result = run([(float(i), "A", i % 2) for i in range(6)], policy)
-    assert result.comparisons == ()
-    assert len(result.unmatched_shots) == 6
-    m = compute_metrics(result)
-    assert m.completion_rate == 0.0
-    assert m.unmatched_by_circuit == (("A", 6),)
-
-
-def test_comparison_fields_separation_and_waiting():
-    # A@0, then B@5: pair completes at t=5 when B arrives.
-    result = run([(0.0, "A", 1), (5.0, "B", 0)])
-    (c,) = result.comparisons
-    assert (c.shot_id_a, c.shot_id_b) == ("s0000", "s0001")
-    assert (c.circuit_a, c.circuit_b) == ("A", "B")
-    assert (c.outcome_a, c.outcome_b) == (1, 0)
-    assert c.observed_difference == 1
-    assert (c.arrival_time_a, c.arrival_time_b) == (0.0, 5.0)
-    assert c.timestamp_separation == 5.0
-    assert c.completion_time == 5.0
-    assert (c.waiting_time_a, c.waiting_time_b) == (5.0, 0.0)
-    assert c.policy_name == "arrival-order"
-    assert c.comparison_id == 1
-    assert c.pair_key == ("A", "B")
-
-
-def test_delayed_completion_waiting_times():
-    # A and B arrive; policy pairs them at the arrival of B (t=2), not later.
-    result = run([(1.0, "A", 1), (2.0, "B", 1), (9.0, "C", 0)])
-    (c,) = result.comparisons
-    assert c.completion_time == 2.0
-    assert c.waiting_time_a == 1.0 and c.waiting_time_b == 0.0
-    assert [s.circuit for s in result.unmatched_shots] == ["C"]
-
-
-def test_simultaneous_arrivals_are_all_queued_before_policy_runs():
-    result = run([(1.0, "A", 1), (1.0, "A", 0), (1.0, "B", 1), (1.0, "B", 0)])
-    assert len(result.comparisons) == 2
-    assert all(c.completion_time == 1.0 and c.timestamp_separation == 0.0 for c in result.comparisons)
-    assert len(result.unmatched_shots) == 0
-
-
-def test_min_gap_differs_from_fifo_when_queue_has_choices():
-    rows = [(0.0, "A", 1), (0.0, "A", 0), (10.0, "B", 1), (10.0, "C", 0)]
-    fifo = run(rows, "arrival-order")
-    gap = run(rows, "minimum-recorded-gap")
-    # FIFO pairs the oldest A with the oldest compatible shot (B), then A with C.
-    assert [c.shot_ids for c in fifo.comparisons] == [("s0000", "s0002"), ("s0001", "s0003")]
-    assert not fifo.unmatched_shots
-    # The gap policy takes the closest pair first (B@10 with C@10) and strands both A shots.
-    assert [c.shot_ids for c in gap.comparisons] == [("s0002", "s0003")]
-    assert [s.shot_id for s in gap.unmatched_shots] == ["s0000", "s0001"]
-
-
-# ---------------------------------------------------------------- invariants
-
-
-@pytest.mark.parametrize("policy", POLICY_NAMES)
-def test_no_shot_reused_and_budget_conserved(policy):
-    rows = [(float(i // 3), "ABC"[i % 3], i % 2) for i in range(31)]
-    result = run(rows, policy)
-    consumed = [sid for c in result.comparisons for sid in c.shot_ids]
-    assert len(consumed) == len(set(consumed)) == 2 * len(result.comparisons)
-    leftover = {s.shot_id for s in result.unmatched_shots}
-    assert leftover.isdisjoint(consumed)
-    assert len(consumed) + len(leftover) == result.input_shots == 31
-
-
-@pytest.mark.parametrize("policy", POLICY_NAMES)
-def test_every_completed_pair_is_registry_compatible(policy):
-    registry = make_registry(
-        ("A", "B", "C", "D"),
-        overrides={
-            ("A", "B"): CompatibilityStatus.INCOMPATIBLE,
-            ("C", "D"): CompatibilityStatus.CONDITIONALLY_COMPATIBLE,
-        },
-    )
-    rows = [(float(i), "ABCD"[i % 4], i % 2) for i in range(40)]
-    result = run_simulation(make_trace(rows), registry, make_policy(policy))
+def test_no_unrelated_shot_inside_a_pair_block():
+    # Many ready requests; whatever the dispatch order, a block is two adjacent slots.
+    rows = [(float(r), k, (r + k) % 2) for r in range(6) for k in (1, 2, 4, 8)]
+    trace = make_trace(rows)
+    result = run_simulation(trace, ramsey_registry(), ConsecutivePairPolicy(), grid(len(trace), 0.25))
+    slot_to_shot = {e.slot: e.shot_id for e in result.executed}
     assert result.comparisons
     for c in result.comparisons:
-        assert registry.is_compatible(c.circuit_a, c.circuit_b)
-        assert c.circuit_a != c.circuit_b
+        assert c.slot_b == c.slot_a + 1
+        assert slot_to_shot[c.slot_a] == c.shot_id_a and slot_to_shot[c.slot_b] == c.shot_id_b
+    assert len({e.slot for e in result.executed}) == len(result.executed)  # one shot per slot
 
 
-def test_incompatible_only_registry_completes_nothing():
-    registry = make_registry(("A", "B"), overrides={("A", "B"): CompatibilityStatus.INCOMPATIBLE})
-    for policy in POLICY_NAMES:
-        result = run_simulation(make_trace([(0.0, "A", 1), (1.0, "B", 0)]), registry, make_policy(policy))
-        assert result.comparisons == ()
-        assert len(result.unmatched_shots) == 2
+def test_pair_policy_executes_lower_wait_length_first():
+    trace = make_trace([(0.0, 8, 1), (0.0, 2, 0)])
+    result = run_simulation(trace, ramsey_registry(), ConsecutivePairPolicy(), grid(2))
+    (c,) = result.comparisons
+    assert (c.circuit_a, c.circuit_b) == (label(2), label(8))
+    assert (c.slot_a, c.slot_b) == (0, 1)
+    assert c.observed_difference == 0 - 1
 
 
-def test_both_policies_share_the_same_budget():
-    rows = [(float(i // 2), "ABC"[i % 3], (i * 7) % 2) for i in range(60)]
-    results = [run(rows, p) for p in POLICY_NAMES]
-    assert len({r.input_shots for r in results}) == 1
-    for r in results:
-        assert 2 * len(r.comparisons) + len(r.unmatched_shots) == r.input_shots
+def test_pair_policy_idles_instead_of_running_a_lone_shot():
+    # Lone shot at t=0; its partner only arrives at t=5.
+    trace = make_trace([(0.0, 1, 1), (5.0, 2, 0)])
+    pair = run_simulation(trace, ramsey_registry(), ConsecutivePairPolicy(), grid(8))
+    assert pair.idle_slots == 6 and len(pair.comparisons) == 1
+    assert (pair.comparisons[0].slot_a, pair.comparisons[0].slot_b) == (5, 6)
+    assert pair.comparisons[0].waiting_time_a == 5.0 and pair.comparisons[0].waiting_time_b == 1.0
+
+    fifo = run_simulation(trace, ramsey_registry(), ArrivalOrderPolicy(), grid(8))
+    assert execution_order(fifo)[0] == (0, label(1))  # FIFO runs the lone shot immediately
+    assert fifo.comparisons[0].completion_slot == 5
+
+
+def test_block_needs_two_remaining_slots():
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0), (0.0, 4, 1), (0.0, 8, 0)])
+    requests = requests_of(trace, [(0, 1), (2, 3)])
+    result = run_simulation(trace, ramsey_registry(), ConsecutivePairPolicy(), grid(3), requests)
+    assert len(result.comparisons) == 1
+    assert result.idle_slots == 1  # slot 2 cannot start a two-slot block
+    assert {s.circuit for s in result.unexecuted_shots} == {label(4), label(8)}
+
+
+def test_overlapping_requests_never_reuse_a_shot():
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0), (0.0, 4, 1)])
+    requests = requests_of(trace, [(0, 1), (0, 2)])  # shot 0 appears in both
+    for policy in POLICIES:
+        result = run_simulation(trace, ramsey_registry(), policy(), grid(3), requests)
+        ids = [sid for c in result.comparisons for sid in c.shot_ids]
+        assert len(ids) == len(set(ids))
+        assert len(result.comparisons) == 1
+
+
+# ---------------------------------------------------------------- arrival-order semantics
+
+
+def test_arrival_order_is_individual_shot_fifo():
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0), (0.0, 4, 1), (0.0, 8, 0)])
+    requests = requests_of(trace, [(0, 3), (1, 2)])  # comparisons are not adjacent in FIFO order
+    result = run_simulation(trace, ramsey_registry(), ArrivalOrderPolicy(), grid(4), requests)
+    assert [c for _, c in execution_order(result)] == [label(1), label(2), label(4), label(8)]
+    by_request = {c.request_id: c for c in result.comparisons}
+    assert by_request["r1"].slot_separation == 1 and by_request["r1"].completion_slot == 2
+    assert by_request["r0"].slot_separation == 3 and by_request["r0"].completion_slot == 3
+    assert by_request["r0"].time_separation == 3.0
+
+
+def test_arrival_order_executes_unpaired_shots_and_never_idles_with_pending_shots():
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0), (0.0, 4, 0)])
+    requests = requests_of(trace, [(0, 1)])
+    result = run_simulation(trace, ramsey_registry(), ArrivalOrderPolicy(), grid(3), requests)
+    assert result.idle_slots == 0 and len(result.executed) == 3
+    m = compute_metrics(result)
+    assert m.completed_comparisons == 1 and m.executed_unpaired_shots == 1
+
+
+def test_shots_cannot_execute_before_they_arrive():
+    trace = make_trace([(2.5, 1, 1), (2.5, 2, 0)])
+    result = run_simulation(trace, ramsey_registry(), ArrivalOrderPolicy(), grid(6))
+    assert [e.slot for e in result.executed] == [3, 4]  # first slot start >= 2.5
+    assert all(e.execution_time >= e.arrival_time for e in result.executed)
+    assert result.executed[0].waiting_time == pytest.approx(0.5)
+    assert result.idle_slots == 4
+
+
+# ---------------------------------------------------------------- invariants and fairness
+
+
+def _mixed_trace():
+    return make_trace([(r * 0.7 + i * 0.05, k, (r * 3 + i) % 2) for r in range(12) for i, k in enumerate((1, 2, 4, 8))])
+
+
+@pytest.mark.parametrize("policy", POLICIES)
+def test_no_shot_executed_or_consumed_twice(policy):
+    trace = _mixed_trace()
+    result = run_simulation(trace, ramsey_registry(), policy())
+    exec_ids = [e.shot_id for e in result.executed]
+    assert len(exec_ids) == len(set(exec_ids))
+    consumed = [sid for c in result.comparisons for sid in c.shot_ids]
+    assert len(consumed) == len(set(consumed)) == 2 * len(result.comparisons)
+    assert set(consumed) <= set(exec_ids)
+    assert set(exec_ids).isdisjoint(s.shot_id for s in result.unexecuted_shots)
+    assert len(exec_ids) + len(result.unexecuted_shots) == len(trace)
+    assert len(exec_ids) + result.idle_slots == result.schedule.total_slots
+
+
+def test_policies_share_budget_and_workload():
+    trace = _mixed_trace()
+    registry = ramsey_registry()
+    schedule = grid(len(trace), 0.3)
+    requests = build_pair_requests(trace, registry)
+    results = [run_simulation(trace, registry, p(), schedule, requests) for p in POLICIES]
+    assert {r.source_shots for r in results} == {len(trace)}
+    assert {r.schedule for r in results} == {schedule}
+    assert {r.workload_requests for r in results} == {len(requests)}
+
+
+@pytest.mark.parametrize("policy", POLICIES)
+def test_every_completed_comparison_is_registry_compatible(policy):
+    registry = make_registry((1, 2, 4, 8), {(1, 2): CompatibilityStatus.INCOMPATIBLE})
+    trace = _mixed_trace()
+    result = run_simulation(trace, registry, policy())
+    assert result.comparisons
+    assert all(registry.is_compatible(c.circuit_a, c.circuit_b) for c in result.comparisons)
+    assert not any({c.circuit_a, c.circuit_b} == {label(1), label(2)} for c in result.comparisons)
+
+
+@pytest.mark.parametrize("policy", POLICIES)
+def test_simulation_is_deterministic(policy):
+    trace = _mixed_trace()
+    registry = ramsey_registry()
+    assert run_simulation(trace, registry, policy()) == run_simulation(trace, registry, policy())
+
+
+@pytest.mark.parametrize("policy", POLICIES)
+def test_empty_and_single_shot_inputs(policy):
+    empty = run_simulation((), ramsey_registry(), policy())
+    assert empty.source_shots == 0 and empty.comparisons == () and empty.schedule.total_slots == 0
+    m = compute_metrics(empty)
+    assert m.completion_rate is None and m.waiting_time.mean is None and m.pair_counts == ()
+    one = run_simulation(make_trace([(1.0, 1, 1)]), ramsey_registry(), policy())
+    assert one.comparisons == ()
+    assert compute_metrics(one).completion_rate is None  # floor(1 / 2) == 0 possible comparisons
 
 
 # ---------------------------------------------------------------- guards
 
 
-class _RoguePolicy:
-    name = "rogue"
-
-    def __init__(self, chooser):
-        self._chooser = chooser
-
-    def select_pair(self, pending, registry, now):
-        return self._chooser(pending)
-
-
-def test_policy_cannot_complete_incompatible_pair():
-    registry = make_registry(("A", "B"), overrides={("A", "B"): CompatibilityStatus.INCOMPATIBLE})
-    policy = _RoguePolicy(lambda q: tuple(q.all_shots()[:2]) if len(q) >= 2 else None)
-    with pytest.raises(SimulationError, match="only 'compatible' pairs may complete"):
-        run_simulation(make_trace([(0.0, "A", 1), (1.0, "B", 0)]), registry, policy)
+def test_workload_with_incompatible_or_missing_pair_is_rejected():
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0)])
+    request = requests_of(trace, [(0, 1)])
+    for status in (CompatibilityStatus.INCOMPATIBLE, CompatibilityStatus.CONDITIONALLY_COMPATIBLE):
+        registry = make_registry((1, 2), {(1, 2): status})
+        for policy in POLICIES:
+            with pytest.raises(SimulationError, match="only 'compatible' pairs may complete"):
+                run_simulation(trace, registry, policy(), grid(2), request)
+    full = make_registry((1, 2, 4))
+    missing = CompatibilityRegistry([p for p in full.pairs if {p.circuit_a, p.circuit_b} != {label(1), label(2)}])
+    for policy in POLICIES:
+        with pytest.raises(SimulationError, match="not in the registry"):
+            run_simulation(trace, missing, policy(), grid(2), request)
 
 
-def test_policy_cannot_pair_two_shots_of_one_circuit():
-    registry = make_registry(("A", "B"))
-    ghost = ShotArrival("g1", 1.0, "A", 1, 1, 1, "x")
-    other = ShotArrival("g0", 0.0, "A", 0, 1, 0, "x")
-    policy = _RoguePolicy(lambda q: (other, ghost) if len(q) >= 2 else None)
-    trace = (other, ghost)
-    with pytest.raises(SimulationError, match="same circuit"):
-        run_simulation(trace, registry, policy)
+def test_workload_with_foreign_duplicate_or_misordered_requests_is_rejected():
+    registry = ramsey_registry()
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0)])
+    foreign = make_trace([(0.0, 1, 1), (0.0, 4, 0)], source="other")
+    with pytest.raises(SimulationError, match="not in the trace"):
+        run_simulation(trace, registry, ConsecutivePairPolicy(), grid(2), (make_request("f", foreign[0], foreign[1]),))
+    good = requests_of(trace, [(0, 1)])
+    with pytest.raises(SimulationError, match="Duplicate request_id"):
+        run_simulation(trace, registry, ConsecutivePairPolicy(), grid(2), good + good)
+    from quantum_drift_scheduler.scheduling import PairRequest
+
+    swapped = PairRequest("m", trace[1], trace[0], 2, 1)
+    with pytest.raises(SimulationError, match="smaller wait length first"):
+        run_simulation(trace, registry, ConsecutivePairPolicy(), grid(2), (swapped,))
+    same = make_trace([(0.0, 1, 1), (0.0, 1, 0)])
+    with pytest.raises(SimulationError, match="two shots of circuit"):
+        run_simulation(same, registry, ConsecutivePairPolicy(), grid(2), (PairRequest("s", same[0], same[1], 1, 1),))
 
 
-def test_policy_cannot_reuse_consumed_shot():
-    calls = {"n": 0}
-    first = make_trace([(0.0, "A", 1), (1.0, "B", 0), (2.0, "C", 1)])
-
-    def chooser(queue):
-        calls["n"] += 1
-        if calls["n"] == 1:
-            return None
-        if calls["n"] == 2:
-            return (first[0], first[1])
-        return (first[0], first[2])  # first[0] already consumed
-
-    with pytest.raises(SimulationError, match="not pending|already-consumed"):
-        run_simulation(first, make_registry(), _RoguePolicy(chooser))
-
-
-def test_policy_cannot_select_shot_that_is_not_pending():
-    registry = make_registry(("A", "B"))
-    trace = make_trace([(0.0, "A", 1), (1.0, "B", 0)])
-    bad = (trace[0], ShotArrival("zz", 1.0, "B", 0, 1, 1, "x"))
-    with pytest.raises(SimulationError, match="not pending"):
-        run_simulation(trace, registry, _RoguePolicy(lambda q: bad if len(q) >= 2 else None))
-
-
-def test_pair_absent_from_registry_is_never_completed():
-    full = make_registry(("A", "B", "C"))
-    partial = CompatibilityRegistry([p for p in full.pairs if {p.circuit_a, p.circuit_b} != {"B", "C"}])
-    trace = make_trace([(0.0, "B", 1), (1.0, "C", 0)])
-    # Built-in policies treat the missing pair as not compatible and leave both shots pending.
-    for policy in POLICY_NAMES:
-        result = run_simulation(trace, partial, make_policy(policy))
-        assert result.comparisons == ()
-        assert len(result.unmatched_shots) == 2
-    # A policy that forces the missing pair is rejected by the simulator.
-    forcing = _RoguePolicy(lambda q: tuple(q.all_shots()) if len(q) >= 2 else None)
-    with pytest.raises(SimulationError, match="not in the registry"):
-        run_simulation(trace, partial, forcing)
-
-
-def test_invalid_traces_rejected():
-    registry = make_registry()
-    policy = make_policy("arrival-order")
+def test_invalid_traces_and_policies_rejected():
+    registry = ramsey_registry()
+    policy = ConsecutivePairPolicy()
     with pytest.raises(SimulationError, match="not in the compatibility registry"):
-        run_simulation(make_trace([(0.0, "Z", 1)]), registry, policy)
+        run_simulation(make_trace([(0.0, 16, 1)]), registry, policy)
     with pytest.raises(SimulationError, match="non-decreasing"):
-        run_simulation(make_trace([(2.0, "A", 1), (1.0, "B", 0)]), registry, policy)
-    dup = (ShotArrival("d", 0.0, "A", 1, 1, 0, "x"), ShotArrival("d", 1.0, "B", 1, 1, 1, "x"))
+        run_simulation(make_trace([(2.0, 1, 1), (1.0, 2, 0)]), registry, policy)
+    from quantum_drift_scheduler.scheduling import ShotArrival
+
+    a = ShotArrival("d", 0.0, label(1), 1, 1, 0, "x")
     with pytest.raises(SimulationError, match="Duplicate shot_id"):
-        run_simulation(dup, registry, policy)
+        run_simulation((a, ShotArrival("d", 1.0, label(2), 1, 1, 1, "x")), registry, policy)
     with pytest.raises(SimulationError, match="non-binary"):
-        run_simulation((ShotArrival("e", 0.0, "A", 2, 1, 0, "x"),), registry, policy)
+        run_simulation((ShotArrival("e", 0.0, label(1), 2, 1, 0, "x"),), registry, policy)
+
+    class Bogus:
+        name = "bogus"
+        dispatch_unit = "banana"
+
+    with pytest.raises(SimulationError, match="invalid dispatch_unit"):
+        run_simulation(make_trace([(0.0, 1, 1)]), registry, Bogus())
+    with pytest.raises(SimulationError, match="slot_seconds"):
+        SlotSchedule(0.0, 0.0, 3)
 
 
 # ---------------------------------------------------------------- metrics
@@ -268,27 +278,26 @@ def test_percentile_linear_interpolation():
         percentile([1.0], 101)
 
 
-def test_metrics_on_non_empty_result():
-    # AB at (0,2): diff 1-0=+1, sep 2; AC at (3,3): diff 0-1=-1, sep 0 (B stays pending? no).
-    result = run([(0.0, "A", 1), (2.0, "B", 0), (3.0, "A", 0), (3.0, "C", 1), (9.0, "B", 1)])
+def test_metrics_values():
+    trace = make_trace([(0.0, 1, 1), (0.0, 2, 0), (0.0, 4, 1), (0.0, 8, 0), (8.0, 1, 0)])
+    requests = requests_of(trace, [(0, 3), (1, 2)])
+    result = run_simulation(trace, ramsey_registry(), ArrivalOrderPolicy(), grid(5, 2.0), requests)
     m = compute_metrics(result)
-    assert m.total_input_shots == 5
-    assert m.completed_comparisons == 2
-    assert m.consumed_shots == 4
-    assert m.unmatched_shots == 1
-    assert m.completion_rate == 1.0
-    assert m.separation_mean == pytest.approx(1.0)
-    assert m.separation_max == 2.0
-    assert m.separation_median == pytest.approx(1.0)
-    assert m.waiting_max == 2.0
-    assert m.waiting_mean == pytest.approx((2.0 + 0.0 + 0.0 + 0.0) / 4)
+    assert (m.source_shots, m.total_slots, m.executed_shots, m.unexecuted_shots) == (5, 5, 5, 0)
+    assert m.completed_comparisons == 2 and m.consumed_shots == 4 and m.executed_unpaired_shots == 1
+    assert m.completion_rate == 1.0  # 2 of floor(5/2)
+    # r1: k2@slot1, k4@slot2 -> 1 slot / 2 s ; r0: k1@slot0, k8@slot3 -> 3 slots / 6 s
+    assert m.slot_separation.mean == 2.0 and m.slot_separation.maximum == 3.0
+    assert m.time_separation.mean == 4.0 and m.time_separation.median == 4.0
+    assert m.time_separation.p95 == pytest.approx(5.8)
+    assert m.waiting_time.maximum == 6.0  # slot 3 starts at t=6 for a shot that arrived at t=0
+    # r0: outcome(k1) - outcome(k8) = 1 - 0 ; r1: outcome(k2) - outcome(k4) = 0 - 1
     assert m.mean_absolute_observed_difference == pytest.approx(1.0)
     assert m.mean_signed_observed_difference == pytest.approx(0.0)
-    assert m.pair_counts == (("A", "B", 1), ("A", "C", 1))
-    assert m.unmatched_by_circuit == (("B", 1),)
+    assert m.pair_counts == ((label(1), label(8), 1), (label(2), label(4), 1))
 
 
-# ---------------------------------------------------------------- real dataset and CLI
+# ---------------------------------------------------------------- recorded dataset and CLI
 
 
 @pytest.fixture(scope="module")
@@ -296,20 +305,21 @@ def recorded():
     return load_compatibility_registry(), load_recorded_trace()
 
 
-@pytest.mark.parametrize("policy", POLICY_NAMES)
+@pytest.mark.parametrize("policy", POLICIES)
 def test_default_recorded_dataset_replay_runs(recorded, policy):
     registry, trace = recorded
-    result = run_simulation(trace, registry, make_policy(policy))
+    result = run_simulation(trace, registry, policy())
     m = compute_metrics(result)
-    assert m.total_input_shots == 84000
-    assert m.consumed_shots + m.unmatched_shots == 84000
-    assert m.completed_comparisons == 42000
-    consumed = [sid for c in result.comparisons for sid in c.shot_ids]
-    assert len(consumed) == len(set(consumed))
+    assert m.source_shots == 84000 and m.total_slots == 84000
+    assert m.executed_shots + m.unexecuted_shots == 84000
+    assert m.completed_comparisons >= 0.99 * 42000  # tail/idle loss only
+    assert len({sid for c in result.comparisons for sid in c.shot_ids}) == 2 * m.completed_comparisons
     assert all(registry.is_compatible(c.circuit_a, c.circuit_b) for c in result.comparisons)
-    assert all(
-        math.isclose(c.timestamp_separation, abs(c.arrival_time_a - c.arrival_time_b)) for c in result.comparisons
-    )
+    assert all(math.isclose(c.time_separation, c.slot_separation * result.schedule.slot_seconds) for c in result.comparisons)
+    if policy is ConsecutivePairPolicy:
+        assert m.slot_separation.maximum == 1.0
+    else:
+        assert m.slot_separation.maximum > 1.0
 
 
 def _load_cli():
@@ -322,7 +332,7 @@ def _load_cli():
 CLI = _load_cli()
 
 
-def run_cli(capsys, *args: str):
+def run_cli(capsys, *args):
     try:
         code = CLI.main(list(args))
     except SystemExit as exc:  # argparse errors
@@ -333,27 +343,23 @@ def run_cli(capsys, *args: str):
 
 def test_cli_custom_input_and_outputs(tmp_path, capsys):
     example = ROOT / "data" / "inputs" / "input.txt.example"
-    csv_path = tmp_path / "out.csv"
-    json_path = tmp_path / "out.json"
-    code, out, err = run_cli(capsys, "--policy", "arrival-order", "--input", str(example), "--output", str(csv_path))
+    csv_path, json_path = tmp_path / "out.csv", tmp_path / "out.json"
+    code, out, err = run_cli(capsys, "--policy", "consecutive-pair", "--input", str(example), "--slots-per-shot", "2", "--output", str(csv_path))
     assert code == 0, err
-    assert "Completed comparisons:   2" in out
-    assert "does not predict outcomes" in out
+    assert "Completed comparisons:   1" in out and "do not predict" in out
     with open(csv_path, encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
-    assert len(rows) == 2 and rows[0]["circuit_a"] == "Gx(Gw)Gy"
+    assert len(rows) == 1 and rows[0]["circuit_a"] == "Gx(Gw)Gy" and rows[0]["slot_separation"] == "1"
 
-    code, out, err = run_cli(
-        capsys, "--policy", "minimum-recorded-gap", "--input", str(example), "--output", str(json_path)
-    )
+    code, out, err = run_cli(capsys, "--policy", "arrival-order", "--input", str(example), "--output", str(json_path))
     assert code == 0, err
     payload = json.loads(json_path.read_text(encoding="utf-8"))
-    assert payload["metrics"]["completed_comparisons"] == 2
-    assert payload["policy"] == "minimum-recorded-gap"
+    assert payload["policy"] == "arrival-order" and payload["metrics"]["source_shots"] == 4
 
 
 def test_cli_rejects_bad_arguments(tmp_path, capsys):
-    assert run_cli(capsys, "--policy", "drift-aware")[0] != 0
+    for stale in ("minimum-recorded-gap", "drift-aware", "bogus"):
+        assert run_cli(capsys, "--policy", stale)[0] != 0
     assert run_cli(capsys)[0] != 0
     code, _, err = run_cli(capsys, "--policy", "arrival-order", "--input", str(tmp_path / "nope.txt"))
     assert code == 1 and "not found" in err
@@ -361,13 +367,13 @@ def test_cli_rejects_bad_arguments(tmp_path, capsys):
     bad.write_text("arrival_time,circuit,outcome,repetitions\n0,Nope,1,1\n", encoding="utf-8")
     code, _, err = run_cli(capsys, "--policy", "arrival-order", "--input", str(bad))
     assert code == 1 and "unknown circuit" in err
-    code, _, err = run_cli(
-        capsys, "--policy", "arrival-order", "--input", str(bad), "--output", str(tmp_path / "x.xml")
-    )
+    code, _, err = run_cli(capsys, "--policy", "arrival-order", "--input", str(bad), "--output", str(tmp_path / "x.xml"))
     assert code == 1 and ".csv or .json" in err
+    code, _, err = run_cli(capsys, "--policy", "arrival-order", "--slots-per-shot", "0")
+    assert code == 1 and "slots_per_shot" in err
 
 
 def test_cli_default_dataset_runs(capsys):
-    code, out, err = run_cli(capsys, "--policy", "minimum-recorded-gap")
+    code, out, err = run_cli(capsys, "--policy", "consecutive-pair")
     assert code == 0, err
-    assert "Input shots:             84000" in out
+    assert "Source shots:            84000" in out
