@@ -1,9 +1,12 @@
 # Circuit Compatibility Analysis & Candidate-Pair Report
 
 **Project:** DriftSched (Drift-Aware Quantum Experiment Scheduling)  
-**Status:** Research Review / Design Phase  
+**Status:** Final for this release: compatibility registry implemented  
 **Artifact Path:** `docs/circuit_compatibility_report.md`  
-**Candidate Pairs CSV:** `docs/candidate_pairs.csv`  
+**Authoritative Registry:** `data/compatibility_registry.csv` (loader: `src/quantum_drift_scheduler/data/compatibility.py`)  
+
+> [!IMPORTANT]
+> **Final decision for this release.** All 91 Ramsey circuit pairs are `compatible`. The decision rests only on circuit structure: every circuit belongs to the same Ramsey family and only the wait length `(Gw)^k` differs. It is recorded in `data/compatibility_registry.csv`, the single source of truth read by the application. Empirical drift diagnostics (mean |Z|, phase wrapping, long-wait decay) do **not** change compatibility; they may influence scheduling *priority* in a later phase. Sections 5-10 below are the historical design analysis that led to this decision; where they describe `candidate_for_review` or pending approval, this note supersedes them.
 
 ---
 
@@ -106,7 +109,7 @@ For $N = 14$ distinct circuits, the complete set of unordered candidate pairs is
 \frac{N(N-1)}{2} = \frac{14 \times 13}{2} = 91 \text{ pairs}
 \]
 
-The full machine-generated inventory of all 91 candidate pairs has been generated in [`docs/candidate_pairs.csv`](file:///c:/Users/Karthik%20Tamarapalli/projects_workbook/DriftSched/docs/candidate_pairs.csv).
+The inventory of all 91 pairs is the compatibility registry [`data/compatibility_registry.csv`](../data/compatibility_registry.csv). `docs/candidate_pairs.csv` is now only a historical pointer to it.
 
 ### Pair Classification Structure
 
@@ -125,8 +128,8 @@ To facilitate scientific review, the 91 pairs are grouped into three logical rev
    - *Rationale:* The shortest sequence ($k=1$) and longest sequence ($k=8192$) have drastically different sensitivity to low-frequency vs high-frequency noise and $T_2^*$ decay. A direct comparison may have low signal contrast at large $k$.
    - *Status:* `candidate_for_review` (flagged for review regarding decay contrast limits).
 
-> [!IMPORTANT]
-> In accordance with scientific integrity guidelines, **no pair is marked `compatible` or `incompatible` automatically**. All 91 pairs are assigned `candidate_for_review` with `reviewer_decision = undecided` until approved by the research team.
+> [!NOTE]
+> Historical: during review all 91 pairs were `candidate_for_review`. The researcher then approved all 91 as `compatible`; see the final-decision note at the top of this report.
 
 ---
 
@@ -210,7 +213,7 @@ Before marking candidate pairs `compatible`, the following questions must be ans
 
 ## 10. Recommended Next Steps
 
-1. Review and approve candidate pairs in [`docs/candidate_pairs.csv`](file:///c:/Users/Karthik%20Tamarapalli/projects_workbook/DriftSched/docs/candidate_pairs.csv).
-2. Implement the minimal `CompatibilityRegistry` module adhering to the schema and symmetry rules specified above.
+1. ~~Review and approve candidate pairs~~ Done: all 91 pairs approved as `compatible` in `data/compatibility_registry.csv`.
+2. ~~Implement the `CompatibilityRegistry` module~~ Done: `quantum_drift_scheduler.data.compatibility` (statuses `compatible`, `conditionally_compatible`, `incompatible`; unordered lookup; load-time validation; tests in `tests/test_compatibility.py`).
 3. Implement the time-window binning module (`src/quantum_drift_scheduler/analysis/windowing.py`) as outlined in `data/1_8.md` to compute outcome fractions and measurement uncertainty across 10-minute intervals.
 

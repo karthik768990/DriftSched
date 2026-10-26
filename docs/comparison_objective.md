@@ -3,7 +3,7 @@
 **Project:** DriftSched (Drift-Aware Quantum Experiment Scheduling)  
 **Document:** `docs/comparison_objective.md`  
 **Status:** Research Design & Policy Specification  
-**Associated Artifacts:** `docs/circuit_compatibility_report.md`, `docs/candidate_pairs.csv`, `data/1_8.md`, `data/README.txt`
+**Associated Artifacts:** `docs/circuit_compatibility_report.md`, `data/compatibility_registry.csv`, `data/1_8.md`, `data/README.txt`
 
 ---
 
@@ -170,7 +170,7 @@ Across all $M-1$ window transitions, the **Mean Absolute Drift Discrepancy** is:
 
 ## 6. Impact on the Compatibility Policy
 
-Adopting this objective refines how candidate pairs in `docs/candidate_pairs.csv` must be conceptualized:
+Adopting this objective refines how candidate pairs in `data/compatibility_registry.csv` must be conceptualized:
 
 ```
 [ All 91 Unordered Circuit Pairs ]

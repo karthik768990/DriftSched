@@ -22,6 +22,7 @@ quantum-drift-scheduler/
 │   ├── README.md                  # Dataset documentation & layout notes
 │   ├── dataset.txt                # Raw experimental observations
 │   ├── README.txt                 # Dataset origin documentation
+│   ├── compatibility_registry.csv # Authoritative 91-pair compatibility registry
 │   └── 1_8.md                     # Research notes & project plan
 ├── notebooks/                     # Exploratory analysis notebooks
 ├── src/
@@ -32,8 +33,10 @@ quantum-drift-scheduler/
 │           ├── __init__.py        # Data module exports
 │           ├── models.py          # Dataclasses: CircuitExperimentRecord & ParseErrorRecord
 │           ├── parser.py          # Robust multi-format dataset parser
+│           ├── compatibility.py   # Circuit-pair compatibility registry loader
 │           └── validation.py      # Semantic data validators (binary outcomes, monotonicity, etc.)
 ├── tests/
+│   ├── test_compatibility.py      # Unit tests for the compatibility registry
 │   ├── test_parser.py             # Unit tests for dataset parser
 │   └── test_validation.py         # Unit tests for data validation rules
 └── scripts/
@@ -127,7 +130,25 @@ Record & Observation Metrics:
 
 ---
 
-## 6. Running Tests
+## 6. Compatibility Registry
+
+`data/compatibility_registry.csv` is the single source of truth for which circuit pairs may be compared. It holds all 91 unordered pairs of the 14 Ramsey circuits, each with status `compatible` (researcher decision `Comparable`, based on circuit structure only). Allowed statuses are `compatible`, `conditionally_compatible` and `incompatible`. Drift diagnostics never change a status; they may only inform scheduling priority later. `docs/candidate_pairs.csv` is a historical pointer and is not read.
+
+```python
+from quantum_drift_scheduler.data.compatibility import load_compatibility_registry
+
+registry = load_compatibility_registry()           # validates on load
+registry.is_compatible("Gx(Gw)Gy", "Gx(Gw)^2Gy")   # True (order does not matter)
+registry.get_status("Gx(Gw)^2Gy", "Gx(Gw)Gy")      # CompatibilityStatus.COMPATIBLE
+registry.get_pair("Gx(Gw)Gy", "Gx(Gw)^2Gy").source_reference
+len(registry.pairs_for("Gx(Gw)Gy"))                # 13
+```
+
+Unknown pairs raise `UnknownPairError` and self-pairs raise `ValueError`; nothing defaults to compatible.
+
+---
+
+## 7. Running Tests
 
 Execute unit tests using `pytest`:
 
