@@ -23,12 +23,21 @@ quantum-drift-scheduler/
 │   ├── dataset.txt                # Raw experimental observations
 │   ├── README.txt                 # Dataset origin documentation
 │   ├── compatibility_registry.csv # Authoritative 91-pair compatibility registry
+│   ├── inputs/
+│   │   └── input.txt.example      # Example custom replay input
 │   └── 1_8.md                     # Research notes & project plan
+├── docs/                          # Design notes, reports and the scheduler replay design
 ├── notebooks/                     # Exploratory analysis notebooks
 ├── src/
 │   └── quantum_drift_scheduler/
 │       ├── __init__.py            # Package initialization
 │       ├── config.py              # Path and global configuration
+│       ├── scheduling/            # Recorded-trace queue and pairing simulator
+│       │   ├── models.py          # ShotArrival, CompletedComparison, SimulationResult/Metrics
+│       │   ├── trace.py           # Recorded and custom replay trace loaders
+│       │   ├── policies.py        # PairingPolicy interface, arrival-order, minimum-recorded-gap
+│       │   ├── simulator.py       # Queue simulator (run_simulation)
+│       │   └── metrics.py         # compute_metrics
 │       └── data/
 │           ├── __init__.py        # Data module exports
 │           ├── models.py          # Dataclasses: CircuitExperimentRecord & ParseErrorRecord
@@ -38,9 +47,13 @@ quantum-drift-scheduler/
 ├── tests/
 │   ├── test_compatibility.py      # Unit tests for the compatibility registry
 │   ├── test_parser.py             # Unit tests for dataset parser
+│   ├── test_scheduling_trace.py   # Trace loading and custom-input validation
+│   ├── test_scheduler_policies.py # Pairing policies and tie-breaking
+│   ├── test_scheduler_simulator.py# Simulator, metrics and replay CLI
 │   └── test_validation.py         # Unit tests for data validation rules
 └── scripts/
-    └── inspect_dataset.py         # Dataset inspection and summary CLI tool
+    ├── inspect_dataset.py         # Dataset inspection and summary CLI tool
+    └── run_scheduler_replay.py    # Recorded-trace scheduler replay CLI
 ```
 
 ---
@@ -148,7 +161,66 @@ Unknown pairs raise `UnknownPairError` and self-pairs raise `ValueError`; nothin
 
 ---
 
-## 7. Running Tests
+## 7. Recorded-trace scheduler replay
+
+A queue-based simulator pairs compatible single shots from a recorded trace under a pairing policy. Each completed comparison consumes exactly two shots whose circuits are `compatible` in `data/compatibility_registry.csv`, and every source shot is used at most once. Design details are in `docs/scheduler_replay_design.md`.
+
+**Limitation:**
+
+```text
+This replay pairs observed historical shots. It measures actual timestamp
+separation and queue behaviour; it does not predict outcomes under a
+counterfactual reordered physical experiment.
+```
+
+### Policies
+
+- `arrival-order`: FIFO baseline. The oldest pending shot with a compatible counterpart is paired with the oldest compatible pending shot.
+- `minimum-recorded-gap`: pairs the compatible pending pair with the smallest recorded timestamp separation (ties: earlier max arrival, earlier min arrival, source indices, shot ids).
+
+### Custom input schema
+
+A custom input is CSV content stored in a `.txt` file. The first line must be exactly:
+
+```text
+arrival_time,circuit,outcome,repetitions
+```
+
+```text
+arrival_time,circuit,outcome,repetitions
+0.120257,Gx(Gw)Gy,1,1
+0.128913,Gx(Gw)^2Gy,0,1
+5.000260,Gx(Gw)Gy,0,1
+5.008941,Gx(Gw)^2Gy,1,1
+```
+
+- `arrival_time`: finite, non-negative float in seconds. Rows must be in non-decreasing time order; the file is never sorted and row order breaks ties.
+- `circuit`: non-empty and present in the compatibility registry.
+- `outcome`: exactly `0` or `1`.
+- `repetitions`: positive integer (retained on the shot; not expanded into extra shots).
+
+Invalid files are rejected with line-specific errors. A copyable example is `data/inputs/input.txt.example`.
+
+### Running
+
+```powershell
+# Default: replay data/dataset.txt (84,000 shots)
+python scripts/run_scheduler_replay.py --policy arrival-order
+python scripts/run_scheduler_replay.py --policy minimum-recorded-gap
+
+# Custom input (copy the example first)
+Copy-Item data/inputs/input.txt.example data/inputs/input.txt
+python scripts/run_scheduler_replay.py --input data/inputs/input.txt --policy arrival-order
+
+# Optional result artifact (.csv: one row per comparison; .json: metrics + comparisons + unmatched shots)
+python scripts/run_scheduler_replay.py --policy arrival-order --output result.json
+```
+
+The report prints the input source, policy, shot counts, completion rate, timestamp-separation and waiting-time statistics (mean, median, 95th percentile, max), observed outcome-difference statistics (`outcome_a - outcome_b`, where `a` is the earlier shot), counts per circuit pair, and unmatched shots per circuit. Invalid input exits nonzero with a readable message.
+
+---
+
+## 8. Running Tests
 
 Execute unit tests using `pytest`:
 

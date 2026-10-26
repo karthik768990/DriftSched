@@ -1,0 +1,5 @@
+arrival_time,circuit,outcome,repetitions
+0.120257,Gx(Gw)Gy,1,1
+0.128913,Gx(Gw)^2Gy,0,1
+5.000260,Gx(Gw)Gy,0,1
+5.008941,Gx(Gw)^2Gy,1,1
