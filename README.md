@@ -262,3 +262,18 @@ To run with verbose output:
 python -m pytest -v tests
 ```
 
+---
+
+## 10. QCS drift-model evaluation (shared-detuning Ramsey model)
+
+The frozen scheduler is scored against a physically motivated drift model: the Ramsey model of Proctor et al. (Nat. Commun. 2020), `p_l(t) = A + B exp(-l/l0) sin(2 pi l t_w Omega(t))`, with one shared detuning `Omega(t)` expanded in a DCT-like basis, fit by maximum likelihood on the first 75% of the timeline and frozen before the last 25% is touched.
+
+```powershell
+pip install -r requirements.txt            # adds numpy, scipy, matplotlib
+python scripts/run_full_evaluation.py      # about 3 minutes; writes results/qcs_evaluation/
+```
+
+It selects the number of drift components by chronological cross-validation, evaluates the frozen model once on the holdout (log loss, Brier, calibration), groups circuits by model-implied drift, and compares `arrival-order`, `consecutive-pair` and `drift-aware` on identical holdout workloads with comparison MAE, a temporal block bootstrap (95% CI), waiting time, and reliable comparisons per device-hour (reliable means `E_AB <= 0.05`, fixed in advance). Methods, leakage controls and limitations: `docs/qcs_evaluation.md`.
+
+**This is not a real-QPU experiment and simulates no outcomes.** Comparison errors are model-derived from the actual execution timestamps; results depend on the fitted drift model, which on this dataset does not forecast the holdout drift.
+

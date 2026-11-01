@@ -1,0 +1,3474 @@
+{
+  "evaluation_kind": "recorded-timing replay of the frozen scheduler scored by a model-based reference (NOT a real-QPU experiment; no outcomes are simulated)",
+  "config": {
+    "train_fraction": 0.75,
+    "window_seconds": 600.0,
+    "t_w_seconds": 0.0004,
+    "candidates": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      10,
+      13
+    ],
+    "cv_blocks": 5,
+    "cv_sensitivity_blocks": [
+      3,
+      4,
+      6
+    ],
+    "log_loss_tolerance": 0.001,
+    "n_starts": 6,
+    "seed": 20260101,
+    "slots_per_shot": 1.0,
+    "reliability_threshold": 0.05,
+    "n_bootstrap": 2000,
+    "confidence": 0.95,
+    "output_dir": "C:\\Users\\Karthik Tamarapalli\\projects_workbook\\DriftSched\\results\\qcs_evaluation",
+    "make_figures": true
+  },
+  "environment": {
+    "python": "3.14.7",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2",
+    "git_commit": "9b9a74c46eacbd0c9be930ba0417ad5edd1646ed"
+  },
+  "data": {
+    "time_unit": "seconds",
+    "observations": 84000,
+    "circuits": 14,
+    "time_range": [
+      0.120257,
+      29227.1
+    ],
+    "outcome_mean": 0.4913095238095238,
+    "duplicate_timestamps_within_circuit": 0,
+    "observations_excluded": 0,
+    "counts_per_circuit": {
+      "Gx(Gw)Gy": 6000,
+      "Gx(Gw)^2Gy": 6000,
+      "Gx(Gw)^4Gy": 6000,
+      "Gx(Gw)^8Gy": 6000,
+      "Gx(Gw)^16Gy": 6000,
+      "Gx(Gw)^32Gy": 6000,
+      "Gx(Gw)^64Gy": 6000,
+      "Gx(Gw)^128Gy": 6000,
+      "Gx(Gw)^256Gy": 6000,
+      "Gx(Gw)^512Gy": 6000,
+      "Gx(Gw)^1024Gy": 6000,
+      "Gx(Gw)^2048Gy": 6000,
+      "Gx(Gw)^4096Gy": 6000,
+      "Gx(Gw)^8192Gy": 6000
+    }
+  },
+  "split": {
+    "train_fraction": 0.75,
+    "boundary_seconds": 21920.355064249998,
+    "train_range": [
+      0.120257,
+      21919.8
+    ],
+    "holdout_range": [
+      21921.7,
+      29227.1
+    ],
+    "train_shots": 63041,
+    "holdout_shots": 20959,
+    "time_unit": "seconds"
+  },
+  "model": {
+    "equation": "p_l(t) = A + B exp(-l/l0) sin(2 pi l t_w Omega(t)); Omega(t) = gamma_0 + sum_w gamma_w f_w(t)",
+    "basis": {
+      "definition": "f_w(t) = cos(w*pi/N * ((t - t0)/t_step + 1/2)), w = 1..K",
+      "t0": 0.120257,
+      "t_step": 4.868254052199023,
+      "N": 4503,
+      "frequencies_hz": [
+        2.280840013612211e-05,
+        4.561680027224422e-05
+      ]
+    },
+    "selected_components": 2,
+    "selection_rule": "min mean validation log loss = 0.710785; candidates within 0.001 nats: [2]; lowest BIC among them -> K=2",
+    "parameters": {
+      "A": 0.4892552828468299,
+      "B": 0.4892552828468299,
+      "l0": 13641.680584242311,
+      "decay_rate": 7.33047511136651e-05,
+      "t_w_seconds": 0.0004,
+      "gamma_0_hz": 0.13155865822339377,
+      "gammas_hz": [
+        -0.19233954419973553,
+        -0.2254379140192572
+      ]
+    },
+    "training_fit": {
+      "mean_nll": 0.6452219252092566,
+      "bic": 81417.1800177576,
+      "aic": 81362.8707742335,
+      "converged": true,
+      "starts_tried": 6,
+      "start_nlls": [
+        0.6554850363479,
+        0.6554850362875182,
+        0.6554850362396882,
+        0.6452219252112126,
+        0.6452219252092566,
+        0.6452219252108726
+      ]
+    }
+  },
+  "component_selection": [
+    {
+      "K": 0,
+      "fold_log_losses": [
+        0.8365504137631178,
+        0.7123974901904183,
+        0.6661127323676954,
+        0.7043061560421315
+      ],
+      "fold_briers": [
+        0.29499269270185396,
+        0.2595609960222167,
+        0.23662321133464984,
+        0.25526655201380904
+      ],
+      "mean_validation_log_loss": 0.7298416980908408,
+      "mean_validation_brier": 0.2616108630181324,
+      "bic": 86272.90089510838,
+      "training_mean_nll": 0.6839096360524023
+    },
+    {
+      "K": 1,
+      "fold_log_losses": [
+        0.7782193695943701,
+        0.6093950756128674,
+        0.718521042496285,
+        0.7797287143210138
+      ],
+      "fold_briers": [
+        0.27841613451301983,
+        0.2129236170991643,
+        0.2521158585867875,
+        0.2778942735240268
+      ],
+      "mean_validation_log_loss": 0.7214660505061341,
+      "mean_validation_brier": 0.2553374709307496,
+      "bic": 83537.14187334983,
+      "training_mean_nll": 0.6621237303533659
+    },
+    {
+      "K": 2,
+      "fold_log_losses": [
+        0.7118849069001234,
+        0.6880936792318225,
+        0.6994367797824157,
+        0.7437250212012428
+      ],
+      "fold_briers": [
+        0.25157547078014236,
+        0.24110721504027732,
+        0.24335567255003848,
+        0.26537440725377165
+      ],
+      "mean_validation_log_loss": 0.7107850967789011,
+      "mean_validation_brier": 0.25035319140605744,
+      "bic": 81417.1800177576,
+      "training_mean_nll": 0.6452219252092566
+    },
+    {
+      "K": 3,
+      "fold_log_losses": [
+        0.8939703069965107,
+        0.808660384631373,
+        0.6582588652602143,
+        0.6500913120756965
+      ],
+      "fold_briers": [
+        0.3007652308979258,
+        0.2820675344881415,
+        0.22652018956523517,
+        0.23108132367743034
+      ],
+      "mean_validation_log_loss": 0.7527452172409487,
+      "mean_validation_brier": 0.26010856965718315,
+      "bic": 78578.01017091784,
+      "training_mean_nll": 0.6226158324487745
+    },
+    {
+      "K": 4,
+      "fold_log_losses": [
+        0.811945716426991,
+        0.6983466697903743,
+        0.7966221014856035,
+        0.6565949580549679
+      ],
+      "fold_briers": [
+        0.2799178967491304,
+        0.2413456757755271,
+        0.272492992926834,
+        0.23327584788441874
+      ],
+      "mean_validation_log_loss": 0.7408773614394842,
+      "mean_validation_brier": 0.2567581033339776,
+      "bic": 78534.11761480929,
+      "training_mean_nll": 0.6221800517925674
+    },
+    {
+      "K": 5,
+      "fold_log_losses": [
+        0.9059732445572628,
+        0.8187582272857911,
+        0.8226818990576793,
+        0.770028612813522
+      ],
+      "fold_briers": [
+        0.2974419993449239,
+        0.27723535979184255,
+        0.2828398802290554,
+        0.2725176458629324
+      ],
+      "mean_validation_log_loss": 0.8293604959285638,
+      "mean_validation_brier": 0.28250872130718857,
+      "bic": 78527.37601299651,
+      "training_mean_nll": 0.6220389282190191
+    },
+    {
+      "K": 6,
+      "fold_log_losses": [
+        0.9544425012306651,
+        0.8226435514617967,
+        0.799226549733824,
+        0.7905319856773334
+      ],
+      "fold_briers": [
+        0.30438255035720885,
+        0.27797989886986213,
+        0.27135804022750165,
+        0.27172259380186004
+      ],
+      "mean_validation_log_loss": 0.8417111470259047,
+      "mean_validation_brier": 0.28136077081410815,
+      "bic": 78489.19752444854,
+      "training_mean_nll": 0.6216484678112263
+    },
+    {
+      "K": 8,
+      "fold_log_losses": [
+        0.9328413294485655,
+        0.9503873352341651,
+        0.8925602740179581,
+        0.8266589017051589
+      ],
+      "fold_briers": [
+        0.3060319679700185,
+        0.3175257962193101,
+        0.29716779174673114,
+        0.282481028542209
+      ],
+      "mean_validation_log_loss": 0.9006119601014619,
+      "mean_validation_brier": 0.30080164611956717,
+      "bic": 78252.57209111986,
+      "training_mean_nll": 0.6195964023736272
+    },
+    {
+      "K": 10,
+      "fold_log_losses": [
+        0.8928525460919469,
+        0.7184146680984507,
+        0.6651099522328826,
+        0.7940005304231084
+      ],
+      "fold_briers": [
+        0.2989277411161147,
+        0.2451843737487354,
+        0.23150209165542388,
+        0.27306321472441786
+      ],
+      "mean_validation_log_loss": 0.7675944242115971,
+      "mean_validation_brier": 0.26216935531117297,
+      "bic": 78151.83704884538,
+      "training_mean_nll": 0.6186221306817982
+    },
+    {
+      "K": 13,
+      "fold_log_losses": [
+        0.9596345305397493,
+        0.8710695729209262,
+        0.7692872723181633,
+        0.767643690153469
+      ],
+      "fold_briers": [
+        0.30791132324533793,
+        0.29121730145114366,
+        0.26206790911664984,
+        0.2665218146329056
+      ],
+      "mean_validation_log_loss": 0.841908766483077,
+      "mean_validation_brier": 0.28192958711150923,
+      "bic": 78126.6507779598,
+      "training_mean_nll": 0.6181594088607006
+    }
+  ],
+  "validation": {
+    "training_in_sample": {
+      "n_observations": 63041,
+      "log_loss": 0.6452219252092566,
+      "brier": 0.22804449083290382,
+      "expected_calibration_error": 0.014155222018090954,
+      "calibration": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "count": 469,
+          "mean_predicted": 0.07793247651906857,
+          "observed_frequency": 0.18976545842217485
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 923,
+          "mean_predicted": 0.15949012725141332,
+          "observed_frequency": 0.18309859154929578
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.30000000000000004,
+          "count": 2235,
+          "mean_predicted": 0.2507553411067824,
+          "observed_frequency": 0.17404921700223713
+        },
+        {
+          "lower": 0.30000000000000004,
+          "upper": 0.4,
+          "count": 2240,
+          "mean_predicted": 0.34822718787936474,
+          "observed_frequency": 0.31607142857142856
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 31644,
+          "mean_predicted": 0.48451165318439093,
+          "observed_frequency": 0.4885918341549741
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6000000000000001,
+          "count": 12277,
+          "mean_predicted": 0.5332819989426909,
+          "observed_frequency": 0.5364502728679645
+        },
+        {
+          "lower": 0.6000000000000001,
+          "upper": 0.7000000000000001,
+          "count": 4599,
+          "mean_predicted": 0.6463637963700991,
+          "observed_frequency": 0.6160034790171777
+        },
+        {
+          "lower": 0.7000000000000001,
+          "upper": 0.8,
+          "count": 3964,
+          "mean_predicted": 0.7404324702173108,
+          "observed_frequency": 0.6990413723511605
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 3865,
+          "mean_predicted": 0.8517476290069421,
+          "observed_frequency": 0.8677878395860285
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 825,
+          "mean_predicted": 0.9067333199877073,
+          "observed_frequency": 0.9563636363636364
+        }
+      ],
+      "per_circuit_log_loss": [
+        [
+          "Gx(Gw)Gy",
+          0.6936028860010872
+        ],
+        [
+          "Gx(Gw)^2Gy",
+          0.6929262276699575
+        ],
+        [
+          "Gx(Gw)^4Gy",
+          0.6931464742646117
+        ],
+        [
+          "Gx(Gw)^8Gy",
+          0.6928244069208531
+        ],
+        [
+          "Gx(Gw)^16Gy",
+          0.6931361608610065
+        ],
+        [
+          "Gx(Gw)^32Gy",
+          0.6928984555096168
+        ],
+        [
+          "Gx(Gw)^64Gy",
+          0.6913994139583012
+        ],
+        [
+          "Gx(Gw)^128Gy",
+          0.6913079281119201
+        ],
+        [
+          "Gx(Gw)^256Gy",
+          0.681398150292778
+        ],
+        [
+          "Gx(Gw)^512Gy",
+          0.6517472470781368
+        ],
+        [
+          "Gx(Gw)^1024Gy",
+          0.5561562797841823
+        ],
+        [
+          "Gx(Gw)^2048Gy",
+          0.4619232079609945
+        ],
+        [
+          "Gx(Gw)^4096Gy",
+          0.5078003710451541
+        ],
+        [
+          "Gx(Gw)^8192Gy",
+          0.6328369930974399
+        ]
+      ],
+      "per_circuit_calibration_error": [
+        [
+          "Gx(Gw)Gy",
+          0.01602337843660001
+        ],
+        [
+          "Gx(Gw)^2Gy",
+          9.397151522333447e-05
+        ],
+        [
+          "Gx(Gw)^4Gy",
+          0.003989173210985242
+        ],
+        [
+          "Gx(Gw)^8Gy",
+          0.002654960467861567
+        ],
+        [
+          "Gx(Gw)^16Gy",
+          0.008708178391799382
+        ],
+        [
+          "Gx(Gw)^32Gy",
+          0.0010151938419880047
+        ],
+        [
+          "Gx(Gw)^64Gy",
+          0.007413585867272588
+        ],
+        [
+          "Gx(Gw)^128Gy",
+          0.005871418395649752
+        ],
+        [
+          "Gx(Gw)^256Gy",
+          0.017694393591761583
+        ],
+        [
+          "Gx(Gw)^512Gy",
+          0.026928839508785028
+        ],
+        [
+          "Gx(Gw)^1024Gy",
+          0.05684932062976121
+        ],
+        [
+          "Gx(Gw)^2048Gy",
+          0.06504006042113245
+        ],
+        [
+          "Gx(Gw)^4096Gy",
+          0.10015963336881868
+        ],
+        [
+          "Gx(Gw)^8192Gy",
+          0.06283261249544404
+        ]
+      ]
+    },
+    "training_constant_baseline": {
+      "log_loss": 0.6836875971041158,
+      "brier": 0.24533456945525933
+    },
+    "holdout_frozen_model": {
+      "n_observations": 20959,
+      "log_loss": 0.8379733634545419,
+      "brier": 0.30876159018914334,
+      "expected_calibration_error": 0.17608394795363022,
+      "calibration": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "count": 0,
+          "mean_predicted": null,
+          "observed_frequency": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 0,
+          "mean_predicted": null,
+          "observed_frequency": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.30000000000000004,
+          "count": 347,
+          "mean_predicted": 0.24801887174088832,
+          "observed_frequency": 0.138328530259366
+        },
+        {
+          "lower": 0.30000000000000004,
+          "upper": 0.4,
+          "count": 274,
+          "mean_predicted": 0.35577249504755,
+          "observed_frequency": 0.4233576642335766
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 9454,
+          "mean_predicted": 0.49026628386306803,
+          "observed_frequency": 0.4726041887031944
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6000000000000001,
+          "count": 5444,
+          "mean_predicted": 0.5331803599759464,
+          "observed_frequency": 0.42119764878765614
+        },
+        {
+          "lower": 0.6000000000000001,
+          "upper": 0.7000000000000001,
+          "count": 2079,
+          "mean_predicted": 0.6475462998714933,
+          "observed_frequency": 0.341029341029341
+        },
+        {
+          "lower": 0.7000000000000001,
+          "upper": 0.8,
+          "count": 1489,
+          "mean_predicted": 0.7468114996040925,
+          "observed_frequency": 0.19274680993955676
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 1473,
+          "mean_predicted": 0.8371002705418323,
+          "observed_frequency": 0.1079429735234216
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 399,
+          "mean_predicted": 0.9073971782133627,
+          "observed_frequency": 0.10275689223057644
+        }
+      ],
+      "per_circuit_log_loss": [
+        [
+          "Gx(Gw)Gy",
+          0.6919324840653003
+        ],
+        [
+          "Gx(Gw)^2Gy",
+          0.691474850219202
+        ],
+        [
+          "Gx(Gw)^4Gy",
+          0.6920529746380131
+        ],
+        [
+          "Gx(Gw)^8Gy",
+          0.6918982630154075
+        ],
+        [
+          "Gx(Gw)^16Gy",
+          0.6923165237120049
+        ],
+        [
+          "Gx(Gw)^32Gy",
+          0.6930322670358893
+        ],
+        [
+          "Gx(Gw)^64Gy",
+          0.695370170315238
+        ],
+        [
+          "Gx(Gw)^128Gy",
+          0.7036162288936393
+        ],
+        [
+          "Gx(Gw)^256Gy",
+          0.7299358793806449
+        ],
+        [
+          "Gx(Gw)^512Gy",
+          0.8289995700316994
+        ],
+        [
+          "Gx(Gw)^1024Gy",
+          1.1452160168122356
+        ],
+        [
+          "Gx(Gw)^2048Gy",
+          1.6837905135219617
+        ],
+        [
+          "Gx(Gw)^4096Gy",
+          1.1222883264502217
+        ],
+        [
+          "Gx(Gw)^8192Gy",
+          0.6698153502742549
+        ]
+      ],
+      "per_circuit_calibration_error": [
+        [
+          "Gx(Gw)Gy",
+          0.023900091672762025
+        ],
+        [
+          "Gx(Gw)^2Gy",
+          0.036166791606929816
+        ],
+        [
+          "Gx(Gw)^4Gy",
+          0.02529593926821261
+        ],
+        [
+          "Gx(Gw)^8Gy",
+          0.03494994146263719
+        ],
+        [
+          "Gx(Gw)^16Gy",
+          0.035552151069961235
+        ],
+        [
+          "Gx(Gw)^32Gy",
+          0.026729446093395892
+        ],
+        [
+          "Gx(Gw)^64Gy",
+          0.04913454820548108
+        ],
+        [
+          "Gx(Gw)^128Gy",
+          0.11051644870382482
+        ],
+        [
+          "Gx(Gw)^256Gy",
+          0.17257157666739578
+        ],
+        [
+          "Gx(Gw)^512Gy",
+          0.31580042745442194
+        ],
+        [
+          "Gx(Gw)^1024Gy",
+          0.5317691209972374
+        ],
+        [
+          "Gx(Gw)^2048Gy",
+          0.7313372995696076
+        ],
+        [
+          "Gx(Gw)^4096Gy",
+          0.43039586767901555
+        ],
+        [
+          "Gx(Gw)^8192Gy",
+          0.13771158281632084
+        ]
+      ]
+    },
+    "holdout_constant_baseline": {
+      "log_loss": 0.7423245502181773,
+      "brier": 0.27379107417371396
+    },
+    "holdout_tracked_diagnostic": {
+      "note": "same K, A, B, l0; detuning coefficients re-estimated ON the holdout (in-sample diagnostic only)",
+      "evaluation": {
+        "n_observations": 20959,
+        "log_loss": 0.6034602317608164,
+        "brier": 0.21014020604599262,
+        "expected_calibration_error": 0.03510677254086701,
+        "calibration": [
+          {
+            "lower": 0.0,
+            "upper": 0.1,
+            "count": 873,
+            "mean_predicted": 0.08128068581430625,
+            "observed_frequency": 0.029782359679266894
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.2,
+            "count": 1749,
+            "mean_predicted": 0.14502085270209608,
+            "observed_frequency": 0.08976558033161806
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.30000000000000004,
+            "count": 1627,
+            "mean_predicted": 0.24801935220813026,
+            "observed_frequency": 0.18869084204056547
+          },
+          {
+            "lower": 0.30000000000000004,
+            "upper": 0.4,
+            "count": 2277,
+            "mean_predicted": 0.35881713938212406,
+            "observed_frequency": 0.31752305665349145
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.5,
+            "count": 13204,
+            "mean_predicted": 0.47342190100689074,
+            "observed_frequency": 0.45092396243562555
+          },
+          {
+            "lower": 0.5,
+            "upper": 0.6000000000000001,
+            "count": 228,
+            "mean_predicted": 0.5497000571982196,
+            "observed_frequency": 0.5921052631578947
+          },
+          {
+            "lower": 0.6000000000000001,
+            "upper": 0.7000000000000001,
+            "count": 253,
+            "mean_predicted": 0.6522509868544438,
+            "observed_frequency": 0.7786561264822134
+          },
+          {
+            "lower": 0.7000000000000001,
+            "upper": 0.8,
+            "count": 352,
+            "mean_predicted": 0.7451940351589245,
+            "observed_frequency": 0.8778409090909091
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.9,
+            "count": 396,
+            "mean_predicted": 0.8364794327595354,
+            "observed_frequency": 0.7904040404040404
+          },
+          {
+            "lower": 0.9,
+            "upper": 1.0,
+            "count": 0,
+            "mean_predicted": null,
+            "observed_frequency": null
+          }
+        ],
+        "per_circuit_log_loss": [
+          [
+            "Gx(Gw)Gy",
+            0.6918523836048436
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            0.6912481940113451
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            0.6916138723889244
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            0.6909451149481874
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            0.690596844133378
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            0.6913524718039568
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            0.6879831474190989
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            0.6766880479005577
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            0.6578908347893014
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            0.5897877204631495
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            0.4212818645298191
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            0.28734626419938825
+          ],
+          [
+            "Gx(Gw)^4096Gy",
+            0.45102794597860246
+          ],
+          [
+            "Gx(Gw)^8192Gy",
+            0.5288783593709175
+          ]
+        ],
+        "per_circuit_calibration_error": [
+          [
+            "Gx(Gw)Gy",
+            0.02329746036353275
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            0.034961581230817884
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            0.02288584565232416
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            0.030131132684533768
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            0.02592025611822285
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            0.00748951462323455
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            0.010756432897588541
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            0.03421446921690996
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            0.022148254157281798
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            0.02727125819101388
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            0.017824219513161366
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            0.049762096807988716
+          ],
+          [
+            "Gx(Gw)^4096Gy",
+            0.06247313851471681
+          ],
+          [
+            "Gx(Gw)^8192Gy",
+            0.1207391381549631
+          ]
+        ]
+      },
+      "gammas_hz": [
+        0.9591354667967308,
+        1.936545080360116,
+        0.8454201250081852
+      ]
+    }
+  },
+  "grouping": {
+    "method": "average-linkage on RMS difference of model-implied window-to-window probability changes",
+    "n_groups": 2,
+    "silhouette_by_groups": [
+      [
+        2,
+        0.7433256528929287
+      ],
+      [
+        3,
+        0.6947033846531784
+      ],
+      [
+        4,
+        0.5567342039135341
+      ],
+      [
+        5,
+        0.5758209420193882
+      ],
+      [
+        6,
+        0.48627355649217974
+      ]
+    ],
+    "groups": {
+      "0": [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^2Gy",
+        "Gx(Gw)^4Gy",
+        "Gx(Gw)^8Gy",
+        "Gx(Gw)^16Gy",
+        "Gx(Gw)^32Gy",
+        "Gx(Gw)^64Gy",
+        "Gx(Gw)^128Gy",
+        "Gx(Gw)^256Gy",
+        "Gx(Gw)^512Gy",
+        "Gx(Gw)^1024Gy",
+        "Gx(Gw)^2048Gy",
+        "Gx(Gw)^4096Gy"
+      ],
+      "1": [
+        "Gx(Gw)^8192Gy"
+      ]
+    },
+    "mean_within_group_distance": 0.024895830214009665,
+    "mean_between_group_distance": 0.12015709503722209,
+    "holdout_stability": {
+      "model_holdout_ari": 1.0,
+      "empirical_within_between_ratio": 0.3755288557896928,
+      "training_vs_empirical_holdout_spearman": 0.6068641503424113,
+      "model_vs_empirical_holdout_spearman": 0.608361204013378,
+      "stable": true
+    },
+    "correlation_diagnostic_training_model": {
+      "mean": 0.6950002873836372,
+      "min": -0.16361372072511074,
+      "max": 0.9999999999999423,
+      "pairs": 91.0
+    },
+    "correlation_diagnostic_holdout_empirical": {
+      "mean": 0.018200086387318497,
+      "min": -0.747580041012194,
+      "max": 0.6372208585359312,
+      "pairs": 91.0
+    }
+  },
+  "scheduler": {
+    "boundary": 21920.355064249998,
+    "holdout_shots": 20959,
+    "total_slots": 20959,
+    "slot_seconds": 0.3485733371504914,
+    "workload_requests": 10479,
+    "replay_metrics": {
+      "arrival-order": {
+        "source_shots": 20959,
+        "total_slots": 20959,
+        "executed_shots": 20958,
+        "unexecuted_shots": 1,
+        "idle_slots": 1,
+        "completed_comparisons": 10478,
+        "consumed_shots": 20956,
+        "executed_unpaired_shots": 2,
+        "completion_rate": 0.9999045710468556,
+        "slot_separation": {
+          "mean": 5.001145256728384,
+          "median": 4.0,
+          "p95": 11.0,
+          "maximum": 13.0
+        },
+        "time_separation": {
+          "mean": 1.7432658917121782,
+          "median": 1.3942933486032416,
+          "p95": 3.8343067086534575,
+          "maximum": 4.531453382958716
+        },
+        "waiting_time": {
+          "mean": 1.7198597181638455,
+          "median": 1.8350033400110988,
+          "p95": 2.7683094760928726,
+          "maximum": 2.8379902662454697
+        },
+        "mean_absolute_observed_difference": 0.4817713304065661,
+        "mean_signed_observed_difference": 0.08264936056499332,
+        "pair_counts": [
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^128Gy",
+            116
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^256Gy",
+            116
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^2Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^4Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^512Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^1024Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^4096Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^4Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^2048Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^512Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4096Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^4096Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^1024Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^256Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^2048Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^8192Gy",
+            116
+          ]
+        ]
+      },
+      "consecutive-pair": {
+        "source_shots": 20959,
+        "total_slots": 20959,
+        "executed_shots": 20956,
+        "unexecuted_shots": 3,
+        "idle_slots": 3,
+        "completed_comparisons": 10478,
+        "consumed_shots": 20956,
+        "executed_unpaired_shots": 0,
+        "completion_rate": 0.9999045710468556,
+        "slot_separation": {
+          "mean": 1.0,
+          "median": 1.0,
+          "p95": 1.0,
+          "maximum": 1.0
+        },
+        "time_separation": {
+          "mean": 0.34857333715049027,
+          "median": 0.3485733371489914,
+          "p95": 0.3485733371526294,
+          "maximum": 0.3485733371526294
+        },
+        "waiting_time": {
+          "mean": 2.0683990933355947,
+          "median": 1.9741482965910109,
+          "p95": 4.322103731270545,
+          "maximum": 5.142160511499242
+        },
+        "mean_absolute_observed_difference": 0.4817713304065661,
+        "mean_signed_observed_difference": 0.08264936056499332,
+        "pair_counts": [
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^128Gy",
+            116
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^256Gy",
+            116
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^2Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^4Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^512Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^1024Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^4096Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^4Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^2048Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^512Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4096Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^4096Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^1024Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^256Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^2048Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^8192Gy",
+            116
+          ]
+        ]
+      },
+      "drift-aware": {
+        "source_shots": 20959,
+        "total_slots": 20959,
+        "executed_shots": 20956,
+        "unexecuted_shots": 3,
+        "idle_slots": 3,
+        "completed_comparisons": 10478,
+        "consumed_shots": 20956,
+        "executed_unpaired_shots": 0,
+        "completion_rate": 0.9999045710468556,
+        "slot_separation": {
+          "mean": 1.0,
+          "median": 1.0,
+          "p95": 1.0,
+          "maximum": 1.0
+        },
+        "time_separation": {
+          "mean": 0.34857333715049027,
+          "median": 0.3485733371489914,
+          "p95": 0.3485733371526294,
+          "maximum": 0.3485733371526294
+        },
+        "waiting_time": {
+          "mean": 2.0683990933355947,
+          "median": 1.9743534688441287,
+          "p95": 4.388617711611914,
+          "maximum": 8.886029201261408
+        },
+        "mean_absolute_observed_difference": 0.4817713304065661,
+        "mean_signed_observed_difference": 0.08264936056499332,
+        "pair_counts": [
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^128Gy",
+            116
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^256Gy",
+            116
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^2Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^4Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^1024Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^512Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^128Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^1024Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^4096Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^16Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2048Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^256Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^4Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^2Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^2048Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^512Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^32Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4096Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^4096Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^4Gy",
+            "Gx(Gw)^8Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^512Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^1024Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^2048Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^256Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^64Gy",
+            "Gx(Gw)^8192Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^1024Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^128Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^16Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^2048Gy",
+            116
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^256Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^32Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^4096Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^512Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^64Gy",
+            115
+          ],
+          [
+            "Gx(Gw)^8Gy",
+            "Gx(Gw)^8192Gy",
+            116
+          ]
+        ]
+      }
+    }
+  },
+  "policy_evaluation_primary": {
+    "reference": "frozen training model (extrapolated)",
+    "reliability_threshold": 0.05,
+    "window_seconds": 600.0,
+    "workload_requests": 10479,
+    "bootstrap_block_length_requests": 1001,
+    "policies": {
+      "arrival-order": {
+        "metrics": {
+          "mae": {
+            "estimate": 0.00584887362306848,
+            "lower": 0.004250230536803862,
+            "upper": 0.007320324295335943,
+            "standard_error": 0.0007621765329383015
+          },
+          "synchronous_mae": {
+            "estimate": 8.805943621515886e-05,
+            "lower": 6.553669706948322e-05,
+            "upper": 0.00010827407100090512,
+            "standard_error": 1.0779806943120095e-05
+          },
+          "completed_comparisons": {
+            "estimate": 10478.0,
+            "lower": 10476.0,
+            "upper": 10479.0,
+            "standard_error": 0.9486937123645017
+          },
+          "completion_rate": {
+            "estimate": 0.9999045710468556,
+            "lower": 0.9997137131405669,
+            "upper": 1.0,
+            "standard_error": 9.053284782560475e-05
+          },
+          "mean_waiting_time": {
+            "estimate": 1.7199920920016476,
+            "lower": 1.7126827450869209,
+            "upper": 1.7270075896610315,
+            "standard_error": 0.0037213776749044484
+          },
+          "reliable_comparisons": {
+            "estimate": 10351.0,
+            "lower": 10262.975,
+            "upper": 10432.0,
+            "standard_error": 43.742695635508454
+          },
+          "reliable_per_device_hour": {
+            "estimate": 5100.586151567845,
+            "lower": 5057.210719629698,
+            "upper": 5140.499925915928,
+            "standard_error": 21.554766456450743
+          }
+        },
+        "device_time": {
+          "budget_seconds": 7305.748573337149,
+          "busy_seconds": 7305.399999999999,
+          "slot_seconds": 0.3485733371504914,
+          "executed_shots": 20958,
+          "unexecuted_shots": 1,
+          "idle_slots": 1
+        }
+      },
+      "consecutive-pair": {
+        "metrics": {
+          "mae": {
+            "estimate": 0.005850513037647033,
+            "lower": 0.004252172371567497,
+            "upper": 0.007321143835317938,
+            "standard_error": 0.0007618530848766666
+          },
+          "synchronous_mae": {
+            "estimate": 1.3686396873940068e-05,
+            "lower": 1.027020986368558e-05,
+            "upper": 1.6716176463061466e-05,
+            "standard_error": 1.6384379188510553e-06
+          },
+          "completed_comparisons": {
+            "estimate": 10478.0,
+            "lower": 10476.0,
+            "upper": 10479.0,
+            "standard_error": 0.9486937123645017
+          },
+          "completion_rate": {
+            "estimate": 0.9999045710468556,
+            "lower": 0.9997137131405669,
+            "upper": 1.0,
+            "standard_error": 9.053284782560475e-05
+          },
+          "mean_waiting_time": {
+            "estimate": 2.0683990933355947,
+            "lower": 2.060912226376109,
+            "upper": 2.0755432103509466,
+            "standard_error": 0.003816615838905385
+          },
+          "reliable_comparisons": {
+            "estimate": 10352.0,
+            "lower": 10263.0,
+            "upper": 10433.0,
+            "standard_error": 43.82279592542403
+          },
+          "reliable_per_device_hour": {
+            "estimate": 5101.078914214118,
+            "lower": 5057.223038695855,
+            "upper": 5140.9926885622,
+            "standard_error": 21.594236887276757
+          }
+        },
+        "device_time": {
+          "budget_seconds": 7305.748573337149,
+          "busy_seconds": 7304.702853325697,
+          "slot_seconds": 0.3485733371504914,
+          "executed_shots": 20956,
+          "unexecuted_shots": 3,
+          "idle_slots": 3
+        }
+      },
+      "drift-aware": {
+        "metrics": {
+          "mae": {
+            "estimate": 0.005848807200252369,
+            "lower": 0.004250455972959172,
+            "upper": 0.007321242073921676,
+            "standard_error": 0.000761944515408454
+          },
+          "synchronous_mae": {
+            "estimate": 1.3686394920199067e-05,
+            "lower": 1.0269645985796677e-05,
+            "upper": 1.671657735673852e-05,
+            "standard_error": 1.6385528112618373e-06
+          },
+          "completed_comparisons": {
+            "estimate": 10478.0,
+            "lower": 10476.0,
+            "upper": 10479.0,
+            "standard_error": 0.9486937123645017
+          },
+          "completion_rate": {
+            "estimate": 0.9999045710468556,
+            "lower": 0.9997137131405669,
+            "upper": 1.0,
+            "standard_error": 9.053284782560475e-05
+          },
+          "mean_waiting_time": {
+            "estimate": 2.0683990933355947,
+            "lower": 2.060922360677661,
+            "upper": 2.0754761116784457,
+            "standard_error": 0.003827233765805205
+          },
+          "reliable_comparisons": {
+            "estimate": 10352.0,
+            "lower": 10263.0,
+            "upper": 10433.0,
+            "standard_error": 43.82279592542403
+          },
+          "reliable_per_device_hour": {
+            "estimate": 5101.078914214118,
+            "lower": 5057.223038695855,
+            "upper": 5140.9926885622,
+            "standard_error": 21.594236887276757
+          }
+        },
+        "device_time": {
+          "budget_seconds": 7305.748573337149,
+          "busy_seconds": 7304.702853325697,
+          "slot_seconds": 0.3485733371504914,
+          "executed_shots": 20956,
+          "unexecuted_shots": 3,
+          "idle_slots": 3
+        }
+      }
+    },
+    "paired_differences": {
+      "consecutive-pair - arrival-order": {
+        "mae": {
+          "estimate": 1.6394145785532388e-06,
+          "lower": -4.152168837449205e-06,
+          "upper": 7.342537231235456e-06,
+          "standard_error": 2.9324609846707554e-06
+        },
+        "synchronous_mae": {
+          "estimate": -7.437303934121879e-05,
+          "lower": -9.159412010397633e-05,
+          "upper": -5.523557577015047e-05,
+          "standard_error": 9.143152178733738e-06
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "completion_rate": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "mean_waiting_time": {
+          "estimate": 0.3484070013339471,
+          "lower": 0.3478076303997103,
+          "upper": 0.3488394490597584,
+          "standard_error": 0.0002704330944176756
+        },
+        "reliable_comparisons": {
+          "estimate": 1.0,
+          "lower": 0.0,
+          "upper": 3.0,
+          "standard_error": 0.9385255271342071
+        },
+        "reliable_per_device_hour": {
+          "estimate": 0.4927626462731496,
+          "lower": 0.0,
+          "upper": 1.4782879388185393,
+          "standard_error": 0.46247032234506563
+        }
+      },
+      "drift-aware - arrival-order": {
+        "mae": {
+          "estimate": -6.642281611107109e-08,
+          "lower": -9.096602500414743e-06,
+          "upper": 7.326277892260017e-06,
+          "standard_error": 4.209769046443566e-06
+        },
+        "synchronous_mae": {
+          "estimate": -7.437304129495979e-05,
+          "lower": -9.159407665575885e-05,
+          "upper": -5.523564279097134e-05,
+          "standard_error": 9.143038746703046e-06
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "completion_rate": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "mean_waiting_time": {
+          "estimate": 0.3484070013339471,
+          "lower": 0.34752541900574674,
+          "upper": 0.3492054132533611,
+          "standard_error": 0.00041561317442278145
+        },
+        "reliable_comparisons": {
+          "estimate": 1.0,
+          "lower": 0.0,
+          "upper": 3.0,
+          "standard_error": 0.9385255271342071
+        },
+        "reliable_per_device_hour": {
+          "estimate": 0.4927626462731496,
+          "lower": 0.0,
+          "upper": 1.4782879388185393,
+          "standard_error": 0.46247032234506563
+        }
+      },
+      "drift-aware - consecutive-pair": {
+        "mae": {
+          "estimate": -1.7058373946643099e-06,
+          "lower": -5.433744208285687e-06,
+          "upper": 3.7368274508941047e-07,
+          "standard_error": 1.741066470992218e-06
+        },
+        "synchronous_mae": {
+          "estimate": -1.95374100029472e-12,
+          "lower": -5.450590603780232e-10,
+          "upper": 6.770412719134674e-10,
+          "standard_error": 3.0953102598087535e-10
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "completion_rate": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "mean_waiting_time": {
+          "estimate": 0.0,
+          "lower": -0.0007318775927958043,
+          "upper": 0.000731949195166004,
+          "standard_error": 0.00035472705564331325
+        },
+        "reliable_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "reliable_per_device_hour": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        }
+      }
+    }
+  },
+  "policy_evaluation_holdout_tracked_reference": {
+    "reference": "holdout-tracked drift (same structure, re-estimated detuning)",
+    "reliability_threshold": 0.05,
+    "window_seconds": 600.0,
+    "workload_requests": 10479,
+    "bootstrap_block_length_requests": 1001,
+    "policies": {
+      "arrival-order": {
+        "metrics": {
+          "mae": {
+            "estimate": 0.0072822909851273715,
+            "lower": 0.004944158614413652,
+            "upper": 0.009737971598056063,
+            "standard_error": 0.0012655789333203117
+          },
+          "synchronous_mae": {
+            "estimate": 0.00010831660483009281,
+            "lower": 7.47192720246712e-05,
+            "upper": 0.00014588136561118436,
+            "standard_error": 1.8373280727174425e-05
+          },
+          "completed_comparisons": {
+            "estimate": 10478.0,
+            "lower": 10476.0,
+            "upper": 10479.0,
+            "standard_error": 0.9486937123645017
+          },
+          "completion_rate": {
+            "estimate": 0.9999045710468556,
+            "lower": 0.9997137131405669,
+            "upper": 1.0,
+            "standard_error": 9.053284782560475e-05
+          },
+          "mean_waiting_time": {
+            "estimate": 1.7199920920016476,
+            "lower": 1.7126827450869209,
+            "upper": 1.7270075896610315,
+            "standard_error": 0.0037213776749044484
+          },
+          "reliable_comparisons": {
+            "estimate": 10148.0,
+            "lower": 9884.0,
+            "upper": 10377.05,
+            "standard_error": 130.49713786610656
+          },
+          "reliable_per_device_hour": {
+            "estimate": 5000.555334374504,
+            "lower": 4870.465995758534,
+            "upper": 5113.422618503247,
+            "standard_error": 64.30411498590504
+          }
+        },
+        "device_time": {
+          "budget_seconds": 7305.748573337149,
+          "busy_seconds": 7305.399999999999,
+          "slot_seconds": 0.3485733371504914,
+          "executed_shots": 20958,
+          "unexecuted_shots": 1,
+          "idle_slots": 1
+        }
+      },
+      "consecutive-pair": {
+        "metrics": {
+          "mae": {
+            "estimate": 0.0072841740837444584,
+            "lower": 0.004944103709458577,
+            "upper": 0.009739085969205445,
+            "standard_error": 0.0012649556146180675
+          },
+          "synchronous_mae": {
+            "estimate": 1.685498724895036e-05,
+            "lower": 1.1675503662651156e-05,
+            "upper": 2.255548765554544e-05,
+            "standard_error": 2.8230565861236503e-06
+          },
+          "completed_comparisons": {
+            "estimate": 10478.0,
+            "lower": 10476.0,
+            "upper": 10479.0,
+            "standard_error": 0.9486937123645017
+          },
+          "completion_rate": {
+            "estimate": 0.9999045710468556,
+            "lower": 0.9997137131405669,
+            "upper": 1.0,
+            "standard_error": 9.053284782560475e-05
+          },
+          "mean_waiting_time": {
+            "estimate": 2.0683990933355947,
+            "lower": 2.060912226376109,
+            "upper": 2.0755432103509466,
+            "standard_error": 0.003816615838905385
+          },
+          "reliable_comparisons": {
+            "estimate": 10148.0,
+            "lower": 9884.975,
+            "upper": 10377.0,
+            "standard_error": 130.02741958014602
+          },
+          "reliable_per_device_hour": {
+            "estimate": 5000.555334374504,
+            "lower": 4870.94643933865,
+            "upper": 5113.3979803709335,
+            "standard_error": 64.07265536031247
+          }
+        },
+        "device_time": {
+          "budget_seconds": 7305.748573337149,
+          "busy_seconds": 7304.702853325697,
+          "slot_seconds": 0.3485733371504914,
+          "executed_shots": 20956,
+          "unexecuted_shots": 3,
+          "idle_slots": 3
+        }
+      },
+      "drift-aware": {
+        "metrics": {
+          "mae": {
+            "estimate": 0.007280276689036785,
+            "lower": 0.004940101377998589,
+            "upper": 0.009734711124103086,
+            "standard_error": 0.0012637174701629304
+          },
+          "synchronous_mae": {
+            "estimate": 1.6854937605964438e-05,
+            "lower": 1.16750133845694e-05,
+            "upper": 2.2554766572840186e-05,
+            "standard_error": 2.8231327975156436e-06
+          },
+          "completed_comparisons": {
+            "estimate": 10478.0,
+            "lower": 10476.0,
+            "upper": 10479.0,
+            "standard_error": 0.9486937123645017
+          },
+          "completion_rate": {
+            "estimate": 0.9999045710468556,
+            "lower": 0.9997137131405669,
+            "upper": 1.0,
+            "standard_error": 9.053284782560475e-05
+          },
+          "mean_waiting_time": {
+            "estimate": 2.0683990933355947,
+            "lower": 2.060922360677661,
+            "upper": 2.0754761116784457,
+            "standard_error": 0.003827233765805205
+          },
+          "reliable_comparisons": {
+            "estimate": 10149.0,
+            "lower": 9886.0,
+            "upper": 10378.0,
+            "standard_error": 129.52736382706934
+          },
+          "reliable_per_device_hour": {
+            "estimate": 5001.048097020777,
+            "lower": 4871.451521051079,
+            "upper": 5113.890743017206,
+            "standard_error": 63.82624656414257
+          }
+        },
+        "device_time": {
+          "budget_seconds": 7305.748573337149,
+          "busy_seconds": 7304.702853325697,
+          "slot_seconds": 0.3485733371504914,
+          "executed_shots": 20956,
+          "unexecuted_shots": 3,
+          "idle_slots": 3
+        }
+      }
+    },
+    "paired_differences": {
+      "consecutive-pair - arrival-order": {
+        "mae": {
+          "estimate": 1.8830986170869854e-06,
+          "lower": -1.1792601190076549e-05,
+          "upper": 1.4766560640220398e-05,
+          "standard_error": 6.8918218664840015e-06
+        },
+        "synchronous_mae": {
+          "estimate": -9.146161758114246e-05,
+          "lower": -0.00012331157965130357,
+          "upper": -6.292031817792078e-05,
+          "standard_error": 1.55520549136052e-05
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "completion_rate": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "mean_waiting_time": {
+          "estimate": 0.3484070013339471,
+          "lower": 0.3478076303997103,
+          "upper": 0.3488394490597584,
+          "standard_error": 0.0002704330944176756
+        },
+        "reliable_comparisons": {
+          "estimate": 0.0,
+          "lower": -3.0,
+          "upper": 3.0,
+          "standard_error": 1.4170278698713008
+        },
+        "reliable_per_device_hour": {
+          "estimate": 0.0,
+          "lower": -1.4782879388176298,
+          "upper": 1.4782879388176298,
+          "standard_error": 0.6982584029998351
+        }
+      },
+      "drift-aware - arrival-order": {
+        "mae": {
+          "estimate": -2.01429609058678e-06,
+          "lower": -2.397650342207669e-05,
+          "upper": 1.481634630468649e-05,
+          "standard_error": 1.0185578421830574e-05
+        },
+        "synchronous_mae": {
+          "estimate": -9.146166722412838e-05,
+          "lower": -0.00012331165193887127,
+          "upper": -6.292052481472748e-05,
+          "standard_error": 1.5551983021013027e-05
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "completion_rate": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "mean_waiting_time": {
+          "estimate": 0.3484070013339471,
+          "lower": 0.34752541900574674,
+          "upper": 0.3492054132533611,
+          "standard_error": 0.00041561317442278145
+        },
+        "reliable_comparisons": {
+          "estimate": 1.0,
+          "lower": -3.0,
+          "upper": 6.0,
+          "standard_error": 2.0368647866462664
+        },
+        "reliable_per_device_hour": {
+          "estimate": 0.4927626462731496,
+          "lower": -1.4782879388176298,
+          "upper": 2.9565758776352595,
+          "standard_error": 1.0036908823673374
+        }
+      },
+      "drift-aware - consecutive-pair": {
+        "mae": {
+          "estimate": -3.897394707673765e-06,
+          "lower": -1.2621215209908496e-05,
+          "upper": 9.073240957018074e-07,
+          "standard_error": 4.045507816276663e-06
+        },
+        "synchronous_mae": {
+          "estimate": -4.964298592292698e-11,
+          "lower": -1.1374007002245328e-09,
+          "upper": 1.1635702173012551e-09,
+          "standard_error": 6.110902061960663e-10
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "completion_rate": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "standard_error": 0.0
+        },
+        "mean_waiting_time": {
+          "estimate": 0.0,
+          "lower": -0.0007318775927958043,
+          "upper": 0.000731949195166004,
+          "standard_error": 0.00035472705564331325
+        },
+        "reliable_comparisons": {
+          "estimate": 1.0,
+          "lower": 0.0,
+          "upper": 3.0,
+          "standard_error": 0.9863387765322043
+        },
+        "reliable_per_device_hour": {
+          "estimate": 0.4927626462731496,
+          "lower": 0.0,
+          "upper": 1.4782879388185393,
+          "standard_error": 0.48603090564530893
+        }
+      }
+    }
+  },
+  "sensitivity": {
+    "cv_block_count_selection": {
+      "note": "training-only re-selection with other chronological block counts; reported, never used to override the approved protocol",
+      "approved_cv_blocks": 5,
+      "approved_selected_components": 2,
+      "alternatives": {
+        "3": {
+          "selected_components": 1,
+          "mean_validation_log_loss": {
+            "0": 0.7143933392873956,
+            "1": 0.7055028710526958,
+            "2": 0.7736744922707668,
+            "3": 0.7680561099813543,
+            "4": 0.8462022074145973,
+            "5": 0.8519244804536393,
+            "6": 0.8815461615760883,
+            "8": 0.8891226036424088,
+            "10": 0.9156769883445457,
+            "13": 0.8879284436658931
+          }
+        },
+        "4": {
+          "selected_components": 1,
+          "mean_validation_log_loss": {
+            "0": 0.7388396265230243,
+            "1": 0.7171229559457218,
+            "2": 0.7449479280137301,
+            "3": 0.7190144788185352,
+            "4": 0.7828696867745147,
+            "5": 0.8441785434502672,
+            "6": 0.8362159330460494,
+            "8": 0.8658789662510135,
+            "10": 0.8855144149201942,
+            "13": 0.8639106625190118
+          }
+        },
+        "6": {
+          "selected_components": 2,
+          "mean_validation_log_loss": {
+            "0": 0.7179146318118764,
+            "1": 0.7035075163640749,
+            "2": 0.7009183572262127,
+            "3": 0.7028843020961436,
+            "4": 0.7686779627611234,
+            "5": 0.7257389809801026,
+            "6": 0.8323175860808153,
+            "8": 0.8148555095143714,
+            "10": 0.8414067497695061,
+            "13": 0.7881713538635944
+          }
+        }
+      }
+    },
+    "component_count_point_estimates": {
+      "0": {
+        "arrival-order": {
+          "mae": 0.0,
+          "synchronous_mae": 0.0,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 10478.0,
+          "reliable_per_device_hour": 5163.167007644468
+        },
+        "consecutive-pair": {
+          "mae": 0.0,
+          "synchronous_mae": 0.0,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 10478.0,
+          "reliable_per_device_hour": 5163.167007644468
+        },
+        "drift-aware": {
+          "mae": 0.0,
+          "synchronous_mae": 0.0,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 10478.0,
+          "reliable_per_device_hour": 5163.167007644468
+        }
+      },
+      "1": {
+        "arrival-order": {
+          "mae": 0.0041501357345159195,
+          "synchronous_mae": 6.356727582980122e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 10459.0,
+          "reliable_per_device_hour": 5153.804517365288
+        },
+        "consecutive-pair": {
+          "mae": 0.004151373077706757,
+          "synchronous_mae": 9.808914279944686e-06,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 10459.0,
+          "reliable_per_device_hour": 5153.804517365288
+        },
+        "drift-aware": {
+          "mae": 0.004151064739866348,
+          "synchronous_mae": 9.80897773399042e-06,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 10459.0,
+          "reliable_per_device_hour": 5153.804517365288
+        }
+      },
+      "2": {
+        "arrival-order": {
+          "mae": 0.00584887362306848,
+          "synchronous_mae": 8.805943621515886e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 10351.0,
+          "reliable_per_device_hour": 5100.586151567845
+        },
+        "consecutive-pair": {
+          "mae": 0.005850513037647033,
+          "synchronous_mae": 1.3686396873940068e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 10352.0,
+          "reliable_per_device_hour": 5101.078914214118
+        },
+        "drift-aware": {
+          "mae": 0.005848807200252369,
+          "synchronous_mae": 1.3686394920199067e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 10352.0,
+          "reliable_per_device_hour": 5101.078914214118
+        }
+      },
+      "3": {
+        "arrival-order": {
+          "mae": 0.014738528089673138,
+          "synchronous_mae": 0.00022891652112536602,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 9589.0,
+          "reliable_per_device_hour": 4725.101015108112
+        },
+        "consecutive-pair": {
+          "mae": 0.014736801214854605,
+          "synchronous_mae": 3.515152035043563e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9590.0,
+          "reliable_per_device_hour": 4725.593777754385
+        },
+        "drift-aware": {
+          "mae": 0.01473530834913595,
+          "synchronous_mae": 3.515112776262894e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9591.0,
+          "reliable_per_device_hour": 4726.086540400657
+        }
+      },
+      "4": {
+        "arrival-order": {
+          "mae": 0.015269719696796837,
+          "synchronous_mae": 0.00023747939322286835,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 9535.0,
+          "reliable_per_device_hour": 4698.491832209391
+        },
+        "consecutive-pair": {
+          "mae": 0.01526921745542215,
+          "synchronous_mae": 3.6443353520235495e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9533.0,
+          "reliable_per_device_hour": 4697.5063069168455
+        },
+        "drift-aware": {
+          "mae": 0.015274152731054126,
+          "synchronous_mae": 3.644305993493002e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9531.0,
+          "reliable_per_device_hour": 4696.5207816243
+        }
+      },
+      "5": {
+        "arrival-order": {
+          "mae": 0.015314262748767238,
+          "synchronous_mae": 0.00023880668241097825,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 9530.0,
+          "reliable_per_device_hour": 4696.028018978028
+        },
+        "consecutive-pair": {
+          "mae": 0.015314705931138374,
+          "synchronous_mae": 3.665130477333256e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9530.0,
+          "reliable_per_device_hour": 4696.028018978028
+        },
+        "drift-aware": {
+          "mae": 0.015323771752397705,
+          "synchronous_mae": 3.665070594532604e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9530.0,
+          "reliable_per_device_hour": 4696.028018978028
+        }
+      },
+      "6": {
+        "arrival-order": {
+          "mae": 0.015423131440310984,
+          "synchronous_mae": 0.00023891841114335145,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 9547.0,
+          "reliable_per_device_hour": 4704.404983964662
+        },
+        "consecutive-pair": {
+          "mae": 0.01542468841704188,
+          "synchronous_mae": 3.6645467453227004e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9546.0,
+          "reliable_per_device_hour": 4703.91222131839
+        },
+        "drift-aware": {
+          "mae": 0.015429143140237264,
+          "synchronous_mae": 3.664538408490529e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9547.0,
+          "reliable_per_device_hour": 4704.404983964662
+        }
+      },
+      "8": {
+        "arrival-order": {
+          "mae": 0.015845457079361972,
+          "synchronous_mae": 0.0002490952467200361,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 9473.0,
+          "reliable_per_device_hour": 4667.940548140489
+        },
+        "consecutive-pair": {
+          "mae": 0.01584576564947173,
+          "synchronous_mae": 3.817726152175198e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9471.0,
+          "reliable_per_device_hour": 4666.955022847944
+        },
+        "drift-aware": {
+          "mae": 0.015852340809276562,
+          "synchronous_mae": 3.8176913183321185e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9472.0,
+          "reliable_per_device_hour": 4667.447785494216
+        }
+      },
+      "10": {
+        "arrival-order": {
+          "mae": 0.016414904059962543,
+          "synchronous_mae": 0.00025856872513210197,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 9436.0,
+          "reliable_per_device_hour": 4649.708330228402
+        },
+        "consecutive-pair": {
+          "mae": 0.016414652331702258,
+          "synchronous_mae": 3.9608019778746584e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9434.0,
+          "reliable_per_device_hour": 4648.722804935856
+        },
+        "drift-aware": {
+          "mae": 0.01641828183367656,
+          "synchronous_mae": 3.9607909529056476e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9433.0,
+          "reliable_per_device_hour": 4648.230042289584
+        }
+      },
+      "13": {
+        "arrival-order": {
+          "mae": 0.016587375366378814,
+          "synchronous_mae": 0.00026077793380159184,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 1.7199920920016476,
+          "reliable_comparisons": 9403.0,
+          "reliable_per_device_hour": 4633.447162901406
+        },
+        "consecutive-pair": {
+          "mae": 0.016586160215070964,
+          "synchronous_mae": 3.9983777470737665e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9400.0,
+          "reliable_per_device_hour": 4631.9688749625875
+        },
+        "drift-aware": {
+          "mae": 0.01658954871278664,
+          "synchronous_mae": 3.9983612065522045e-05,
+          "completed_comparisons": 10478.0,
+          "completion_rate": 0.9999045710468556,
+          "mean_waiting_time": 2.0683990933355947,
+          "reliable_comparisons": 9400.0,
+          "reliable_per_device_hour": 4631.9688749625875
+        }
+      }
+    },
+    "reliability_threshold_point_estimates": {
+      "0.01": {
+        "arrival-order": {
+          "reliable_comparisons": 8814.0,
+          "reliable_per_device_hour": 4343.209964246835
+        },
+        "consecutive-pair": {
+          "reliable_comparisons": 8813.0,
+          "reliable_per_device_hour": 4342.7172016005625
+        },
+        "drift-aware": {
+          "reliable_comparisons": 8813.0,
+          "reliable_per_device_hour": 4342.7172016005625
+        }
+      },
+      "0.02": {
+        "arrival-order": {
+          "reliable_comparisons": 9525.0,
+          "reliable_per_device_hour": 4693.564205746665
+        },
+        "consecutive-pair": {
+          "reliable_comparisons": 9524.0,
+          "reliable_per_device_hour": 4693.071443100393
+        },
+        "drift-aware": {
+          "reliable_comparisons": 9525.0,
+          "reliable_per_device_hour": 4693.564205746665
+        }
+      },
+      "0.05": {
+        "arrival-order": {
+          "reliable_comparisons": 10351.0,
+          "reliable_per_device_hour": 5100.586151567845
+        },
+        "consecutive-pair": {
+          "reliable_comparisons": 10352.0,
+          "reliable_per_device_hour": 5101.078914214118
+        },
+        "drift-aware": {
+          "reliable_comparisons": 10352.0,
+          "reliable_per_device_hour": 5101.078914214118
+        }
+      },
+      "0.1": {
+        "arrival-order": {
+          "reliable_comparisons": 10477.0,
+          "reliable_per_device_hour": 5162.674244998195
+        },
+        "consecutive-pair": {
+          "reliable_comparisons": 10477.0,
+          "reliable_per_device_hour": 5162.674244998195
+        },
+        "drift-aware": {
+          "reliable_comparisons": 10477.0,
+          "reliable_per_device_hour": 5162.674244998195
+        }
+      }
+    }
+  }
+}
