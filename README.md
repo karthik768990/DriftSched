@@ -164,7 +164,7 @@ Record & Observation Metrics:
 | `Not comparable` | The pair is excluded and can never be scheduled (currently 62 pairs). |
 | anything else (blank, misspelt, missing column) | Rejected when the registry is loaded; it is never read as `Comparable`. |
 
-`compatibility_status` and `empirical_test` are kept as provenance only: they cannot make an excluded pair eligible or remove an eligible one. Drift diagnostics never change a decision; they only order the eligible pairs.
+`compatibility_status` and `empirical_test` are optional provenance columns: a registry loads without them, an unfamiliar status is kept as none instead of rejecting the row, and neither can make an excluded pair eligible or remove an eligible one. Only `reviewer_decision` is mandatory. Drift diagnostics never change a decision; they only order the eligible pairs.
 
 ```python
 from quantum_drift_scheduler.data.compatibility import load_compatibility_registry

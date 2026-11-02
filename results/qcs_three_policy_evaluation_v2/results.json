@@ -1,0 +1,3076 @@
+{
+  "evaluation_kind": "recorded-trace timing replay of the frozen scheduler scored by a model-simulated drift reference; NOT a real-QPU experiment and no outcomes are simulated",
+  "provenance_labels": {
+    "recorded_trace_timing_replay": "arrival pattern, queueing, waiting, measurement separation, idle slots and completions",
+    "model_simulated": "p_A, p_B, Delta_measured, Delta_reference, comparison error and reliability, from a drift model fitted on the training portion only and evaluated at those times (not device observations)",
+    "synthetic_stress": "scenarios with drift-rate factor != 1 are synthetic stress tests, never the primary result"
+  },
+  "config": {
+    "dataset_path": "C:\\Users\\Karthik Tamarapalli\\projects_workbook\\DriftSched\\data\\dataset.txt",
+    "registry_path": "C:\\Users\\Karthik Tamarapalli\\projects_workbook\\DriftSched\\data\\compatibility_registry.csv",
+    "output_dir": "results\\qcs_three_policy_evaluation_v2",
+    "priority_analysis_csv": "C:\\Users\\Karthik Tamarapalli\\projects_workbook\\DriftSched\\results\\priority_analysis\\priority_results.csv",
+    "train_fraction": 0.75,
+    "window_seconds": 600.0,
+    "slots_per_shot": 1.0,
+    "seed": 20260101,
+    "n_bootstrap": 2000,
+    "confidence": 0.95,
+    "n_starts": 6,
+    "cv_blocks": 5,
+    "candidates": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      8,
+      10,
+      13
+    ],
+    "stress_drift_rate_factors": [
+      10.0,
+      100.0
+    ],
+    "overwrite": false,
+    "make_figures": true
+  },
+  "reliability_threshold": 0.05,
+  "environment": {
+    "python": "3.14.7",
+    "platform": "Windows-11-10.0.26300-SP0",
+    "numpy": "2.5.4",
+    "scipy": "1.18.1",
+    "matplotlib": "3.11.2",
+    "git_commit": "c927d9631d32f21c4cbba4c6b1104bc310a37cee"
+  },
+  "hashes": {
+    "dataset_sha256": "a341b8a26545b6315d4adb6e19d93a0983e9f18a7c2258441cd8eeab34b6e717",
+    "registry_sha256": "584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed"
+  },
+  "data": {
+    "time_unit": "seconds",
+    "observations": 84000,
+    "circuits": 14,
+    "time_range": [
+      0.120257,
+      29227.1
+    ],
+    "outcome_mean": 0.4913095238095238,
+    "duplicate_timestamps_within_circuit": 0,
+    "observations_excluded": 0,
+    "counts_per_circuit": {
+      "Gx(Gw)Gy": 6000,
+      "Gx(Gw)^2Gy": 6000,
+      "Gx(Gw)^4Gy": 6000,
+      "Gx(Gw)^8Gy": 6000,
+      "Gx(Gw)^16Gy": 6000,
+      "Gx(Gw)^32Gy": 6000,
+      "Gx(Gw)^64Gy": 6000,
+      "Gx(Gw)^128Gy": 6000,
+      "Gx(Gw)^256Gy": 6000,
+      "Gx(Gw)^512Gy": 6000,
+      "Gx(Gw)^1024Gy": 6000,
+      "Gx(Gw)^2048Gy": 6000,
+      "Gx(Gw)^4096Gy": 6000,
+      "Gx(Gw)^8192Gy": 6000
+    }
+  },
+  "definitions": {
+    "Delta_measured": "p_A(t_A) - p_B(t_B), t_A and t_B the policy's execution times",
+    "Delta_reference": "p_A(t_ref) - p_B(t_ref), t_ref the midpoint of the fixed window containing the request's arrival (same for all policies)",
+    "comparison_error": "E_AB = abs(Delta_measured - Delta_reference)",
+    "synchronous_error": "diagnostic: reference at the comparison's own earlier execution time; isolates the drift between the two executions",
+    "reliable": "completed and E_AB <= 0.05 (threshold fixed in advance, inclusive)",
+    "reliable_comparison_throughput": "reliable completed comparisons / device time; primary denominator = budgeted device time (total_slots * slot_seconds, idle slots included, identical for all policies); busy-time variant also reported",
+    "time_separation": "abs(execution time of the second measurement - execution time of the first) of each completed comparison",
+    "waiting_time": "execution time - arrival time per executed shot of a completed comparison",
+    "window_seconds": 600.0
+  },
+  "split": {
+    "train_fraction": 0.75,
+    "boundary_seconds": 21920.355064249998,
+    "train_shots": 63041,
+    "holdout_shots": 20959,
+    "train_range": [
+      0.120257,
+      21919.8
+    ],
+    "holdout_range": [
+      21921.7,
+      29227.1
+    ]
+  },
+  "eligibility": {
+    "authority": "reviewer_decision",
+    "eligible_pairs": [
+      [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^2Gy"
+      ],
+      [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^4Gy"
+      ],
+      [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^8Gy"
+      ],
+      [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^16Gy"
+      ],
+      [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^32Gy"
+      ],
+      [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^64Gy"
+      ],
+      [
+        "Gx(Gw)Gy",
+        "Gx(Gw)^128Gy"
+      ],
+      [
+        "Gx(Gw)^2Gy",
+        "Gx(Gw)^4Gy"
+      ],
+      [
+        "Gx(Gw)^2Gy",
+        "Gx(Gw)^8Gy"
+      ],
+      [
+        "Gx(Gw)^2Gy",
+        "Gx(Gw)^16Gy"
+      ],
+      [
+        "Gx(Gw)^2Gy",
+        "Gx(Gw)^32Gy"
+      ],
+      [
+        "Gx(Gw)^2Gy",
+        "Gx(Gw)^64Gy"
+      ],
+      [
+        "Gx(Gw)^2Gy",
+        "Gx(Gw)^128Gy"
+      ],
+      [
+        "Gx(Gw)^4Gy",
+        "Gx(Gw)^8Gy"
+      ],
+      [
+        "Gx(Gw)^4Gy",
+        "Gx(Gw)^16Gy"
+      ],
+      [
+        "Gx(Gw)^4Gy",
+        "Gx(Gw)^32Gy"
+      ],
+      [
+        "Gx(Gw)^4Gy",
+        "Gx(Gw)^64Gy"
+      ],
+      [
+        "Gx(Gw)^4Gy",
+        "Gx(Gw)^128Gy"
+      ],
+      [
+        "Gx(Gw)^8Gy",
+        "Gx(Gw)^16Gy"
+      ],
+      [
+        "Gx(Gw)^8Gy",
+        "Gx(Gw)^32Gy"
+      ],
+      [
+        "Gx(Gw)^8Gy",
+        "Gx(Gw)^64Gy"
+      ],
+      [
+        "Gx(Gw)^8Gy",
+        "Gx(Gw)^128Gy"
+      ],
+      [
+        "Gx(Gw)^16Gy",
+        "Gx(Gw)^32Gy"
+      ],
+      [
+        "Gx(Gw)^16Gy",
+        "Gx(Gw)^64Gy"
+      ],
+      [
+        "Gx(Gw)^16Gy",
+        "Gx(Gw)^128Gy"
+      ],
+      [
+        "Gx(Gw)^32Gy",
+        "Gx(Gw)^64Gy"
+      ],
+      [
+        "Gx(Gw)^32Gy",
+        "Gx(Gw)^128Gy"
+      ],
+      [
+        "Gx(Gw)^64Gy",
+        "Gx(Gw)^128Gy"
+      ],
+      [
+        "Gx(Gw)^128Gy",
+        "Gx(Gw)^256Gy"
+      ]
+    ],
+    "excluded_pair_count": 62,
+    "ineligible_circuit_shots_excluded": 7486,
+    "unrequested_shots_excluded": 3825,
+    "simulated_source_shots": 9648,
+    "workload_requests": 4824
+  },
+  "priorities_for_this_run": {
+    "artifact_version": 2,
+    "metadata": {
+      "train_fraction": 0.75,
+      "window_seconds": 600.0,
+      "boundary": 21920.355064249998,
+      "window_origin": 0.120257,
+      "train_start": 0.120257,
+      "train_end": 21919.8,
+      "train_shot_count": 63041,
+      "training_fingerprint": "3053f998444cc905c66cb8fa15d06fec74c13aadc4f403347e96ace25acdbb04",
+      "eligible_pairs_fingerprint": "463ed52eb6ca8fc59ab6e2e3d7a1802836c02617787f12869e31eb64b438934b",
+      "min_valid_transitions": 10,
+      "min_observations_per_window": 5,
+      "epsilon": 1e-12,
+      "score_formula": "priority_score = 1.0 / (mean_abs_z + 1e-12); 0.0 if training data is insufficient"
+    },
+    "positive_score_pairs": 29,
+    "zero_score_pairs": 0,
+    "priorities": [
+      {
+        "circuit_a": "Gx(Gw)Gy",
+        "circuit_b": "Gx(Gw)^2Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.06424486406154384,
+        "rms_d": 0.08150577124446098,
+        "mean_abs_z": 0.7091556694109817,
+        "sufficient_data": true,
+        "priority_score": 1.4101276251929014,
+        "rank": 8
+      },
+      {
+        "circuit_a": "Gx(Gw)Gy",
+        "circuit_b": "Gx(Gw)^4Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.056278186664701906,
+        "rms_d": 0.07099950683521182,
+        "mean_abs_z": 0.6204564220287311,
+        "sufficient_data": true,
+        "priority_score": 1.6117167370572916,
+        "rank": 4
+      },
+      {
+        "circuit_a": "Gx(Gw)Gy",
+        "circuit_b": "Gx(Gw)^8Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.08784519446517874,
+        "rms_d": 0.09697820727964719,
+        "mean_abs_z": 0.9679600786850082,
+        "sufficient_data": true,
+        "priority_score": 1.0331004573633713,
+        "rank": 26
+      },
+      {
+        "circuit_a": "Gx(Gw)Gy",
+        "circuit_b": "Gx(Gw)^16Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.09692289618209797,
+        "rms_d": 0.10927865764011953,
+        "mean_abs_z": 1.0696176739834873,
+        "sufficient_data": true,
+        "priority_score": 0.93491349696462,
+        "rank": 28
+      },
+      {
+        "circuit_a": "Gx(Gw)Gy",
+        "circuit_b": "Gx(Gw)^32Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.0722306589124524,
+        "rms_d": 0.09146484141091599,
+        "mean_abs_z": 0.7905108237316548,
+        "sufficient_data": true,
+        "priority_score": 1.265004817110756,
+        "rank": 13
+      },
+      {
+        "circuit_a": "Gx(Gw)Gy",
+        "circuit_b": "Gx(Gw)^64Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.09871853708157897,
+        "rms_d": 0.11399652206042118,
+        "mean_abs_z": 1.0873992940192445,
+        "sufficient_data": true,
+        "priority_score": 0.9196253901387788,
+        "rank": 29
+      },
+      {
+        "circuit_a": "Gx(Gw)Gy",
+        "circuit_b": "Gx(Gw)^128Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.08198293852328768,
+        "rms_d": 0.10096720061743955,
+        "mean_abs_z": 0.9085231333593909,
+        "sufficient_data": true,
+        "priority_score": 1.1006874379755855,
+        "rank": 21
+      },
+      {
+        "circuit_a": "Gx(Gw)^2Gy",
+        "circuit_b": "Gx(Gw)^4Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07889819246737798,
+        "rms_d": 0.0894200716725255,
+        "mean_abs_z": 0.8664883504370753,
+        "sufficient_data": true,
+        "priority_score": 1.1540836059647248,
+        "rank": 19
+      },
+      {
+        "circuit_a": "Gx(Gw)^2Gy",
+        "circuit_b": "Gx(Gw)^8Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07660152641372497,
+        "rms_d": 0.09060442997399484,
+        "mean_abs_z": 0.8398514362240674,
+        "sufficient_data": true,
+        "priority_score": 1.190686777288567,
+        "rank": 16
+      },
+      {
+        "circuit_a": "Gx(Gw)^2Gy",
+        "circuit_b": "Gx(Gw)^16Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.0756843922589568,
+        "rms_d": 0.09141542679321744,
+        "mean_abs_z": 0.8311566898183853,
+        "sufficient_data": true,
+        "priority_score": 1.2031425749786184,
+        "rank": 15
+      },
+      {
+        "circuit_a": "Gx(Gw)^2Gy",
+        "circuit_b": "Gx(Gw)^32Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.06435333103211421,
+        "rms_d": 0.08074873262213836,
+        "mean_abs_z": 0.698819219969429,
+        "sufficient_data": true,
+        "priority_score": 1.4309852554460591,
+        "rank": 6
+      },
+      {
+        "circuit_a": "Gx(Gw)^2Gy",
+        "circuit_b": "Gx(Gw)^64Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.0838292985117739,
+        "rms_d": 0.10321478530053473,
+        "mean_abs_z": 0.9181346426960079,
+        "sufficient_data": true,
+        "priority_score": 1.0891648713553752,
+        "rank": 23
+      },
+      {
+        "circuit_a": "Gx(Gw)^2Gy",
+        "circuit_b": "Gx(Gw)^128Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.0766252947645219,
+        "rms_d": 0.09477016530969296,
+        "mean_abs_z": 0.844381577290332,
+        "sufficient_data": true,
+        "priority_score": 1.1842986949192709,
+        "rank": 17
+      },
+      {
+        "circuit_a": "Gx(Gw)^4Gy",
+        "circuit_b": "Gx(Gw)^8Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.06999011030639671,
+        "rms_d": 0.0862231954983126,
+        "mean_abs_z": 0.7731878119191378,
+        "sufficient_data": true,
+        "priority_score": 1.2933468228328586,
+        "rank": 9
+      },
+      {
+        "circuit_a": "Gx(Gw)^4Gy",
+        "circuit_b": "Gx(Gw)^16Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.0944654169624322,
+        "rms_d": 0.1169338945430052,
+        "mean_abs_z": 1.0448165848409166,
+        "sufficient_data": true,
+        "priority_score": 0.9571057872816046,
+        "rank": 27
+      },
+      {
+        "circuit_a": "Gx(Gw)^4Gy",
+        "circuit_b": "Gx(Gw)^32Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.08309813615765793,
+        "rms_d": 0.09512773705367752,
+        "mean_abs_z": 0.913185563143679,
+        "sufficient_data": true,
+        "priority_score": 1.0950676843339087,
+        "rank": 22
+      },
+      {
+        "circuit_a": "Gx(Gw)^4Gy",
+        "circuit_b": "Gx(Gw)^64Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.08611556259430826,
+        "rms_d": 0.10737284896803036,
+        "mean_abs_z": 0.9481472091493333,
+        "sufficient_data": true,
+        "priority_score": 1.0546885445100174,
+        "rank": 25
+      },
+      {
+        "circuit_a": "Gx(Gw)^4Gy",
+        "circuit_b": "Gx(Gw)^128Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.06257161401925433,
+        "rms_d": 0.07859711705308707,
+        "mean_abs_z": 0.689515086584955,
+        "sufficient_data": true,
+        "priority_score": 1.4502945902915207,
+        "rank": 5
+      },
+      {
+        "circuit_a": "Gx(Gw)^8Gy",
+        "circuit_b": "Gx(Gw)^16Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07098614673328182,
+        "rms_d": 0.08772045362679719,
+        "mean_abs_z": 0.784925563504453,
+        "sufficient_data": true,
+        "priority_score": 1.2740061561175704,
+        "rank": 11
+      },
+      {
+        "circuit_a": "Gx(Gw)^8Gy",
+        "circuit_b": "Gx(Gw)^32Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07165316319604281,
+        "rms_d": 0.08086066055327035,
+        "mean_abs_z": 0.7863877667897126,
+        "sufficient_data": true,
+        "priority_score": 1.271637278999201,
+        "rank": 12
+      },
+      {
+        "circuit_a": "Gx(Gw)^8Gy",
+        "circuit_b": "Gx(Gw)^64Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07039265791929465,
+        "rms_d": 0.07759272760093226,
+        "mean_abs_z": 0.7746889903069314,
+        "sufficient_data": true,
+        "priority_score": 1.290840598628502,
+        "rank": 10
+      },
+      {
+        "circuit_a": "Gx(Gw)^8Gy",
+        "circuit_b": "Gx(Gw)^128Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.0523854199288136,
+        "rms_d": 0.06590765989293952,
+        "mean_abs_z": 0.5759716911179006,
+        "sufficient_data": true,
+        "priority_score": 1.7361964405878505,
+        "rank": 2
+      },
+      {
+        "circuit_a": "Gx(Gw)^16Gy",
+        "circuit_b": "Gx(Gw)^32Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07206023138602757,
+        "rms_d": 0.08556180069021681,
+        "mean_abs_z": 0.7913840155341763,
+        "sufficient_data": true,
+        "priority_score": 1.2636090448753208,
+        "rank": 14
+      },
+      {
+        "circuit_a": "Gx(Gw)^16Gy",
+        "circuit_b": "Gx(Gw)^64Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.05636394600528247,
+        "rms_d": 0.06734201929007304,
+        "mean_abs_z": 0.6203525984047786,
+        "sufficient_data": true,
+        "priority_score": 1.6119864776416886,
+        "rank": 3
+      },
+      {
+        "circuit_a": "Gx(Gw)^16Gy",
+        "circuit_b": "Gx(Gw)^128Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.08420019387309871,
+        "rms_d": 0.09834183112073515,
+        "mean_abs_z": 0.9273854139472759,
+        "sufficient_data": true,
+        "priority_score": 1.078300332267005,
+        "rank": 24
+      },
+      {
+        "circuit_a": "Gx(Gw)^32Gy",
+        "circuit_b": "Gx(Gw)^64Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.06369556404442897,
+        "rms_d": 0.07764251048770554,
+        "mean_abs_z": 0.7044669250218231,
+        "sufficient_data": true,
+        "priority_score": 1.4195130594209264,
+        "rank": 7
+      },
+      {
+        "circuit_a": "Gx(Gw)^32Gy",
+        "circuit_b": "Gx(Gw)^128Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07843533159912003,
+        "rms_d": 0.09818607329828372,
+        "mean_abs_z": 0.8586054955665359,
+        "sufficient_data": true,
+        "priority_score": 1.1646792446151335,
+        "rank": 18
+      },
+      {
+        "circuit_a": "Gx(Gw)^64Gy",
+        "circuit_b": "Gx(Gw)^128Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.07993254079411265,
+        "rms_d": 0.09498602080802633,
+        "mean_abs_z": 0.8766924505806166,
+        "sufficient_data": true,
+        "priority_score": 1.140650862610461,
+        "rank": 20
+      },
+      {
+        "circuit_a": "Gx(Gw)^128Gy",
+        "circuit_b": "Gx(Gw)^256Gy",
+        "reviewer_decision": "Comparable",
+        "valid_transitions": 36,
+        "unusable_transitions": 0,
+        "mean_abs_d": 0.0439381757886614,
+        "rms_d": 0.05733749387460936,
+        "mean_abs_z": 0.4877048160443441,
+        "sufficient_data": true,
+        "priority_score": 2.0504205968452553,
+        "rank": 1
+      }
+    ]
+  },
+  "priority_analysis_cross_check": {
+    "file": "C:\\Users\\Karthik Tamarapalli\\projects_workbook\\DriftSched\\results\\priority_analysis\\priority_results.csv",
+    "found": true,
+    "consistent": true,
+    "pairs_compared": 29,
+    "problems": [],
+    "note": "cross-check only; this run's priorities were calculated freshly and are not read from the file"
+  },
+  "drift_model": {
+    "equation": "p_l(t) = A + B exp(-l/l0) sin(2 pi l t_w Omega(t)); Omega(t) = gamma_0 + sum_w gamma_w f_w(t)",
+    "selected_components": 2,
+    "selection_rule": "min mean validation log loss = 0.710785; candidates within 0.001 nats: [2]; lowest BIC among them -> K=2",
+    "A": 0.4892552828468299,
+    "B": 0.4892552828468299,
+    "l0": 13641.680584242311,
+    "t_w_seconds": 0.0004,
+    "gamma_0_hz": 0.13155865822339377,
+    "gammas_hz": [
+      -0.19233954419973553,
+      -0.2254379140192572
+    ],
+    "fitted_on": "training portion only",
+    "validity_diagnostic_after_freezing": {
+      "note": "scored on holdout outcomes AFTER the model was frozen; influences nothing",
+      "holdout_log_loss": 0.8379733634545419,
+      "holdout_constant_baseline_log_loss": 0.7423245502181773,
+      "caveat": "the frozen model does not forecast the holdout drift when its log loss exceeds the constant baseline; results describe scheduling under this simulated drift, not the real device"
+    }
+  },
+  "bootstrap": {
+    "method": "paired circular temporal block bootstrap over time-ordered requests",
+    "block_length_requests": 464,
+    "block_length_chosen_from": "training period only",
+    "replicates": 2000,
+    "seed": 20260101,
+    "confidence": 0.95,
+    "note": "intervals reflect which time blocks were observed, not uncertainty in the drift-model parameters"
+  },
+  "primary": {
+    "label": "primary: frozen training-fitted drift (x1)",
+    "kind": "primary",
+    "drift_rate_factor": 1.0,
+    "policies": {
+      "arrival-order": {
+        "error_mean": {
+          "estimate": 0.00029197014611393905,
+          "lower": 0.00021773394058985154,
+          "upper": 0.00035735202504904776,
+          "unit": "probability",
+          "interval": true
+        },
+        "error_median": {
+          "estimate": 0.0001221557354615932,
+          "lower": 7.64189976689985e-05,
+          "upper": 0.00017287534453422625,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_mean": {
+          "estimate": 5.723401120926721e-06,
+          "lower": 4.345849057543219e-06,
+          "upper": 6.92105389916919e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_median": {
+          "estimate": 2.639157492850819e-06,
+          "lower": 1.7292007780299324e-06,
+          "upper": 3.8048000665286125e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "separation_mean": {
+          "estimate": 2.0616723879932524,
+          "lower": 2.0601021881547177,
+          "upper": 2.063212567385995,
+          "unit": "s",
+          "interval": true
+        },
+        "separation_median": {
+          "estimate": 2.2705089665178093,
+          "lower": 2.2705089665178093,
+          "upper": 2.2705089665178093,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_mean": {
+          "estimate": 3.196843595519564,
+          "lower": 3.1286632644272805,
+          "upper": 3.2641030025801254,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_median": {
+          "estimate": 3.1830569088833727,
+          "lower": 3.1300514408642357,
+          "upper": 3.2472715611065723,
+          "unit": "s",
+          "interval": true
+        },
+        "completed_comparisons": {
+          "estimate": 4820.0,
+          "lower": 4812.0,
+          "upper": 4824.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "completion_rate": {
+          "estimate": 0.9991708126036484,
+          "lower": 0.9975124378109452,
+          "upper": 1.0,
+          "unit": "fraction",
+          "interval": true
+        },
+        "reliable_comparisons": {
+          "estimate": 4820.0,
+          "lower": 4812.0,
+          "upper": 4824.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "reliable_throughput_per_device_hour": {
+          "estimate": 2376.3492977232945,
+          "lower": 2372.4051495113054,
+          "upper": 2378.3213718292886,
+          "unit": "reliable comparisons / device-hour",
+          "interval": true
+        },
+        "reliable_throughput_per_device_second": {
+          "estimate": 0.6600970271453596,
+          "lower": 0.6590014304198072,
+          "upper": 0.6606448255081359,
+          "unit": "reliable comparisons / device-second",
+          "interval": true
+        },
+        "reliable_throughput_per_busy_hour": {
+          "estimate": 2378.074683584104,
+          "lower": 2374.127671661143,
+          "upper": 2380.0481895455846,
+          "unit": "reliable comparisons / busy device-hour",
+          "interval": true
+        },
+        "error_p95": {
+          "estimate": 0.0012065692061076715,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "error_max": {
+          "estimate": 0.0020982078333518506,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "sync_error_p95": {
+          "estimate": 2.378798404387706e-05,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "sync_error_max": {
+          "estimate": 3.241485818250567e-05,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "separation_p95": {
+          "estimate": 3.7841816108630155,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "separation_max": {
+          "estimate": 4.541017933039257,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "waiting_p95": {
+          "estimate": 5.492205867109258,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "waiting_max": {
+          "estimate": 6.4758370477902645,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "idle_slots": {
+          "estimate": 7.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "executed_shots": {
+          "estimate": 9641.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "unexecuted_shots": {
+          "estimate": 7.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "total_slots": {
+          "estimate": 9648.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "budget_seconds": {
+          "estimate": 7301.956836322171,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "busy_seconds": {
+          "estimate": 7296.6589820669615,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "slot_seconds": {
+          "estimate": 0.7568363221726959,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        }
+      },
+      "consecutive-pair": {
+        "error_mean": {
+          "estimate": 0.00029194796989549045,
+          "lower": 0.00021769113983138456,
+          "upper": 0.00035745614797774673,
+          "unit": "probability",
+          "interval": true
+        },
+        "error_median": {
+          "estimate": 0.00012138984966550415,
+          "lower": 7.60319507066364e-05,
+          "upper": 0.000173464006073986,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_mean": {
+          "estimate": 1.885508570993911e-06,
+          "lower": 1.4307594268579306e-06,
+          "upper": 2.2799575485964365e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_median": {
+          "estimate": 1.1591805355037899e-06,
+          "lower": 6.751244048780471e-07,
+          "upper": 1.3566542810247716e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "separation_mean": {
+          "estimate": 0.7568363221726951,
+          "lower": 0.7568363221726876,
+          "upper": 0.7568363221727014,
+          "unit": "s",
+          "interval": true
+        },
+        "separation_median": {
+          "estimate": 0.7568363221726031,
+          "lower": 0.7568363221726031,
+          "upper": 0.7568363221726031,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_mean": {
+          "estimate": 3.639482930001895,
+          "lower": 3.5763204860054656,
+          "upper": 3.7062785966080396,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_median": {
+          "estimate": 3.646138695969057,
+          "lower": 3.5765211983015432,
+          "upper": 3.7180877474871976,
+          "unit": "s",
+          "interval": true
+        },
+        "completed_comparisons": {
+          "estimate": 4820.0,
+          "lower": 4812.0,
+          "upper": 4824.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "completion_rate": {
+          "estimate": 0.9991708126036484,
+          "lower": 0.9975124378109452,
+          "upper": 1.0,
+          "unit": "fraction",
+          "interval": true
+        },
+        "reliable_comparisons": {
+          "estimate": 4820.0,
+          "lower": 4812.0,
+          "upper": 4824.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "reliable_throughput_per_device_hour": {
+          "estimate": 2376.3492977232945,
+          "lower": 2372.4051495113054,
+          "upper": 2378.3213718292886,
+          "unit": "reliable comparisons / device-hour",
+          "interval": true
+        },
+        "reliable_throughput_per_device_second": {
+          "estimate": 0.6600970271453596,
+          "lower": 0.6590014304198072,
+          "upper": 0.6606448255081359,
+          "unit": "reliable comparisons / device-second",
+          "interval": true
+        },
+        "reliable_throughput_per_busy_hour": {
+          "estimate": 2378.321371829289,
+          "lower": 2374.373950465257,
+          "upper": 2380.2950825113053,
+          "unit": "reliable comparisons / busy device-hour",
+          "interval": true
+        },
+        "error_p95": {
+          "estimate": 0.0012032878115499587,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "error_max": {
+          "estimate": 0.002103349122037579,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "sync_error_p95": {
+          "estimate": 5.365887363983912e-06,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "sync_error_max": {
+          "estimate": 1.0608004490708645e-05,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "separation_p95": {
+          "estimate": 0.7568363221726031,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "separation_max": {
+          "estimate": 0.7568363221762411,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "waiting_p95": {
+          "estimate": 5.927285166370892,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "waiting_max": {
+          "estimate": 6.88726028817473,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "idle_slots": {
+          "estimate": 8.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "executed_shots": {
+          "estimate": 9640.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "unexecuted_shots": {
+          "estimate": 8.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "total_slots": {
+          "estimate": 9648.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "budget_seconds": {
+          "estimate": 7301.956836322171,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "busy_seconds": {
+          "estimate": 7295.902145744789,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "slot_seconds": {
+          "estimate": 0.7568363221726959,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        }
+      },
+      "drift-aware": {
+        "error_mean": {
+          "estimate": 0.0002920043540288786,
+          "lower": 0.00021780145358876277,
+          "upper": 0.0003574496636110755,
+          "unit": "probability",
+          "interval": true
+        },
+        "error_median": {
+          "estimate": 0.00012259451499638252,
+          "lower": 7.542923795856999e-05,
+          "upper": 0.00017332135137061163,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_mean": {
+          "estimate": 1.8850813086465554e-06,
+          "lower": 1.4299770890162074e-06,
+          "upper": 2.279878344640476e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_median": {
+          "estimate": 1.1592638839985625e-06,
+          "lower": 6.731968958145763e-07,
+          "upper": 1.3565880557162013e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "separation_mean": {
+          "estimate": 0.7568363221726951,
+          "lower": 0.7568363221726876,
+          "upper": 0.7568363221727014,
+          "unit": "s",
+          "interval": true
+        },
+        "separation_median": {
+          "estimate": 0.7568363221726031,
+          "lower": 0.7568363221726031,
+          "upper": 0.7568363221726031,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_mean": {
+          "estimate": 3.639482930001895,
+          "lower": 3.5754186816676152,
+          "upper": 3.708523293988966,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_median": {
+          "estimate": 2.8002695138366107,
+          "lower": 2.7542097284145712,
+          "upper": 2.831284337100442,
+          "unit": "s",
+          "interval": true
+        },
+        "completed_comparisons": {
+          "estimate": 4820.0,
+          "lower": 4812.0,
+          "upper": 4824.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "completion_rate": {
+          "estimate": 0.9991708126036484,
+          "lower": 0.9975124378109452,
+          "upper": 1.0,
+          "unit": "fraction",
+          "interval": true
+        },
+        "reliable_comparisons": {
+          "estimate": 4820.0,
+          "lower": 4812.0,
+          "upper": 4824.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "reliable_throughput_per_device_hour": {
+          "estimate": 2376.3492977232945,
+          "lower": 2372.4051495113054,
+          "upper": 2378.3213718292886,
+          "unit": "reliable comparisons / device-hour",
+          "interval": true
+        },
+        "reliable_throughput_per_device_second": {
+          "estimate": 0.6600970271453596,
+          "lower": 0.6590014304198072,
+          "upper": 0.6606448255081359,
+          "unit": "reliable comparisons / device-second",
+          "interval": true
+        },
+        "reliable_throughput_per_busy_hour": {
+          "estimate": 2378.321371829289,
+          "lower": 2374.373950465257,
+          "upper": 2380.2950825113053,
+          "unit": "reliable comparisons / busy device-hour",
+          "interval": true
+        },
+        "error_p95": {
+          "estimate": 0.0011943574766247163,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "error_max": {
+          "estimate": 0.002103349122037579,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "sync_error_p95": {
+          "estimate": 5.365529164952365e-06,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "sync_error_max": {
+          "estimate": 1.0607929529116156e-05,
+          "lower": null,
+          "upper": null,
+          "unit": "probability",
+          "interval": false
+        },
+        "separation_p95": {
+          "estimate": 0.7568363221726031,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "separation_max": {
+          "estimate": 0.7568363221762411,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "waiting_p95": {
+          "estimate": 5.383628070905244,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "waiting_max": {
+          "estimate": 37.8196952420476,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "idle_slots": {
+          "estimate": 8.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "executed_shots": {
+          "estimate": 9640.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "unexecuted_shots": {
+          "estimate": 8.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "total_slots": {
+          "estimate": 9648.0,
+          "lower": null,
+          "upper": null,
+          "unit": "count",
+          "interval": false
+        },
+        "budget_seconds": {
+          "estimate": 7301.956836322171,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "busy_seconds": {
+          "estimate": 7295.902145744789,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        },
+        "slot_seconds": {
+          "estimate": 0.7568363221726959,
+          "lower": null,
+          "upper": null,
+          "unit": "s",
+          "interval": false
+        }
+      }
+    },
+    "paired_differences": {
+      "consecutive-pair - arrival-order": {
+        "error_mean": {
+          "estimate": -2.2176218448599974e-08,
+          "lower": -1.6639918707227086e-07,
+          "upper": 1.250013696723561e-07,
+          "unit": "probability",
+          "interval": true
+        },
+        "error_median": {
+          "estimate": -7.658857960890497e-07,
+          "lower": -1.0225003339588136e-06,
+          "upper": 9.074799053945812e-07,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_mean": {
+          "estimate": -3.8378925499328095e-06,
+          "lower": -4.6407829336761054e-06,
+          "upper": -2.914598101635189e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "separation_mean": {
+          "estimate": -1.3048360658205573,
+          "lower": -1.3063762452132996,
+          "upper": -1.3032658659820238,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_mean": {
+          "estimate": 0.44263933448233095,
+          "lower": 0.3263277091108451,
+          "upper": 0.5663024050456097,
+          "unit": "s",
+          "interval": true
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "reliable_throughput_per_device_hour": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "unit": "reliable comparisons / device-hour",
+          "interval": true
+        }
+      },
+      "drift-aware - arrival-order": {
+        "error_mean": {
+          "estimate": 3.420791493954434e-08,
+          "lower": -3.0525233702533896e-07,
+          "upper": 3.5901143760950724e-07,
+          "unit": "probability",
+          "interval": true
+        },
+        "error_median": {
+          "estimate": 4.387795347893242e-07,
+          "lower": -1.8205634608810246e-06,
+          "upper": 1.6976983889416247e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_mean": {
+          "estimate": -3.838319812280165e-06,
+          "lower": -4.641090156193273e-06,
+          "upper": -2.9153525489406444e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "separation_mean": {
+          "estimate": -1.3048360658205573,
+          "lower": -1.3063762452132996,
+          "upper": -1.303265865982024,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_mean": {
+          "estimate": 0.44263933448233095,
+          "lower": 0.3244643167078838,
+          "upper": 0.5634647204327716,
+          "unit": "s",
+          "interval": true
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "reliable_throughput_per_device_hour": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "unit": "reliable comparisons / device-hour",
+          "interval": true
+        }
+      },
+      "drift-aware - consecutive-pair": {
+        "error_mean": {
+          "estimate": 5.6384133388144315e-08,
+          "lower": -2.522190471446978e-07,
+          "upper": 3.4166203218381596e-07,
+          "unit": "probability",
+          "interval": true
+        },
+        "error_median": {
+          "estimate": 1.204665330878374e-06,
+          "lower": -2.1668601844521122e-06,
+          "upper": 2.072761853000311e-06,
+          "unit": "probability",
+          "interval": true
+        },
+        "sync_error_mean": {
+          "estimate": -4.2726234735553786e-10,
+          "lower": -8.588023733614946e-10,
+          "upper": 1.3796548702697591e-11,
+          "unit": "probability",
+          "interval": true
+        },
+        "separation_mean": {
+          "estimate": 0.0,
+          "lower": -1.5543122344752192e-15,
+          "upper": 1.5543122344752192e-15,
+          "unit": "s",
+          "interval": true
+        },
+        "waiting_mean": {
+          "estimate": 0.0,
+          "lower": -0.01788580654135573,
+          "upper": 0.016630317195336843,
+          "unit": "s",
+          "interval": true
+        },
+        "completed_comparisons": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "unit": "comparisons",
+          "interval": true
+        },
+        "reliable_throughput_per_device_hour": {
+          "estimate": 0.0,
+          "lower": 0.0,
+          "upper": 0.0,
+          "unit": "reliable comparisons / device-hour",
+          "interval": true
+        }
+      }
+    }
+  },
+  "stress_scenarios": [
+    {
+      "label": "synthetic stress: drift x10 faster",
+      "kind": "synthetic-stress",
+      "drift_rate_factor": 10.0,
+      "policies": {
+        "arrival-order": {
+          "error_mean": {
+            "estimate": 0.003833624296078254,
+            "lower": 0.0030931583699300813,
+            "upper": 0.004626133898867331,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 0.001469534604315842,
+            "lower": 0.0011213818734380676,
+            "upper": 0.001927433773876598,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": 7.71430231560578e-05,
+            "lower": 6.189606270248241e-05,
+            "upper": 9.330020593057286e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_median": {
+            "estimate": 3.22478947239746e-05,
+            "lower": 2.5063406401745065e-05,
+            "upper": 4.1696892723133706e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 2.0616723879932524,
+            "lower": 2.0601021881547177,
+            "upper": 2.063212567385995,
+            "unit": "s",
+            "interval": true
+          },
+          "separation_median": {
+            "estimate": 2.2705089665178093,
+            "lower": 2.2705089665178093,
+            "upper": 2.2705089665178093,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 3.196843595519564,
+            "lower": 3.1286632644272805,
+            "upper": 3.2641030025801254,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_median": {
+            "estimate": 3.1830569088833727,
+            "lower": 3.1300514408642357,
+            "upper": 3.2472715611065723,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "completion_rate": {
+            "estimate": 0.9991708126036484,
+            "lower": 0.9975124378109452,
+            "upper": 1.0,
+            "unit": "fraction",
+            "interval": true
+          },
+          "reliable_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 2376.3492977232945,
+            "lower": 2372.4051495113054,
+            "upper": 2378.3213718292886,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          },
+          "reliable_throughput_per_device_second": {
+            "estimate": 0.6600970271453596,
+            "lower": 0.6590014304198072,
+            "upper": 0.6606448255081359,
+            "unit": "reliable comparisons / device-second",
+            "interval": true
+          },
+          "reliable_throughput_per_busy_hour": {
+            "estimate": 2378.074683584104,
+            "lower": 2374.127671661143,
+            "upper": 2380.0481895455846,
+            "unit": "reliable comparisons / busy device-hour",
+            "interval": true
+          },
+          "error_p95": {
+            "estimate": 0.016016272198961123,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "error_max": {
+            "estimate": 0.036540406003779224,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_p95": {
+            "estimate": 0.000308248267591596,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_max": {
+            "estimate": 0.0006003011485910537,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "separation_p95": {
+            "estimate": 3.7841816108630155,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "separation_max": {
+            "estimate": 4.541017933039257,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_p95": {
+            "estimate": 5.492205867109258,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_max": {
+            "estimate": 6.4758370477902645,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "idle_slots": {
+            "estimate": 7.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "executed_shots": {
+            "estimate": 9641.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "unexecuted_shots": {
+            "estimate": 7.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "total_slots": {
+            "estimate": 9648.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "budget_seconds": {
+            "estimate": 7301.956836322171,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "busy_seconds": {
+            "estimate": 7296.6589820669615,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "slot_seconds": {
+            "estimate": 0.7568363221726959,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          }
+        },
+        "consecutive-pair": {
+          "error_mean": {
+            "estimate": 0.0038319825539534355,
+            "lower": 0.0030909455494312053,
+            "upper": 0.004624086751913849,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 0.0014713200119727265,
+            "lower": 0.001124370869624319,
+            "upper": 0.001927956242211981,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": 2.5430575782862844e-05,
+            "lower": 2.040495269656131e-05,
+            "upper": 3.0762489653760715e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_median": {
+            "estimate": 1.2603725482035477e-05,
+            "lower": 1.0740728076241714e-05,
+            "upper": 1.739076779553524e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 0.7568363221726951,
+            "lower": 0.7568363221726876,
+            "upper": 0.7568363221727014,
+            "unit": "s",
+            "interval": true
+          },
+          "separation_median": {
+            "estimate": 0.7568363221726031,
+            "lower": 0.7568363221726031,
+            "upper": 0.7568363221726031,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 3.639482930001895,
+            "lower": 3.5763204860054656,
+            "upper": 3.7062785966080396,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_median": {
+            "estimate": 3.646138695969057,
+            "lower": 3.5765211983015432,
+            "upper": 3.7180877474871976,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "completion_rate": {
+            "estimate": 0.9991708126036484,
+            "lower": 0.9975124378109452,
+            "upper": 1.0,
+            "unit": "fraction",
+            "interval": true
+          },
+          "reliable_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 2376.3492977232945,
+            "lower": 2372.4051495113054,
+            "upper": 2378.3213718292886,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          },
+          "reliable_throughput_per_device_second": {
+            "estimate": 0.6600970271453596,
+            "lower": 0.6590014304198072,
+            "upper": 0.6606448255081359,
+            "unit": "reliable comparisons / device-second",
+            "interval": true
+          },
+          "reliable_throughput_per_busy_hour": {
+            "estimate": 2378.321371829289,
+            "lower": 2374.373950465257,
+            "upper": 2380.2950825113053,
+            "unit": "reliable comparisons / busy device-hour",
+            "interval": true
+          },
+          "error_p95": {
+            "estimate": 0.016025909359188045,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "error_max": {
+            "estimate": 0.036459477076625335,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_p95": {
+            "estimate": 9.515202120122803e-05,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_max": {
+            "estimate": 0.00019818722397046962,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "separation_p95": {
+            "estimate": 0.7568363221726031,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "separation_max": {
+            "estimate": 0.7568363221762411,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_p95": {
+            "estimate": 5.927285166370892,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_max": {
+            "estimate": 6.88726028817473,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "idle_slots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "executed_shots": {
+            "estimate": 9640.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "unexecuted_shots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "total_slots": {
+            "estimate": 9648.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "budget_seconds": {
+            "estimate": 7301.956836322171,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "busy_seconds": {
+            "estimate": 7295.902145744789,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "slot_seconds": {
+            "estimate": 0.7568363221726959,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          }
+        },
+        "drift-aware": {
+          "error_mean": {
+            "estimate": 0.0038306621081590233,
+            "lower": 0.003091352414491488,
+            "upper": 0.004623243862515006,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 0.0014812761184430367,
+            "lower": 0.0011106279752541026,
+            "upper": 0.0019393496388970964,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": 2.5415808809485017e-05,
+            "lower": 2.0406035267524463e-05,
+            "upper": 3.0767550704742556e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_median": {
+            "estimate": 1.2602174884412953e-05,
+            "lower": 1.0725334125812753e-05,
+            "upper": 1.7288117309795217e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 0.7568363221726951,
+            "lower": 0.7568363221726876,
+            "upper": 0.7568363221727014,
+            "unit": "s",
+            "interval": true
+          },
+          "separation_median": {
+            "estimate": 0.7568363221726031,
+            "lower": 0.7568363221726031,
+            "upper": 0.7568363221726031,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 3.639482930001895,
+            "lower": 3.5754186816676152,
+            "upper": 3.708523293988966,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_median": {
+            "estimate": 2.8002695138366107,
+            "lower": 2.7542097284145712,
+            "upper": 2.831284337100442,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "completion_rate": {
+            "estimate": 0.9991708126036484,
+            "lower": 0.9975124378109452,
+            "upper": 1.0,
+            "unit": "fraction",
+            "interval": true
+          },
+          "reliable_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 2376.3492977232945,
+            "lower": 2372.4051495113054,
+            "upper": 2378.3213718292886,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          },
+          "reliable_throughput_per_device_second": {
+            "estimate": 0.6600970271453596,
+            "lower": 0.6590014304198072,
+            "upper": 0.6606448255081359,
+            "unit": "reliable comparisons / device-second",
+            "interval": true
+          },
+          "reliable_throughput_per_busy_hour": {
+            "estimate": 2378.321371829289,
+            "lower": 2374.373950465257,
+            "upper": 2380.2950825113053,
+            "unit": "reliable comparisons / busy device-hour",
+            "interval": true
+          },
+          "error_p95": {
+            "estimate": 0.016016597384639435,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "error_max": {
+            "estimate": 0.037016873944985706,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_p95": {
+            "estimate": 9.511607310689065e-05,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_max": {
+            "estimate": 0.00019819101179519016,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "separation_p95": {
+            "estimate": 0.7568363221726031,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "separation_max": {
+            "estimate": 0.7568363221762411,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_p95": {
+            "estimate": 5.383628070905244,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_max": {
+            "estimate": 37.8196952420476,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "idle_slots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "executed_shots": {
+            "estimate": 9640.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "unexecuted_shots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "total_slots": {
+            "estimate": 9648.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "budget_seconds": {
+            "estimate": 7301.956836322171,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "busy_seconds": {
+            "estimate": 7295.902145744789,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "slot_seconds": {
+            "estimate": 0.7568363221726959,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          }
+        }
+      },
+      "paired_differences": {
+        "consecutive-pair - arrival-order": {
+          "error_mean": {
+            "estimate": -1.6417421248183378e-06,
+            "lower": -3.571232947091639e-06,
+            "upper": 1.0484255406826766e-07,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 1.7854076568846189e-06,
+            "lower": -1.280679510951495e-05,
+            "upper": 9.59286104698086e-06,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": -5.171244737319496e-05,
+            "lower": -6.254906366260607e-05,
+            "upper": -4.1471427230033004e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": -1.3048360658205573,
+            "lower": -1.3063762452132996,
+            "upper": -1.3032658659820238,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 0.44263933448233095,
+            "lower": 0.3263277091108451,
+            "upper": 0.5663024050456097,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          }
+        },
+        "drift-aware - arrival-order": {
+          "error_mean": {
+            "estimate": -2.9621879192305405e-06,
+            "lower": -9.68511929145949e-06,
+            "upper": 3.4590634998609775e-06,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 1.1741514127194819e-05,
+            "lower": -1.651577716222096e-05,
+            "upper": 2.687197843997329e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": -5.172721434657279e-05,
+            "lower": -6.253350398243833e-05,
+            "upper": -4.1463987609371676e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": -1.3048360658205573,
+            "lower": -1.3063762452132996,
+            "upper": -1.303265865982024,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 0.44263933448233095,
+            "lower": 0.3244643167078838,
+            "upper": 0.5634647204327716,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          }
+        },
+        "drift-aware - consecutive-pair": {
+          "error_mean": {
+            "estimate": -1.3204457944122026e-06,
+            "lower": -7.728519105599302e-06,
+            "upper": 4.5470032577679795e-06,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 9.9561064703102e-06,
+            "lower": -1.661889932398282e-05,
+            "upper": 3.300101887230702e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": -1.4766973377827302e-08,
+            "lower": -5.246325307102634e-08,
+            "upper": 2.121208355367431e-08,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 0.0,
+            "lower": -1.5543122344752192e-15,
+            "upper": 1.5543122344752192e-15,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 0.0,
+            "lower": -0.01788580654135573,
+            "upper": 0.016630317195336843,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          }
+        }
+      }
+    },
+    {
+      "label": "synthetic stress: drift x100 faster",
+      "kind": "synthetic-stress",
+      "drift_rate_factor": 100.0,
+      "policies": {
+        "arrival-order": {
+          "error_mean": {
+            "estimate": 0.013509142200287252,
+            "lower": 0.011574164250706384,
+            "upper": 0.01578863405234841,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 0.005612188265919277,
+            "lower": 0.00474949581217704,
+            "upper": 0.006894304854397615,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": 0.0007449703882030711,
+            "lower": 0.0007194336571400401,
+            "upper": 0.0007706875759568633,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_median": {
+            "estimate": 0.0003048293066696961,
+            "lower": 0.00028812273372117445,
+            "upper": 0.00031928532849706396,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 2.0616723879932524,
+            "lower": 2.0601021881547177,
+            "upper": 2.063212567385995,
+            "unit": "s",
+            "interval": true
+          },
+          "separation_median": {
+            "estimate": 2.2705089665178093,
+            "lower": 2.2705089665178093,
+            "upper": 2.2705089665178093,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 3.196843595519564,
+            "lower": 3.1286632644272805,
+            "upper": 3.2641030025801254,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_median": {
+            "estimate": 3.1830569088833727,
+            "lower": 3.1300514408642357,
+            "upper": 3.2472715611065723,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "completion_rate": {
+            "estimate": 0.9991708126036484,
+            "lower": 0.9975124378109452,
+            "upper": 1.0,
+            "unit": "fraction",
+            "interval": true
+          },
+          "reliable_comparisons": {
+            "estimate": 4531.0,
+            "lower": 4416.975,
+            "upper": 4622.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 2233.8669435651964,
+            "lower": 2177.6505060811924,
+            "upper": 2278.7316294765697,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          },
+          "reliable_throughput_per_device_second": {
+            "estimate": 0.6205185954347768,
+            "lower": 0.6049029183558868,
+            "upper": 0.6329810081879361,
+            "unit": "reliable comparisons / device-second",
+            "interval": true
+          },
+          "reliable_throughput_per_busy_hour": {
+            "estimate": 2235.488877867132,
+            "lower": 2179.231623552676,
+            "upper": 2280.386138490815,
+            "unit": "reliable comparisons / busy device-hour",
+            "interval": true
+          },
+          "error_p95": {
+            "estimate": 0.055987612151197456,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "error_max": {
+            "estimate": 0.10134979733948024,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_p95": {
+            "estimate": 0.002922246751366731,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_max": {
+            "estimate": 0.005999458658043133,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "separation_p95": {
+            "estimate": 3.7841816108630155,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "separation_max": {
+            "estimate": 4.541017933039257,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_p95": {
+            "estimate": 5.492205867109258,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_max": {
+            "estimate": 6.4758370477902645,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "idle_slots": {
+            "estimate": 7.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "executed_shots": {
+            "estimate": 9641.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "unexecuted_shots": {
+            "estimate": 7.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "total_slots": {
+            "estimate": 9648.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "budget_seconds": {
+            "estimate": 7301.956836322171,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "busy_seconds": {
+            "estimate": 7296.6589820669615,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "slot_seconds": {
+            "estimate": 0.7568363221726959,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          }
+        },
+        "consecutive-pair": {
+          "error_mean": {
+            "estimate": 0.013509480385418991,
+            "lower": 0.011577312610891321,
+            "upper": 0.015783278226243508,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 0.00564045243663866,
+            "lower": 0.004737667996393322,
+            "upper": 0.0068411399657780534,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": 0.00024630476717059434,
+            "lower": 0.00023776117779253792,
+            "upper": 0.0002547826068594863,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_median": {
+            "estimate": 0.0001235700485239799,
+            "lower": 0.0001205835539584553,
+            "upper": 0.00012562075272820605,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 0.7568363221726951,
+            "lower": 0.7568363221726876,
+            "upper": 0.7568363221727014,
+            "unit": "s",
+            "interval": true
+          },
+          "separation_median": {
+            "estimate": 0.7568363221726031,
+            "lower": 0.7568363221726031,
+            "upper": 0.7568363221726031,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 3.639482930001895,
+            "lower": 3.5763204860054656,
+            "upper": 3.7062785966080396,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_median": {
+            "estimate": 3.646138695969057,
+            "lower": 3.5765211983015432,
+            "upper": 3.7180877474871976,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "completion_rate": {
+            "estimate": 0.9991708126036484,
+            "lower": 0.9975124378109452,
+            "upper": 1.0,
+            "unit": "fraction",
+            "interval": true
+          },
+          "reliable_comparisons": {
+            "estimate": 4531.0,
+            "lower": 4415.0,
+            "upper": 4623.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 2233.8669435651964,
+            "lower": 2176.6767944913577,
+            "upper": 2279.2246480030685,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          },
+          "reliable_throughput_per_device_second": {
+            "estimate": 0.6205185954347768,
+            "lower": 0.6046324429142661,
+            "upper": 0.6331179577786302,
+            "unit": "reliable comparisons / device-second",
+            "interval": true
+          },
+          "reliable_throughput_per_busy_hour": {
+            "estimate": 2235.7207750536327,
+            "lower": 2178.4831652751686,
+            "upper": 2281.116120740001,
+            "unit": "reliable comparisons / busy device-hour",
+            "interval": true
+          },
+          "error_p95": {
+            "estimate": 0.055577355029313685,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "error_max": {
+            "estimate": 0.1011736394688848,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_p95": {
+            "estimate": 0.000926051421575047,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_max": {
+            "estimate": 0.0019818704916669816,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "separation_p95": {
+            "estimate": 0.7568363221726031,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "separation_max": {
+            "estimate": 0.7568363221762411,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_p95": {
+            "estimate": 5.927285166370892,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_max": {
+            "estimate": 6.88726028817473,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "idle_slots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "executed_shots": {
+            "estimate": 9640.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "unexecuted_shots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "total_slots": {
+            "estimate": 9648.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "budget_seconds": {
+            "estimate": 7301.956836322171,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "busy_seconds": {
+            "estimate": 7295.902145744789,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "slot_seconds": {
+            "estimate": 0.7568363221726959,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          }
+        },
+        "drift-aware": {
+          "error_mean": {
+            "estimate": 0.013507605023865596,
+            "lower": 0.011570064845744202,
+            "upper": 0.0157951056373105,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 0.005569933366842278,
+            "lower": 0.004733294429954471,
+            "upper": 0.006839448911087239,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": 0.00024684716173642847,
+            "lower": 0.0002384245971792917,
+            "upper": 0.00025536993146483276,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_median": {
+            "estimate": 0.00012362976600890918,
+            "lower": 0.00012077477585376029,
+            "upper": 0.0001260150179846563,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 0.7568363221726951,
+            "lower": 0.7568363221726876,
+            "upper": 0.7568363221727014,
+            "unit": "s",
+            "interval": true
+          },
+          "separation_median": {
+            "estimate": 0.7568363221726031,
+            "lower": 0.7568363221726031,
+            "upper": 0.7568363221726031,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 3.639482930001895,
+            "lower": 3.5754186816676152,
+            "upper": 3.708523293988966,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_median": {
+            "estimate": 2.8002695138366107,
+            "lower": 2.7542097284145712,
+            "upper": 2.831284337100442,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 4820.0,
+            "lower": 4812.0,
+            "upper": 4824.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "completion_rate": {
+            "estimate": 0.9991708126036484,
+            "lower": 0.9975124378109452,
+            "upper": 1.0,
+            "unit": "fraction",
+            "interval": true
+          },
+          "reliable_comparisons": {
+            "estimate": 4529.0,
+            "lower": 4410.0,
+            "upper": 4624.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 2232.880906512199,
+            "lower": 2174.2117018588647,
+            "upper": 2279.717666529567,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          },
+          "reliable_throughput_per_device_second": {
+            "estimate": 0.6202446962533887,
+            "lower": 0.6039476949607958,
+            "upper": 0.6332549073693242,
+            "unit": "reliable comparisons / device-second",
+            "interval": true
+          },
+          "reliable_throughput_per_busy_hour": {
+            "estimate": 2234.733919712625,
+            "lower": 2176.0160269226485,
+            "upper": 2281.609548410505,
+            "unit": "reliable comparisons / busy device-hour",
+            "interval": true
+          },
+          "error_p95": {
+            "estimate": 0.05536812872429972,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "error_max": {
+            "estimate": 0.10151350236508733,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_p95": {
+            "estimate": 0.0009192650533717373,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "sync_error_max": {
+            "estimate": 0.0019818955016981388,
+            "lower": null,
+            "upper": null,
+            "unit": "probability",
+            "interval": false
+          },
+          "separation_p95": {
+            "estimate": 0.7568363221726031,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "separation_max": {
+            "estimate": 0.7568363221762411,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_p95": {
+            "estimate": 5.383628070905244,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "waiting_max": {
+            "estimate": 37.8196952420476,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "idle_slots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "executed_shots": {
+            "estimate": 9640.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "unexecuted_shots": {
+            "estimate": 8.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "total_slots": {
+            "estimate": 9648.0,
+            "lower": null,
+            "upper": null,
+            "unit": "count",
+            "interval": false
+          },
+          "budget_seconds": {
+            "estimate": 7301.956836322171,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "busy_seconds": {
+            "estimate": 7295.902145744789,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          },
+          "slot_seconds": {
+            "estimate": 0.7568363221726959,
+            "lower": null,
+            "upper": null,
+            "unit": "s",
+            "interval": false
+          }
+        }
+      },
+      "paired_differences": {
+        "consecutive-pair - arrival-order": {
+          "error_mean": {
+            "estimate": 3.381851317388329e-07,
+            "lower": -8.240808804889925e-06,
+            "upper": 7.926018747452706e-06,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": 2.826417071938314e-05,
+            "lower": -9.337724057334321e-05,
+            "upper": 6.43830060395478e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": -0.0004986656210324768,
+            "lower": -0.0005157806017116464,
+            "upper": -0.00048151994733809254,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": -1.3048360658205573,
+            "lower": -1.3063762452132996,
+            "upper": -1.3032658659820238,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 0.44263933448233095,
+            "lower": 0.3263277091108451,
+            "upper": 0.5663024050456097,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": 0.0,
+            "lower": -1.4790555794957072,
+            "upper": 1.4790555794957072,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          }
+        },
+        "drift-aware - arrival-order": {
+          "error_mean": {
+            "estimate": -1.5371764216561695e-06,
+            "lower": -2.7940591861898897e-05,
+            "upper": 2.2572775909794643e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": -4.2254899076998864e-05,
+            "lower": -0.00013215301038336234,
+            "upper": 0.00012077029476186896,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": -0.0004981232264666426,
+            "lower": -0.0005153918989229745,
+            "upper": -0.00048101694303403657,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": -1.3048360658205573,
+            "lower": -1.3063762452132996,
+            "upper": -1.303265865982024,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 0.44263933448233095,
+            "lower": 0.3244643167078838,
+            "upper": 0.5634647204327716,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": -0.9860370529972897,
+            "lower": -5.423203791484411,
+            "upper": 3.4511296854902866,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          }
+        },
+        "drift-aware - consecutive-pair": {
+          "error_mean": {
+            "estimate": -1.8753615533950024e-06,
+            "lower": -2.8808908272309573e-05,
+            "upper": 2.521884309022409e-05,
+            "unit": "probability",
+            "interval": true
+          },
+          "error_median": {
+            "estimate": -7.0519069796382e-05,
+            "lower": -0.00013108674724739283,
+            "upper": 0.0001637420722193895,
+            "unit": "probability",
+            "interval": true
+          },
+          "sync_error_mean": {
+            "estimate": 5.423945658341298e-07,
+            "lower": -1.6882829845476367e-09,
+            "upper": 1.0618196649398607e-06,
+            "unit": "probability",
+            "interval": true
+          },
+          "separation_mean": {
+            "estimate": 0.0,
+            "lower": -1.5543122344752192e-15,
+            "upper": 1.5543122344752192e-15,
+            "unit": "s",
+            "interval": true
+          },
+          "waiting_mean": {
+            "estimate": 0.0,
+            "lower": -0.01788580654135573,
+            "upper": 0.016630317195336843,
+            "unit": "s",
+            "interval": true
+          },
+          "completed_comparisons": {
+            "estimate": 0.0,
+            "lower": 0.0,
+            "upper": 0.0,
+            "unit": "comparisons",
+            "interval": true
+          },
+          "reliable_throughput_per_device_hour": {
+            "estimate": -0.9860370529972897,
+            "lower": -5.423203791484866,
+            "upper": 3.944148211989159,
+            "unit": "reliable comparisons / device-hour",
+            "interval": true
+          }
+        }
+      }
+    }
+  ],
+  "fairness_audit": {
+    "all_passed": true,
+    "checks": [
+      {
+        "name": "same_source_shots_and_measurement_budget",
+        "passed": true,
+        "detail": "every policy saw exactly the same 9648 shots (one shot per slot)"
+      },
+      {
+        "name": "same_workload_and_eligible_pairs",
+        "passed": true,
+        "detail": "4824 identical requests for all policies"
+      },
+      {
+        "name": "same_device_capacity_and_time_budget",
+        "passed": true,
+        "detail": "one slot grid (9648 slots x 0.7568363221726959 s)"
+      },
+      {
+        "name": "same_arrival_pattern_and_initial_queue",
+        "passed": true,
+        "detail": "all policies start at the first arrival with an empty queue and see identical arrival times"
+      },
+      {
+        "name": "same_reference_values_independent_of_scheduler",
+        "passed": true,
+        "detail": "Delta_reference is recomputed from the model and the request's arrival window only; identical for every policy"
+      },
+      {
+        "name": "same_simulated_drift_for_all_policies",
+        "passed": true,
+        "detail": "each policy's errors equal an independent recomputation with the one drift model"
+      },
+      {
+        "name": "only_comparable_pairs_scheduled",
+        "passed": true,
+        "detail": "29 Comparable pairs; 62 Not comparable excluded"
+      },
+      {
+        "name": "priorities_fresh_training_only_and_frozen",
+        "passed": true,
+        "detail": "priorities recalculated for this run from all 63041 training shots; one frozen mapping shared by the policies that use priorities"
+      },
+      {
+        "name": "no_holdout_in_model_or_priorities",
+        "passed": true,
+        "detail": "model fitted on observations up to 21919.8 s and priorities on shots up to 21919.8 s, both before the boundary 21920.355064249998 s"
+      }
+    ]
+  },
+  "limitations": [
+    "The drift is a model fitted on the training portion; it is not the real holdout drift.",
+    "Errors scale with circuit wait length; the Comparable pairs are the low-wait-length circuits, so errors are small.",
+    "Intervals exclude drift-model parameter uncertainty.",
+    "Stress scenarios multiply the drift rate synthetically and say nothing about the real device."
+  ],
+  "outputs": {
+    "results.json": "results\\qcs_three_policy_evaluation_v2\\results.json",
+    "policy_comparisons.csv": "results\\qcs_three_policy_evaluation_v2\\policy_comparisons.csv",
+    "comparison_errors.csv": "results\\qcs_three_policy_evaluation_v2\\comparison_errors.csv",
+    "queue_metrics.csv": "results\\qcs_three_policy_evaluation_v2\\queue_metrics.csv",
+    "reliability_metrics.csv": "results\\qcs_three_policy_evaluation_v2\\reliability_metrics.csv",
+    "fig1_comparison_error.png": "results\\qcs_three_policy_evaluation_v2\\fig1_comparison_error.png",
+    "fig2_measurement_separation.png": "results\\qcs_three_policy_evaluation_v2\\fig2_measurement_separation.png",
+    "fig3_waiting_time.png": "results\\qcs_three_policy_evaluation_v2\\fig3_waiting_time.png",
+    "fig4_reliable_throughput.png": "results\\qcs_three_policy_evaluation_v2\\fig4_reliable_throughput.png",
+    "fig5_policy_comparison.png": "results\\qcs_three_policy_evaluation_v2\\fig5_policy_comparison.png"
+  },
+  "csv_sha256": {
+    "policy_comparisons.csv": "1e1c9c8edc8b67005b967f773f0ded83f0bbb1dc2b767f4e9f72c85d3d2a9d3d",
+    "comparison_errors.csv": "4260df30dfb65c8830205830d5023d3536d4b153f79a78469873e10e4ce2d07c",
+    "queue_metrics.csv": "ca2e9ab8cea7665d46d08eb8b76d48081023cbdd4e1080143fb058a5f04f2f6b",
+    "reliability_metrics.csv": "67d57545f8e32ffefcbb3099457dcad9f853b7775384eeeea74c0a399aea723a"
+  }
+}

@@ -7,9 +7,11 @@ circuit pairs may be compared. **``reviewer_decision`` is the only eligibility a
 * ``Not comparable`` -> the pair is excluded and can never be scheduled.
 
 Any other value (missing, blank, misspelt) is rejected when the registry is loaded; it is
-never read as ``Comparable``. ``compatibility_status`` and ``empirical_test`` are retained
-as informational provenance only and cannot make an excluded pair eligible (or an eligible
-pair excluded). Drift diagnostics never change a decision; they only order eligible pairs.
+never read as ``Comparable``. ``compatibility_status`` and ``empirical_test`` are OPTIONAL,
+informational provenance: a registry loads without them, an unfamiliar ``compatibility_status``
+is kept as ``None`` instead of rejecting the row, and neither can make an excluded pair eligible
+(or an eligible pair excluded). Drift diagnostics never change a decision; they only order
+eligible pairs.
 """
 
 import csv
@@ -26,7 +28,6 @@ REQUIRED_COLUMNS: Tuple[str, ...] = (
     "pair_id",
     "circuit_a",
     "circuit_b",
-    "compatibility_status",
     "evidence_found",
     "evidence_summary",
     "missing_information",
@@ -35,6 +36,9 @@ REQUIRED_COLUMNS: Tuple[str, ...] = (
     "reviewer_decision",
 )
 
+#: Informational columns: they may be absent, blank or unfamiliar without invalidating the registry.
+OPTIONAL_COLUMNS: Tuple[str, ...] = ("compatibility_status", "empirical_test")
+
 #: Wait lengths k of the Ramsey circuits ``Gx(Gw)^kGy`` in the shipped dataset.
 RAMSEY_WAIT_LENGTHS: Tuple[int, ...] = (1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192)
 EXPECTED_CIRCUIT_COUNT = len(RAMSEY_WAIT_LENGTHS)
@@ -42,7 +46,7 @@ EXPECTED_PAIR_COUNT = EXPECTED_CIRCUIT_COUNT * (EXPECTED_CIRCUIT_COUNT - 1) // 2
 
 
 class CompatibilityStatus(str, Enum):
-    """Authoritative compatibility labels."""
+    """Informational compatibility labels (they never decide eligibility)."""
 
     COMPATIBLE = "compatible"
     CONDITIONALLY_COMPATIBLE = "conditionally_compatible"
@@ -70,6 +74,16 @@ class ReviewerDecision(str, Enum):
         raise ValueError(f"unrecognised reviewer_decision {raw!r} (expected one of: {valid})")
 
 
+def parse_status(raw: Optional[str]) -> Optional[CompatibilityStatus]:
+    """Informational status of a registry cell: the matching label, or ``None`` if the cell is
+    missing, blank or unfamiliar. Never raises: this field cannot invalidate a row."""
+    text = (raw or "").strip().casefold()
+    for member in CompatibilityStatus:
+        if text == member.value.casefold():
+            return member
+    return None
+
+
 class CompatibilityError(ValueError):
     """Raised when a registry file is malformed or fails validation."""
 
@@ -85,14 +99,14 @@ class UnknownPairError(KeyError):
 class CompatibilityPair:
     """One immutable registry entry, with its evidence and provenance fields.
 
-    ``status`` and ``empirical_test`` are informational; eligibility comes only from
-    ``reviewer_decision`` (see ``is_eligible``).
+    ``status`` (``None`` when absent or unfamiliar) and ``empirical_test`` are informational;
+    eligibility comes only from ``reviewer_decision`` (see ``is_eligible``).
     """
 
     pair_id: int
     circuit_a: str
     circuit_b: str
-    status: CompatibilityStatus
+    status: Optional[CompatibilityStatus]
     evidence_found: bool
     evidence_summary: str
     missing_information: str
@@ -108,6 +122,7 @@ class CompatibilityPair:
         except ValueError as exc:
             raise CompatibilityError(f"pair_id {self.pair_id}: {exc}") from None
         object.__setattr__(self, "reviewer_decision", decision)
+        object.__setattr__(self, "status", parse_status(self.status))  # informational: never rejects
 
     @property
     def is_eligible(self) -> bool:
@@ -193,8 +208,8 @@ class CompatibilityRegistry:
                 f"No compatibility entry for pair ({circuit_a!r}, {circuit_b!r})"
             ) from None
 
-    def get_status(self, circuit_a: str, circuit_b: str) -> CompatibilityStatus:
-        """Informational ``compatibility_status``; it never decides eligibility."""
+    def get_status(self, circuit_a: str, circuit_b: str) -> Optional[CompatibilityStatus]:
+        """Informational ``compatibility_status`` (``None`` if absent); it never decides eligibility."""
         return self.get_pair(circuit_a, circuit_b).status
 
     def get_decision(self, circuit_a: str, circuit_b: str) -> ReviewerDecision:
@@ -262,14 +277,7 @@ def _parse_row(row: Dict[str, Optional[str]], line: int) -> CompatibilityPair:
     for col in ("circuit_a", "circuit_b"):
         if not fields[col]:
             raise CompatibilityError(f"line {line}: blank {col}")
-    try:
-        status = CompatibilityStatus(fields["compatibility_status"])
-    except ValueError:
-        valid = ", ".join(s.value for s in CompatibilityStatus)
-        raise CompatibilityError(
-            f"line {line}: invalid compatibility_status {fields['compatibility_status']!r} "
-            f"(expected one of: {valid})"
-        ) from None
+    status = parse_status(fields.get("compatibility_status"))  # optional and informational
 
     return CompatibilityPair(
         pair_id=pair_id,
