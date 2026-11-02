@@ -17,7 +17,7 @@ quantum-drift-scheduler/
 ├── README.md                      # Project documentation and setup guide
 ├── requirements.txt               # Direct project dependencies (pytest, etc.)
 ├── pyproject.toml                 # Packaging, metadata, and pytest configuration
-├── .gitignore                     # Git ignore rules for Python artifacts and caches
+├── .gitignore                     # Ignores caches, derived data and bulky generated results
 ├── data/
 │   ├── README.md                  # Dataset documentation & layout notes
 │   ├── dataset.txt                # Raw experimental observations
@@ -64,8 +64,15 @@ quantum-drift-scheduler/
 └── scripts/
     ├── inspect_dataset.py         # Dataset inspection and summary CLI tool
     ├── run_scheduler_replay.py    # Baseline slot-based replay CLI
-    └── run_holdout_evaluation.py  # Holdout learning + three-policy evaluation CLI
+    ├── run_holdout_evaluation.py  # Holdout learning + three-policy evaluation CLI
+    ├── run_full_evaluation.py     # QCS drift-model evaluation
+    ├── run_priority_analysis.py   # Standalone priority analysis
+    ├── run_three_policy_evaluation.py # Three-policy QCS evaluation
+    ├── diagnose_drift_model.py    # Observational diagnosis of the holdout prediction failure
+    └── run_deployment_validation.py # Training-only chronological forecast validation
 ```
+
+`src/quantum_drift_scheduler/modeling/` holds the QCS model code, including `diagnostics.py` and `deployment_validation.py`. `results/` is written by the scripts above; see section 13 for what is tracked.
 
 ---
 
@@ -313,3 +320,18 @@ python scripts/run_three_policy_evaluation.py     # 2. the experiment (results/q
 ```
 
 An existing results directory is never overwritten: pass a new `--output-dir`, or `--overwrite` deliberately. `python -m pytest tests -m "not real_data"` runs every test that does not execute the real dataset.
+
+---
+
+## 13. Drift-model diagnosis and deployment-faithful validation
+
+Two training-only studies explain why the drift model does not forecast the holdout, without touching the holdout for any fitting or selection.
+
+```powershell
+python scripts/diagnose_drift_model.py          # results/drift_model_diagnostics/ (observational)
+python scripts/run_deployment_validation.py     # results/deployment_validation/  (~80 s)
+```
+
+The validation fits on an earlier interval (basis span from that interval alone) and forecasts the next one, for the DCT-like model, a last-value hold, a per-circuit constant and p = 0.5, over 4 folds (9 in a sensitivity design). Result: neither drift forecast beats both baselines, in any subset, so no forecasting skill is claimed. Read `results/deployment_validation/deployment_validation_report.md`. The final holdout remains reserved for one pre-registered evaluation.
+
+**What is tracked in git.** Generated outputs under `results/` are reproducible from the scripts and are git-ignored, except the written reports (`*.md`) and JSON summaries (`summary.json`, `results.json`, `diagnostic_summary.json`). Run the scripts to regenerate the CSVs and plots. `data/derived/` is also ignored.

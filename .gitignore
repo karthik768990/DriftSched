@@ -13,3 +13,17 @@ htmlcov/
 *.log
 .vscode
 data/derived/
+
+# Generated experiment outputs are reproducible from the scripts; keep only the written reports and JSON summaries
+results/**
+!results/*/
+!results/**/*.md
+!results/**/summary.json
+!results/**/results.json
+!results/**/diagnostic_summary.json
+
+# Local tooling / OS
+.claude/
+.DS_Store
+Thumbs.db
+*.tmp
