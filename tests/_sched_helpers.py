@@ -7,6 +7,7 @@ from quantum_drift_scheduler.data.compatibility import (
     CompatibilityPair,
     CompatibilityRegistry,
     CompatibilityStatus,
+    ReviewerDecision,
 )
 from quantum_drift_scheduler.scheduling import ShotArrival
 
@@ -23,13 +24,21 @@ def label(circuit: CircuitRef) -> str:
 def make_registry(
     circuits: Sequence[CircuitRef] = ("A", "B", "C"),
     overrides: Optional[Dict[Tuple[CircuitRef, CircuitRef], CompatibilityStatus]] = None,
+    not_comparable: Iterable[Tuple[CircuitRef, CircuitRef]] = (),
 ) -> CompatibilityRegistry:
-    """Registry over all unordered pairs of ``circuits``; ``overrides`` set other statuses."""
+    """Registry over all unordered pairs of ``circuits``.
+
+    Every pair is ``reviewer_decision = Comparable`` except those listed in ``not_comparable``.
+    ``overrides`` set only the *informational* ``compatibility_status`` column, which must
+    never change eligibility.
+    """
     names = [label(c) for c in circuits]
     overrides = {(label(a), label(b)): v for (a, b), v in (overrides or {}).items()}
+    excluded = {frozenset((label(a), label(b))) for a, b in not_comparable}
     pairs = []
     for i, (a, b) in enumerate(combinations(names, 2), start=1):
         status = overrides.get((a, b), overrides.get((b, a), CompatibilityStatus.COMPATIBLE))
+        decision = ReviewerDecision.NOT_COMPARABLE if frozenset((a, b)) in excluded else ReviewerDecision.COMPARABLE
         pairs.append(
             CompatibilityPair(
                 pair_id=i,
@@ -41,7 +50,7 @@ def make_registry(
                 missing_information="",
                 rationale="synthetic",
                 source_reference="tests",
-                reviewer_decision="Comparable",
+                reviewer_decision=decision,
             )
         )
     return CompatibilityRegistry(pairs)

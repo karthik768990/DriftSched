@@ -65,7 +65,7 @@ from quantum_drift_scheduler.modeling.policy_evaluation import (
     training_block_length,
 )
 from quantum_drift_scheduler.modeling.ramsey_model import DctBasis, RamseyModel
-from quantum_drift_scheduler.scheduling import ShotArrival, build_pair_requests, load_recorded_trace, shot_round_indices
+from quantum_drift_scheduler.scheduling import ShotArrival, load_recorded_trace
 
 Progress = Optional[Callable[[str], None]]
 
@@ -149,6 +149,8 @@ def run_full_pipeline(
     obs_all = observations_from_shots(trace)
     say(f"loaded {len(obs_all)} observations")
 
+    # The drift model is a physical model of the device: it is fit on every circuit's training data.
+    # Reviewer eligibility only decides which comparisons are scheduled and scored (below).
     split = split_trace(trace, config.train_fraction, required_circuits=registry.circuits)
     train = observations_from_shots(split.train)
     origin = split.min_timestamp
@@ -199,7 +201,7 @@ def run_full_pipeline(
     )
     if scheduler.split.boundary != split.boundary:
         raise RuntimeError("Scheduler and model evaluations disagree on the split boundary")
-    requests = build_pair_requests(scheduler.split.holdout, registry, shot_round_indices(trace))
+    requests = scheduler.requests  # the exact workload every policy ran (reviewer-approved pairs only)
 
     block_length = training_block_length(
         split.train, registry, model, origin, config.window_seconds, len(requests)

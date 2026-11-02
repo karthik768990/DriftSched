@@ -1,12 +1,17 @@
 """Held-out replay evaluation: train priorities early, evaluate policies later.
 
-Pipeline::
+Pipeline (one call = one scheduler run)::
 
-    full trace -> chronological split -> learn priorities (training only) -> freeze
-              -> holdout shots only -> {arrival-order, consecutive-pair, drift-aware}
+    full trace -> chronological split -> eligible pairs (registry ``reviewer_decision``)
+              -> priorities recalculated NOW from the complete training portion -> freeze
+              -> holdout shots of reviewer-approved comparisons only
+              -> {arrival-order, consecutive-pair, drift-aware}
 
-All three policies receive the identical holdout shots, slot schedule, prebuilt
-pair-request workload, compatibility registry and frozen priority table. The results
+Eligibility comes only from ``reviewer_decision`` (``Comparable`` vs ``Not comparable``).
+Priorities are never cached: every call recomputes them for its own training portion and
+passes the immutable table straight to the drift-aware policy. All three policies receive
+the identical holdout shots, slot schedule, prebuilt pair-request workload, registry and
+frozen priority table. The results
 are held-out replay scheduling metrics on recorded outcomes; they are not
 counterfactual hardware predictions and the observed outcome difference is not a
 physical comparison error.
@@ -32,6 +37,7 @@ from quantum_drift_scheduler.analysis.priorities import (
 )
 from quantum_drift_scheduler.data.compatibility import CompatibilityRegistry
 from quantum_drift_scheduler.scheduling import (
+    SimulationError,
     DEFAULT_SLOTS_PER_SHOT,
     ArrivalOrderPolicy,
     ConsecutivePairPolicy,
@@ -40,11 +46,11 @@ from quantum_drift_scheduler.scheduling import (
     SimulationMetrics,
     SimulationResult,
     SlotSchedule,
-    build_pair_requests,
+    PairRequest,
     build_slot_schedule,
     compute_metrics,
+    prepare_scheduler_input,
     run_simulation,
-    shot_round_indices,
 )
 
 LIMITATION = (
@@ -75,15 +81,49 @@ class HoldoutEvaluation:
     unrequested_shots: int
     runs: Tuple[PolicyRun, ...]
     holdout_fingerprint: str
+    source_shots: Tuple[ShotArrival, ...] = ()
+    requests: Tuple[PairRequest, ...] = ()
+    eligible_pairs: Tuple[Tuple[str, str], ...] = ()
+    excluded_pair_count: int = 0
+    ineligible_circuit_shots: int = 0
 
     @property
     def leakage_check(self) -> str:
         return (
             "Priorities were learned from the "
             f"{self.priorities.metadata.train_shot_count} training shots only "
-            f"(all with arrival_time < boundary {self.split.boundary!r}); "
+            f"(all with arrival_time < boundary {self.split.boundary!r}) for the "
+            f"{len(self.eligible_pairs)} Comparable pairs only; "
             "no holdout shot was passed to priority learning."
         )
+
+
+def calculate_run_priorities(
+    train_shots: Sequence[ShotArrival],
+    registry: CompatibilityRegistry,
+    boundary: float,
+    window_origin: float,
+    train_fraction: float,
+    window_seconds: float,
+    min_valid_transitions: int = DEFAULT_MIN_VALID_TRANSITIONS,
+) -> PriorityTable:
+    """Calculate the priorities for ONE scheduler run, immediately before it starts.
+
+    Uses the run's complete training portion and only the pairs whose ``reviewer_decision``
+    is ``Comparable``. The table is verified against exactly those inputs, so a stale table
+    cannot slip through, and it is immutable for the rest of the run.
+    """
+    table = learn_pair_priorities(
+        train_shots,
+        registry,
+        boundary=boundary,
+        window_origin=window_origin,
+        train_fraction=train_fraction,
+        window_seconds=window_seconds,
+        min_valid_transitions=min_valid_transitions,
+    )
+    table.assert_matches(train_shots, registry)
+    return table
 
 
 def run_holdout_evaluation(
@@ -95,38 +135,39 @@ def run_holdout_evaluation(
     min_valid_transitions: int = DEFAULT_MIN_VALID_TRANSITIONS,
     input_source: Optional[str] = None,
 ) -> HoldoutEvaluation:
-    """Split, learn priorities from training only, and evaluate all three policies on holdout.
+    """One scheduler run: split, recalculate priorities from training, evaluate all policies on holdout.
 
     Raises:
         SplitError: invalid split parameters or insufficient partition data.
-        PriorityError / SimulationError: invalid priority learning or simulation input.
+        PriorityError / SimulationError: invalid priority learning, no eligible pairs, or
+            invalid simulation input.
     """
     validate_split_parameters(train_fraction, window_seconds)
-    split = split_trace(trace, train_fraction, required_circuits=registry.circuits)
+    eligible_circuits = registry.eligible_circuits()
+    if not eligible_circuits:
+        raise SimulationError("The registry has no 'Comparable' pairs; nothing can be scheduled")
+    # The chronological split is defined on the full trace (the existing split rule); eligibility
+    # only decides which circuits must have enough data and which shots are scheduled.
+    split = split_trace(trace, train_fraction, required_circuits=eligible_circuits)
 
-    priorities = learn_pair_priorities(
-        split.train,
-        registry,
-        boundary=split.boundary,
-        window_origin=split.min_timestamp,
-        train_fraction=train_fraction,
-        window_seconds=window_seconds,
-        min_valid_transitions=min_valid_transitions,
+    # Priorities: recalculated here, once, from the complete training portion; never read from disk.
+    priorities = calculate_run_priorities(
+        split.train, registry, split.boundary, split.min_timestamp, train_fraction, window_seconds,
+        min_valid_transitions,
     )
 
-    holdout = split.holdout
-    schedule = build_slot_schedule(holdout, slots_per_shot)
     # Round alignment comes from per-circuit shot order in the full trace; it uses no outcomes,
     # priorities or training data, and requests only link two holdout shots.
-    requests = build_pair_requests(holdout, registry, shot_round_indices(trace))
-    requested = {sid for r in requests for sid in r.shot_ids}
+    prepared = prepare_scheduler_input(split.holdout, registry, round_reference=trace)
+    source_shots, requests = prepared.source_shots, prepared.requests
+    schedule = build_slot_schedule(source_shots, slots_per_shot)
     source = input_source if input_source is not None else (trace[0].input_source if trace else "")
 
     policies = (ArrivalOrderPolicy(), ConsecutivePairPolicy(), DriftAwarePairPolicy(priorities))
     runs = []
     for policy in policies:
         result = run_simulation(
-            holdout, registry, policy, schedule=schedule, requests=requests, input_source=source
+            source_shots, registry, policy, schedule=schedule, requests=requests, input_source=source
         )
         runs.append(PolicyRun(result=result, metrics=compute_metrics(result)))
 
@@ -141,9 +182,14 @@ def run_holdout_evaluation(
         schedule=schedule,
         slots_per_shot=float(slots_per_shot),
         workload_requests=len(requests),
-        unrequested_shots=sum(1 for s in holdout if s.shot_id not in requested),
+        unrequested_shots=prepared.unrequested_shots,
         runs=tuple(runs),
-        holdout_fingerprint=training_fingerprint(holdout),
+        holdout_fingerprint=training_fingerprint(split.holdout),
+        source_shots=source_shots,
+        requests=requests,
+        eligible_pairs=tuple((p.circuit_a, p.circuit_b) for p in registry.eligible_pairs()),
+        excluded_pair_count=len(registry.excluded_pairs()),
+        ineligible_circuit_shots=prepared.ineligible_circuit_shots,
     )
 
 
@@ -167,6 +213,14 @@ def evaluation_to_dict(evaluation: HoldoutEvaluation) -> dict:
                 {"circuit": c, "train_shots": t, "holdout_shots": h} for c, t, h in split.circuit_counts()
             ],
             "holdout_fingerprint": evaluation.holdout_fingerprint,
+        },
+        "eligibility": {
+            "authority": "reviewer_decision",
+            "eligible_pairs": [list(p) for p in evaluation.eligible_pairs],
+            "excluded_pair_count": evaluation.excluded_pair_count,
+            "ineligible_circuit_shots_excluded": evaluation.ineligible_circuit_shots,
+            "unrequested_shots_excluded": evaluation.unrequested_shots,
+            "simulated_source_shots": len(evaluation.source_shots),
         },
         "schedule": {
             "start_time": evaluation.schedule.start_time,

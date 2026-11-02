@@ -52,6 +52,10 @@ def summarize(result) -> str:
         " QCS FULL EVALUATION  (recorded-timing replay scored by a model-based reference; not a QPU run)",
         "=" * 100,
         f"Split boundary: {result.split.boundary!r} s | train {len(result.split.train)} shots | holdout {len(result.split.holdout)} shots",
+        f"Eligibility (reviewer_decision): {len(result.scheduler.eligible_pairs)} Comparable pairs scheduled, "
+        f"{result.scheduler.excluded_pair_count} Not comparable excluded; "
+        f"{len(result.scheduler.source_shots)} holdout shots simulated "
+        f"({result.scheduler.ineligible_circuit_shots} ineligible-circuit + {result.scheduler.unrequested_shots} unrequested excluded)",
         f"Selected drift components K = {sel.selected_components}   ({sel.rule})",
         f"Training in-sample log loss {result.training_evaluation.log_loss:.4f} (constant baseline {result.baseline_training[0]:.4f})",
         f"HOLDOUT (frozen model, evaluated once): log loss {result.holdout_evaluation.log_loss:.4f}, "

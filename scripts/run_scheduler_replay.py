@@ -27,11 +27,13 @@ from quantum_drift_scheduler.scheduling import (
     SchedulingError,
     SimulationMetrics,
     SimulationResult,
+    build_slot_schedule,
     compute_metrics,
     format_metrics,
     load_custom_trace,
     load_recorded_trace,
     make_baseline_policy,
+    prepare_scheduler_input,
     run_simulation,
 )
 
@@ -153,8 +155,13 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     "(copy data/inputs/input.txt.example to create a custom input)"
                 )
             trace = load_custom_trace(args.input, registry)
+        # Only reviewer-approved (Comparable) pairs are scheduled; shots that cannot belong to one are
+        # excluded for every policy.
+        prepared = prepare_scheduler_input(trace, registry)
+        schedule = build_slot_schedule(prepared.source_shots, args.slots_per_shot)
         result = run_simulation(
-            trace, registry, make_baseline_policy(args.policy), slots_per_shot=args.slots_per_shot
+            prepared.source_shots, registry, make_baseline_policy(args.policy),
+            schedule=schedule, requests=prepared.requests, input_source=trace[0].input_source if trace else "",
         )
         metrics = compute_metrics(result)
         print(format_report(result, metrics))

@@ -22,7 +22,7 @@ quantum-drift-scheduler/
 │   ├── README.md                  # Dataset documentation & layout notes
 │   ├── dataset.txt                # Raw experimental observations
 │   ├── README.txt                 # Dataset origin documentation
-│   ├── compatibility_registry.csv # Authoritative 91-pair compatibility registry
+│   ├── compatibility_registry.csv # 91-pair registry; reviewer_decision decides eligibility
 │   ├── inputs/
 │   │   └── input.txt.example      # Example custom replay input
 │   └── 1_8.md                     # Research notes & project plan
@@ -156,25 +156,33 @@ Record & Observation Metrics:
 
 ## 6. Compatibility Registry
 
-`data/compatibility_registry.csv` is the single source of truth for which circuit pairs may be compared. It holds all 91 unordered pairs of the 14 Ramsey circuits, each with status `compatible` (researcher decision `Comparable`, based on circuit structure only). Allowed statuses are `compatible`, `conditionally_compatible` and `incompatible`. Drift diagnostics never change a status; they may only inform scheduling priority later. `docs/candidate_pairs.csv` is a historical pointer and is not read.
+`data/compatibility_registry.csv` lists all 91 unordered pairs of the 14 Ramsey circuits. **`reviewer_decision` is the only authority on eligibility:**
+
+| `reviewer_decision` | Meaning |
+|---|---|
+| `Comparable` | The pair is eligible for scheduling (currently 29 pairs). |
+| `Not comparable` | The pair is excluded and can never be scheduled (currently 62 pairs). |
+| anything else (blank, misspelt, missing column) | Rejected when the registry is loaded; it is never read as `Comparable`. |
+
+`compatibility_status` and `empirical_test` are kept as provenance only: they cannot make an excluded pair eligible or remove an eligible one. Drift diagnostics never change a decision; they only order the eligible pairs.
 
 ```python
 from quantum_drift_scheduler.data.compatibility import load_compatibility_registry
 
 registry = load_compatibility_registry()           # validates on load
-registry.is_compatible("Gx(Gw)Gy", "Gx(Gw)^2Gy")   # True (order does not matter)
-registry.get_status("Gx(Gw)^2Gy", "Gx(Gw)Gy")      # CompatibilityStatus.COMPATIBLE
-registry.get_pair("Gx(Gw)Gy", "Gx(Gw)^2Gy").source_reference
-len(registry.pairs_for("Gx(Gw)Gy"))                # 13
+registry.is_eligible("Gx(Gw)Gy", "Gx(Gw)^2Gy")      # True  (Comparable; order does not matter)
+registry.is_eligible("Gx(Gw)^8192Gy", "Gx(Gw)^4096Gy")  # False (Not comparable)
+len(registry.eligible_pairs()), len(registry.excluded_pairs())   # (29, 62)
+registry.eligible_circuits()                       # circuits that appear in at least one eligible pair
 ```
 
-Unknown pairs raise `UnknownPairError` and self-pairs raise `ValueError`; nothing defaults to compatible.
+Unknown pairs raise `UnknownPairError` and self-pairs raise `ValueError`; nothing defaults to eligible. `is_compatible` and `compatible_pairs` remain as aliases of `is_eligible` and `eligible_pairs`.
 
 ---
 
 ## 7. Recorded-trace scheduler replay
 
-A slot-based simulator replays recorded shots through a scheduling policy. The device executes **one logical shot per service slot**. A prebuilt, policy-independent workload of comparison requests (round-robin over the 14 Ramsey circuits, so all 91 pairs recur) defines which two shots are compared; only `compatible` pairs from `data/compatibility_registry.csv` can complete, and every shot is executed and consumed at most once. Details: `docs/scheduler_replay_design.md`.
+A slot-based simulator replays recorded shots through a scheduling policy. The device executes **one logical shot per service slot**. A prebuilt, policy-independent workload of comparison requests (round-robin over the circuits that appear in at least one `Comparable` pair) defines which two shots are compared; only pairs whose `reviewer_decision` is `Comparable` in `data/compatibility_registry.csv` can complete, and shots that cannot belong to such a pair are left out for every policy, and every shot is executed and consumed at most once. Details: `docs/scheduler_replay_design.md`.
 
 **Limitation:**
 
@@ -234,14 +242,14 @@ The report lists the input source, policy, slot budget, executed/unexecuted shot
 
 ## 8. Holdout evaluation and drift-aware scheduling
 
-Compatibility and priority are different. **Compatibility** is the researcher decision in the registry: all 91 pairs are `compatible`, and no drift score changes that. **Priority** only decides which compatible comparison to run first.
+Compatibility and priority are different. **Eligibility** is the researcher's `reviewer_decision` in the registry (`Comparable` or `Not comparable`), and no drift score changes that. **Priority** only decides which compatible comparison to run first.
 
 ```powershell
 python scripts/run_holdout_evaluation.py --train-fraction 0.75 --window-seconds 600
 python scripts/run_holdout_evaluation.py --output data/derived/holdout_evaluation.json
 ```
 
-**What is learned from training (first 75% of the time span):** for every compatible pair, windowed pairwise drift diagnostics (`mean_abs_d`, RMS, `mean_abs_z`, valid transitions) give `priority_score = 1.0 / (mean_abs_z + 1e-12)`. A pair with too little valid training data scores `0.0` but stays compatible and schedulable. The frozen table is written to `data/derived/pair_priorities.json` (git-ignored; regenerate with the command above).
+**What is learned from training (first 75% of the time span):** priorities are recalculated at the start of every run from the run's complete training portion, for the `Comparable` pairs only (never read back from a file or reused from an earlier run; the table is immutable once the run starts). For every such pair, windowed pairwise drift diagnostics (`mean_abs_d`, RMS, `mean_abs_z`, valid transitions) give `priority_score = 1.0 / (mean_abs_z + 1e-12)`. A pair with too little valid training data scores `0.0` but stays compatible and schedulable. The frozen table is written to `data/derived/pair_priorities.json` (git-ignored; regenerate with the command above).
 
 **What is evaluated in holdout (final 25%):** `arrival-order`, `consecutive-pair` and `drift-aware` run on the identical holdout shots, slot budget and request workload, using the same frozen priority table. Holdout data never influences priorities (enforced by `LeakageError` and tested). Options: `--dataset`, `--slots-per-shot`, `--min-valid-transitions`, `--priorities-output`. Design: `docs/holdout_and_drift_aware_design.md`.
 
@@ -277,3 +285,31 @@ It selects the number of drift components by chronological cross-validation, eva
 
 **This is not a real-QPU experiment and simulates no outcomes.** Comparison errors are model-derived from the actual execution timestamps; results depend on the fitted drift model, which on this dataset does not forecast the holdout drift.
 
+---
+
+## 11. Standalone priority analysis (inspect the priorities)
+
+Recomputes, for inspection only, the priority the scheduler uses, for every pair whose registry `reviewer_decision` is `Comparable`, from the complete chronological training portion (holdout data is never used). It does not start the scheduler.
+
+```powershell
+.venv\Scripts\Activate.ps1                  # optional: numpy, scipy and matplotlib are already installed there
+python scripts/run_priority_analysis.py
+```
+
+Results go to `results/priority_analysis/`: `priority_results.csv` (one row per eligible pair, with status and reason), `priority_diagnostic_details.csv` (one row per pair and window transition), `priority_analysis_summary.json` (dataset, registry, split, settings, statistics, validation, file hashes), `priority_distribution.png` and `priority_ranking.png`. A built-in validation suite checks eligibility, training-only use, holdout invariance, reproducibility from the recorded diagnostics, agreement with the scheduler's own priority function and determinism; the script exits non-zero if any check fails. Formula: `priority = 1 / (mean_absolute_Z + 1e-12)`.
+
+---
+
+## 12. Three-policy QCS evaluation (arrival-order vs consecutive-pair vs drift-aware)
+
+Compares the no-QCS baseline, pair-aware execution, and drift-aware QCS on identical conditions. Priorities are recalculated from the complete training portion immediately before the run, for `Comparable` pairs only; the three policies share one workload, arrival pattern, device capacity, simulated drift and set of reference values. It is a recorded-trace timing replay scored by a model-simulated drift, not a QPU run. Details and definitions (comparison error, reliability at 0.05, reliable throughput per device-time): `docs/three_policy_evaluation.md`.
+
+Run in this order (PowerShell, from the project root):
+
+```powershell
+.venv\Scripts\Activate.ps1                        # optional
+python scripts/run_priority_analysis.py           # 1. inspect the priorities (results/priority_analysis/)
+python scripts/run_three_policy_evaluation.py     # 2. the experiment (results/qcs_three_policy_evaluation/)
+```
+
+An existing results directory is never overwritten: pass a new `--output-dir`, or `--overwrite` deliberately. `python -m pytest tests -m "not real_data"` runs every test that does not execute the real dataset.

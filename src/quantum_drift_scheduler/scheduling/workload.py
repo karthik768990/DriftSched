@@ -1,5 +1,10 @@
 """Prebuilt pair-request workload and slot-budget construction.
 
+Eligibility: only pairs whose registry ``reviewer_decision`` is ``Comparable`` ever become
+requests. ``prepare_scheduler_input`` restricts a trace to the shots that belong to such a
+request, so every policy receives the identical workload and no slot is spent on shots that
+cannot be part of an approved comparison.
+
 The workload is built once from the shot trace and the compatibility registry, with
 no policy and no drift information involved, so every policy sees the identical set
 of comparison requests.
@@ -11,7 +16,7 @@ circuits; each matched circuit pair yields one request pairing the two circuits'
 round-``r`` shots. For the 14 Ramsey circuits the 13 matchings partition all 91
 unordered circuit pairs, so every compatible pair recurs once every 13 rounds, and
 each shot belongs to exactly one request. A pair that the registry does not mark
-``compatible`` produces no request.
+``Comparable`` produces no request.
 
 Round indices may be supplied (for example computed on the full trace) so a
 sub-trace such as a holdout partition keeps the same round alignment. Requests are
@@ -19,6 +24,7 @@ only created when both shots are present in the trace being scheduled.
 """
 
 import math
+from dataclasses import dataclass
 from typing import Dict, List, Mapping, Optional, Sequence, Tuple
 
 from quantum_drift_scheduler.data.compatibility import (
@@ -37,7 +43,7 @@ DEFAULT_SLOTS_PER_SHOT = 1.0
 
 
 def circuits_compatible(registry: CompatibilityRegistry, circuit_a: str, circuit_b: str) -> bool:
-    """True if two distinct circuits form a registry-``compatible`` pair.
+    """True if two distinct circuits form a pair with ``reviewer_decision == Comparable``.
 
     Same-circuit shots are never paired, and pairs absent from the registry are not
     compatible; this never defaults to ``True``.
@@ -104,7 +110,7 @@ def build_pair_requests(
 
     Args:
         trace: The shots to be scheduled.
-        registry: Compatibility registry; non-``compatible`` pairs yield no request.
+        registry: Compatibility registry; pairs not marked ``Comparable`` yield no request.
         round_index: ``shot_id -> round`` mapping (default: occurrence index within
             ``trace``). Must cover every shot in ``trace``.
 
@@ -134,6 +140,52 @@ def build_pair_requests(
                 continue
             requests.append(make_request(f"req-r{r:06d}-{position:02d}", shot_a, shot_b))
     return tuple(requests)
+
+
+@dataclass(frozen=True)
+class SchedulerInput:
+    """Policy-independent scheduler input derived from one trace partition.
+
+    ``source_shots`` are the shots that belong to a reviewer-approved request, in trace
+    order; ``requests`` is the workload. Every policy of a run receives exactly these.
+    """
+
+    source_shots: Tuple[ShotArrival, ...]
+    requests: Tuple[PairRequest, ...]
+    ineligible_circuit_shots: int  # shots of circuits that appear in no Comparable pair
+    unrequested_shots: int  # shots of eligible circuits without a request in this partition
+
+
+def prepare_scheduler_input(
+    trace: Sequence[ShotArrival],
+    registry: CompatibilityRegistry,
+    round_reference: Optional[Sequence[ShotArrival]] = None,
+) -> SchedulerInput:
+    """Restrict ``trace`` to reviewer-approved comparisons and build the workload.
+
+    Args:
+        trace: The partition to schedule (e.g. the holdout).
+        registry: Eligibility comes only from ``reviewer_decision``.
+        round_reference: Trace whose per-circuit shot order defines the acquisition
+            rounds (e.g. the full trace), so a sub-trace keeps the same alignment.
+
+    Raises:
+        SimulationError: the registry has no ``Comparable`` pair.
+    """
+    if not registry.eligible_pairs():
+        raise SimulationError("The registry has no 'Comparable' pairs; nothing can be scheduled")
+    eligible = set(registry.eligible_circuits())
+    in_scope = tuple(s for s in trace if s.circuit in eligible)
+    reference = in_scope if round_reference is None else tuple(s for s in round_reference if s.circuit in eligible)
+    requests = build_pair_requests(in_scope, registry, shot_round_indices(reference))
+    requested = {sid for r in requests for sid in r.shot_ids}
+    source = tuple(s for s in in_scope if s.shot_id in requested)
+    return SchedulerInput(
+        source_shots=source,
+        requests=requests,
+        ineligible_circuit_shots=len(trace) - len(in_scope),
+        unrequested_shots=len(in_scope) - len(source),
+    )
 
 
 def build_slot_schedule(

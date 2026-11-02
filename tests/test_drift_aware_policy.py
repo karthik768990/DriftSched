@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from quantum_drift_scheduler.analysis.holdout import SplitError
-from quantum_drift_scheduler.analysis.priorities import load_priority_table
+from quantum_drift_scheduler.analysis.priorities import PriorityError, load_priority_table, priority_table_to_dict
 from quantum_drift_scheduler.data.compatibility import CompatibilityStatus, load_compatibility_registry
 from quantum_drift_scheduler.evaluation import evaluation_to_dict, run_holdout_evaluation
 from quantum_drift_scheduler.scheduling import (
@@ -145,10 +145,21 @@ def test_policy_cannot_bypass_registry_or_mutate_priorities():
     trace = make_trace([(0.0, 1, 1), (0.0, 2, 0)])
     requests = requests_of(trace, [(0, 1)])
     policy = DriftAwarePairPolicy(FakePriorities({(1, 2): 99.0}))
-    registry = make_registry((1, 2), {(1, 2): CompatibilityStatus.CONDITIONALLY_COMPATIBLE})
-    with pytest.raises(SimulationError, match="only 'compatible' pairs may complete"):
-        run_simulation(trace, registry, policy, grid(2), requests)
+    registry = make_registry((1, 2), not_comparable=[(1, 2)])
+    with pytest.raises(SimulationError, match="only 'Comparable' pairs may complete"):
+        run_simulation(trace, registry, policy, grid(2), requests)  # priority 99 cannot make it eligible
     assert not hasattr(policy, "set_priorities") and policy.dispatch_unit == "pair"
+
+
+def test_a_very_high_priority_never_makes_a_not_comparable_pair_run():
+    registry = make_registry((1, 2, 4, 8), not_comparable=[(1, 2)])
+    rows = [(r * 10.0 + i * 0.1, k, (r + i) % 2) for r in range(10) for i, k in enumerate((1, 2, 4, 8))]
+    trace = make_trace(rows)
+    policy = DriftAwarePairPolicy(FakePriorities({(1, 2): 1e9}, default=1.0))  # excluded pair scores highest
+    result = run_simulation(trace, registry, policy, grid(len(trace), 0.5))
+    assert result.comparisons
+    assert not any({c.circuit_a, c.circuit_b} == {label(1), label(2)} for c in result.comparisons)
+    assert all(registry.is_eligible(c.circuit_a, c.circuit_b) for c in result.comparisons)
 
 
 @pytest.mark.parametrize("bad", [-1.0, float("nan"), float("inf")])
@@ -170,30 +181,40 @@ def evaluation():
 def test_end_to_end_default_holdout_run(evaluation):
     registry = load_compatibility_registry()
     ev = evaluation
-    assert (len(ev.split.train), len(ev.split.holdout)) == (63041, 20959)
+    eligible_keys = {frozenset((p.circuit_a, p.circuit_b)) for p in registry.eligible_pairs()}
+    assert (len(ev.split.train), len(ev.split.holdout)) == (63041, 20959)  # the split itself is unchanged
     assert ev.split.train_fraction == 0.75 and ev.priorities.metadata.window_seconds == 600.0
     assert [r.result.policy_name for r in ev.runs] == ["arrival-order", "consecutive-pair", "drift-aware"]
-    assert ev.priorities.positive_count == 91 and ev.priorities.zero_count == 0
+    assert len(ev.eligible_pairs) == 29 and ev.excluded_pair_count == 62
+    assert ev.priorities.positive_count == 29 and ev.priorities.zero_count == 0
+    assert {p.key for p in ev.priorities.priorities} == eligible_keys  # priorities only for Comparable pairs
+    assert ev.priorities.metadata.train_shot_count == 63041  # the complete training portion
 
     holdout_ids = {s.shot_id for s in ev.split.holdout}
     train_ids = {s.shot_id for s in ev.split.train}
     assert holdout_ids.isdisjoint(train_ids)
+    n_source = len(ev.source_shots)
+    assert 0 < n_source < 20959 and n_source == 2 * ev.workload_requests
+    assert ev.ineligible_circuit_shots + ev.unrequested_shots + n_source == 20959
+    assert {s.circuit for s in ev.source_shots} <= set(registry.eligible_circuits())
+    assert all(frozenset(r.pair_key) in eligible_keys for r in ev.requests)  # the workload is reviewer-approved only
     for run in ev.runs:
         m, result = run.metrics, run.result
         assert {e.shot_id for e in result.executed} <= holdout_ids  # no training shot in the replay
         assert {s.shot_id for s in result.unexecuted_shots} <= holdout_ids
-        assert m.source_shots == 20959 and m.total_slots == 20959  # identical slot budget
-        assert result.workload_requests == ev.workload_requests == 10479
+        assert m.source_shots == n_source and m.total_slots == n_source  # identical slot budget
+        assert result.workload_requests == ev.workload_requests
         consumed = [sid for c in result.comparisons for sid in c.shot_ids]
         assert len(consumed) == len(set(consumed))
-        assert all(registry.is_compatible(c.circuit_a, c.circuit_b) for c in result.comparisons)
+        assert all(frozenset(c.pair_key) in eligible_keys for c in result.comparisons)  # no excluded pair ran
+        assert {e.circuit for e in result.executed} <= set(registry.eligible_circuits())
         assert all(c.execution_time_a >= c.arrival_time_a and c.execution_time_b >= c.arrival_time_b for c in result.comparisons)
-        assert m.completed_comparisons >= 0.99 * 10479
+        assert m.completed_comparisons >= 0.99 * ev.workload_requests
     arrival, consecutive, drift = (r.metrics for r in ev.runs)
     assert consecutive.slot_separation.maximum == drift.slot_separation.maximum == 1.0
     assert arrival.slot_separation.mean > 1.0
     assert ev.runs[0].result.schedule == ev.runs[2].result.schedule == ev.schedule
-    assert len(registry.compatible_pairs()) == 91
+    assert len(registry.eligible_pairs()) == 29 and len(registry.excluded_pairs()) == 62
 
 
 def test_holdout_outcomes_do_not_change_end_to_end_priorities(evaluation):
@@ -225,7 +246,9 @@ def test_evaluation_json_is_complete_and_strict(evaluation):
     assert set(data["policies"]) == {"arrival-order", "consecutive-pair", "drift-aware"}
     assert data["split"]["train_shots"] == 63041 and data["split"]["holdout_shots"] == 20959
     assert "counterfactual" in data["limitation"] and "Priorities were learned" in data["leakage_check"]
-    assert len(data["priorities"]["priorities"]) == 91
+    assert len(data["priorities"]["priorities"]) == 29
+    assert data["eligibility"]["authority"] == "reviewer_decision" and len(data["eligibility"]["eligible_pairs"]) == 29
+    assert data["eligibility"]["excluded_pair_count"] == 62
     assert len(data["split"]["per_circuit"]) == 14
 
 
@@ -259,11 +282,11 @@ def test_cli_prints_report_and_writes_artifacts(tmp_path, capsys):
     )
     assert code == 0, err
     for needle in ("held-out replay scheduling metrics", "Split boundary", "Top 10 learned priorities",
-                   "91 pairs with positive score, 0 with zero score", "arrival-order", "consecutive-pair",
+                   "29 pairs with positive score, 0 with zero score", "arrival-order", "consecutive-pair",
                    "drift-aware", "Leakage check", "counterfactual hardware"):
         assert needle in out
     assert json.loads(out_json.read_text(encoding="utf-8"))["split"]["holdout_shots"] == 20959
-    assert len(load_priority_table(priorities).priorities) == 91
+    assert len(load_priority_table(priorities).priorities) == 29
 
 
 def test_cli_rejects_invalid_configuration(tmp_path, capsys):
@@ -279,3 +302,106 @@ def test_cli_rejects_invalid_configuration(tmp_path, capsys):
         code, _, err = run_cli(capsys, "--priorities-output", pri, *args)
         assert code == 1 and message in err, (args, err)
     assert not (tmp_path / "p.json").exists()  # nothing is persisted on failure
+
+
+# ---------------------------------------------------------------- run-specific priorities (synthetic, fast)
+
+
+KS = (1, 16, 256, 2048)
+
+
+def _run_inputs(seed=3, not_comparable=((1, 2048),)):
+    from _qcs_helpers import synthetic_shots, true_model
+
+    model = true_model(2500, gammas=(0.1, 0.3), decay_rate=2e-5)
+    return synthetic_shots(model, KS, 2500, seed=seed), make_registry(KS, not_comparable=not_comparable)
+
+
+def test_priorities_are_recalculated_for_every_scheduler_run(monkeypatch):
+    import quantum_drift_scheduler.evaluation as evaluation_module
+
+    calls = []
+    real_learn = evaluation_module.learn_pair_priorities
+
+    def spy(train_shots, *args, **kwargs):
+        calls.append(len(train_shots))
+        return real_learn(train_shots, *args, **kwargs)
+
+    monkeypatch.setattr(evaluation_module, "learn_pair_priorities", spy)
+    trace, registry = _run_inputs()
+    first = run_holdout_evaluation(trace, registry)
+    second = run_holdout_evaluation(trace, registry)
+    assert calls == [len(first.split.train)] * 2  # one fresh calculation per run, on the full training portion
+    assert first.priorities == second.priorities and first.priorities is not second.priorities
+    assert first.priorities.metadata.training_fingerprint == second.priorities.metadata.training_fingerprint
+
+    changed = tuple(dataclasses.replace(s, outcome=1 - s.outcome) if s.arrival_time < first.split.boundary and s.circuit == label(16) else s
+                    for s in trace)
+    third = run_holdout_evaluation(changed, registry)
+    assert len(calls) == 3 and third.priorities != first.priorities  # a new run sees its own training data
+
+
+def test_priorities_are_never_read_back_from_disk(monkeypatch, tmp_path):
+    import quantum_drift_scheduler.analysis.priorities as priorities_module
+    from quantum_drift_scheduler.analysis.priorities import save_priority_table
+
+    trace, registry = _run_inputs()
+    first = run_holdout_evaluation(trace, registry)
+    stale = tmp_path / "pair_priorities.json"
+    save_priority_table(first.priorities, stale)  # a previous run's artifact exists on disk
+
+    def boom(*a, **k):
+        raise AssertionError("a scheduler run must not load priorities from a file")
+
+    monkeypatch.setattr(priorities_module, "load_priority_table", boom)
+    other_trace, _ = _run_inputs(seed=11)  # different data: must get different priorities, not the stale file's
+    again = run_holdout_evaluation(other_trace, registry)
+    assert again.priorities != first.priorities
+
+
+def test_policies_of_one_run_share_one_frozen_priority_mapping(monkeypatch):
+    trace, registry = _run_inputs()
+    seen = []
+    original = DriftAwarePairPolicy.request_key
+
+    def watch(self, request):
+        seen.append(id(self._priorities))
+        return original(self, request)
+
+    monkeypatch.setattr(DriftAwarePairPolicy, "request_key", watch)
+    ev = run_holdout_evaluation(trace, registry)
+    assert seen and set(seen) == {id(ev.priorities)}  # the policy only ever saw this run's table
+    snapshot = priority_table_to_dict(ev.priorities)
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        ev.priorities.priorities[0].priority_score = 123.0
+    assert priority_table_to_dict(ev.priorities) == snapshot  # unchanged after the run
+
+
+def test_only_reviewer_approved_pairs_are_prioritised_and_scheduled_in_a_run():
+    trace, registry = _run_inputs(not_comparable=((1, 2048), (16, 256)))
+    ev = run_holdout_evaluation(trace, registry)
+    banned = ({label(1), label(2048)}, {label(16), label(256)})
+    assert len(ev.priorities.priorities) == 4 and ev.excluded_pair_count == 2
+    for run in ev.runs:
+        assert run.result.comparisons
+        assert not any({c.circuit_a, c.circuit_b} in banned for c in run.result.comparisons)
+    for b in banned:
+        a, c = sorted(b, key=lambda x: int(x.split("^")[1][:-2]) if "^" in x else 1)
+        with pytest.raises(PriorityError, match="No learned priority"):
+            ev.priorities.score(a, c)
+
+
+def test_a_stale_table_cannot_be_passed_off_as_fresh():
+    trace, registry = _run_inputs()
+    ev = run_holdout_evaluation(trace, registry)
+    other_trace, _ = _run_inputs(seed=11)
+    other = run_holdout_evaluation(other_trace, registry)
+    with pytest.raises(PriorityError, match="different training data"):
+        ev.priorities.assert_matches(other.split.train, registry)
+
+
+def test_run_without_comparable_pairs_fails_clearly():
+    trace, _ = _run_inputs()
+    nothing = make_registry(KS, not_comparable=[(a, b) for i, a in enumerate(KS) for b in KS[i + 1:]])
+    with pytest.raises(SimulationError, match="no 'Comparable' pairs"):
+        run_holdout_evaluation(trace, nothing)

@@ -15,13 +15,14 @@
 full recorded trace
    -> chronological split (train < boundary <= holdout)
    -> windowed pairwise drift diagnostics on TRAIN only
-   -> priority score for all 91 compatible pairs  -> frozen PriorityTable (+ JSON artifact)
+   -> eligible pairs = reviewer_decision 'Comparable' (29 of 91 in the shipped registry)
+   -> priority score for those pairs, recalculated for THIS run  -> frozen PriorityTable (+ JSON audit artifact)
    -> HOLDOUT shots only
    -> {arrival-order, consecutive-pair, drift-aware} on the same slots and workload
 ```
 
 **Compatibility and priority are different things.** Compatibility is the researcher
-decision in `data/compatibility_registry.csv`: all 91 Ramsey pairs are `compatible`, and no
+decision in `data/compatibility_registry.csv`: `reviewer_decision` is `Comparable` or `Not comparable`, and no
 drift score can change that. Priority only orders which compatible comparison to run next.
 
 ## 2. Chronological split rule
@@ -68,7 +69,7 @@ priority_score = 1.0 / (mean_abs_z + 1e-12)       # lower training mean|Z|  ->  
 
 **Zero-score fallback:** a pair with fewer than `min_valid_transitions` (default 10) valid
 training transitions, or a non-finite `mean_abs_z`, gets `priority_score = 0.0`. It stays
-`compatible` and can still be scheduled when no positively scored request is ready. No
+`Comparable` and can still be scheduled when no positively scored request is ready. No
 threshold such as `mean_abs_z <= 1.96` is used, and no physical Ramsey/T2* model is fitted.
 Ranks sort by score descending, then wait lengths.
 
@@ -115,3 +116,10 @@ checks that the budgets and workloads match.
   documented modelling choices, adjustable from the CLI where applicable.
 - A later phase needs a drift/outcome model before any claim about comparison error,
   uncertainty or hardware performance under a reordered schedule.
+
+## 9. Eligibility and run-specific priorities
+
+- **Eligibility** is read only from `reviewer_decision`. `Not comparable` pairs get no priority, no request and no execution; a missing or unrecognised decision is rejected at load time and never read as `Comparable`. The simulator re-checks every request against the registry, so even a hand-built request for an excluded pair is refused.
+- **Per-run recalculation.** `evaluation.run_holdout_evaluation` is one scheduler run: it splits the trace, calls `calculate_run_priorities` on the *complete* training portion (every window up to the boundary, no rolling window) for the eligible pairs, verifies the table against exactly those shots and eligible pairs (`PriorityTable.assert_matches`), and passes the immutable table straight to the drift-aware policy. Nothing is loaded from disk; the JSON written by the CLI is an audit record only, and artifact version 2 rejects tables written by older code.
+- **Fair comparison.** All three policies of a run use the same training data, holdout data, workload, budget and (for drift-aware) the same frozen mapping. The workload is built from the eligible pairs only, and holdout shots that cannot belong to such a request (circuits in no `Comparable` pair, or unrequested in a round) are excluded for every policy, so FIFO does not spend slots on shots no policy could pair.
+- **Auditing.** The run's priorities, their training fingerprint, the eligible-pair fingerprint and the eligibility counts are written into the evaluation JSON and `results/qcs_evaluation/results.json`.

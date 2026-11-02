@@ -10,10 +10,13 @@ from quantum_drift_scheduler.config import DEFAULT_CONFIG
 from quantum_drift_scheduler.data.compatibility import (
     REQUIRED_COLUMNS,
     CompatibilityError,
+    CompatibilityPair,
     CompatibilityStatus,
+    ReviewerDecision,
     UnknownPairError,
     load_compatibility_registry,
     ramsey_circuit_labels,
+    wait_length,
 )
 
 A = "Gx(Gw)Gy"
@@ -62,13 +65,42 @@ def test_default_path_is_data_registry():
 
 def test_default_csv_columns_exact_order():
     with open(DEFAULT_CONFIG.compatibility_registry_path, encoding="utf-8", newline="") as f:
-        assert tuple(next(csv.reader(f))) == REQUIRED_COLUMNS
+        header = tuple(next(csv.reader(f)))
+    assert header[: len(REQUIRED_COLUMNS)] == REQUIRED_COLUMNS
+    assert header[len(REQUIRED_COLUMNS):] in ((), ("empirical_test",))  # optional provenance column
 
 
-def test_all_pairs_compatible(registry):
+def test_reviewer_decision_splits_the_default_registry(registry):
+    assert len(registry.eligible_pairs()) == 29 and len(registry.excluded_pairs()) == 62
+    assert len(registry.eligible_pairs()) + len(registry.excluded_pairs()) == 91
+    assert all(p.reviewer_decision is ReviewerDecision.COMPARABLE for p in registry.eligible_pairs())
+    assert all(p.reviewer_decision is ReviewerDecision.NOT_COMPARABLE for p in registry.excluded_pairs())
+    # The informational status column is "compatible" for every row and is not what decides eligibility.
     assert all(p.status is CompatibilityStatus.COMPATIBLE for p in registry.pairs)
-    assert len(registry.compatible_pairs()) == 91
-    assert all(p.reviewer_decision == "Comparable" for p in registry.pairs)
+    assert registry.compatible_pairs() == registry.eligible_pairs()  # backward-compatible alias
+
+
+def test_eligibility_matches_the_csv_reviewer_decision_column_exactly(registry):
+    for row in _default_rows():
+        expected = row["reviewer_decision"].strip() == "Comparable"
+        assert registry.is_eligible(row["circuit_a"], row["circuit_b"]) is expected
+        assert registry.is_compatible(row["circuit_b"], row["circuit_a"]) is expected  # unordered alias
+
+
+def test_eligible_circuits_are_those_in_a_comparable_pair(registry):
+    eligible = registry.eligible_circuits()
+    assert eligible == tuple(f"Gx(Gw)^{k}Gy" if k > 1 else "Gx(Gw)Gy" for k in (1, 2, 4, 8, 16, 32, 64, 128, 256))
+    assert list(eligible) == sorted(eligible, key=wait_length)
+    in_pairs = {c for p in registry.eligible_pairs() for c in (p.circuit_a, p.circuit_b)}
+    assert set(eligible) == in_pairs
+
+
+def test_known_excluded_and_included_pairs(registry):
+    assert registry.is_eligible("Gx(Gw)Gy", "Gx(Gw)^2Gy") is True
+    assert registry.is_eligible("Gx(Gw)^128Gy", "Gx(Gw)^256Gy") is True
+    assert registry.is_eligible("Gx(Gw)^8192Gy", "Gx(Gw)^4096Gy") is False
+    assert registry.get_decision("Gx(Gw)Gy", "Gx(Gw)^256Gy") is ReviewerDecision.NOT_COMPARABLE
+    assert registry.get_pair("Gx(Gw)Gy", "Gx(Gw)^256Gy").is_eligible is False  # still retrievable, never eligible
 
 
 def test_lookup_is_unordered(registry):
@@ -162,14 +194,95 @@ def test_invalid_status_rejected(write_registry):
         load_compatibility_registry(write_registry(mutate))
 
 
-def test_non_compatible_status_rejected_for_ramsey_dataset(write_registry):
-    for status in ("conditionally_compatible", "incompatible"):
+def test_compatibility_status_cannot_override_reviewer_decision(write_registry):
+    def mutate(rows):
+        rows[0]["compatibility_status"] = "incompatible"  # pair 1 is Comparable
+        rows[7]["compatibility_status"] = "compatible"  # pair 8 is Not comparable
+        rows[8]["compatibility_status"] = "conditionally_compatible"
 
-        def mutate(rows, status=status):
-            rows[0]["compatibility_status"] = status
+    reg = load_compatibility_registry(write_registry(mutate))
+    assert reg.get_status(A, B) is CompatibilityStatus.INCOMPATIBLE
+    assert reg.is_eligible(A, B) is True  # decision says Comparable
+    assert reg.is_eligible("Gx(Gw)Gy", "Gx(Gw)^256Gy") is False  # decision says Not comparable
+    assert len(reg.eligible_pairs()) == 29
 
-        with pytest.raises(CompatibilityError, match="must be 'compatible'"):
-            load_compatibility_registry(write_registry(mutate))
+
+def test_status_alone_never_makes_a_pair_eligible_or_excluded(write_registry):
+    def all_incompatible(rows):
+        for r in rows:
+            r["compatibility_status"] = "incompatible"
+
+    reg = load_compatibility_registry(write_registry(all_incompatible))
+    assert len(reg.eligible_pairs()) == 29
+
+    def flip_decisions(rows):
+        for r in rows:
+            r["reviewer_decision"] = "Not comparable" if r["reviewer_decision"] == "Comparable" else "Comparable"
+
+    flipped = load_compatibility_registry(write_registry(flip_decisions))
+    assert len(flipped.eligible_pairs()) == 62 and not flipped.is_eligible(A, B)
+
+
+@pytest.mark.parametrize("raw", ["Comparable", "comparable", "  COMPARABLE  "])
+def test_comparable_spellings_that_are_unambiguous(raw):
+    assert ReviewerDecision.parse(raw) is ReviewerDecision.COMPARABLE
+
+
+@pytest.mark.parametrize("raw", ["Not comparable", "not comparable", " NOT COMPARABLE "])
+def test_not_comparable_is_never_read_as_comparable(raw):
+    assert ReviewerDecision.parse(raw) is ReviewerDecision.NOT_COMPARABLE
+
+
+@pytest.mark.parametrize("raw", ["", "   ", None, "maybe", "Comparable?", "Incomparable", "Not  comparable",
+                                 "noncomparable", "yes", "True", "1", "Comparable;Not comparable"])
+def test_missing_or_unrecognised_decisions_are_rejected_not_defaulted(raw):
+    with pytest.raises(ValueError, match="unrecognised reviewer_decision"):
+        ReviewerDecision.parse(raw)
+
+
+@pytest.mark.parametrize("bad", ["", "maybe", "Comparable?", "Not  comparable"])
+def test_loader_rejects_bad_reviewer_decisions_with_line_numbers(write_registry, bad):
+    def mutate(rows):
+        rows[2]["reviewer_decision"] = bad
+
+    with pytest.raises(CompatibilityError, match=r"line 4: unrecognised reviewer_decision"):
+        load_compatibility_registry(write_registry(mutate))
+
+
+def test_pair_constructor_rejects_unparsed_decisions():
+    kwargs = dict(pair_id=1, circuit_a="A", circuit_b="B", status=CompatibilityStatus.COMPATIBLE,
+                  evidence_found=True, evidence_summary="", missing_information="", rationale="",
+                  source_reference="")
+    assert CompatibilityPair(reviewer_decision="Comparable", **kwargs).is_eligible is True
+    assert CompatibilityPair(reviewer_decision="Not comparable", **kwargs).is_eligible is False
+    with pytest.raises(CompatibilityError, match="unrecognised reviewer_decision"):
+        CompatibilityPair(reviewer_decision="eligible", **kwargs)
+    with pytest.raises(CompatibilityError):
+        CompatibilityPair(reviewer_decision=None, **kwargs)
+
+
+def test_missing_reviewer_decision_column_is_rejected(write_registry):
+    columns = tuple(c for c in REQUIRED_COLUMNS if c != "reviewer_decision")
+    with pytest.raises(CompatibilityError, match="reviewer_decision"):
+        load_compatibility_registry(write_registry(columns=columns))
+
+
+def test_empirical_test_column_is_preserved_but_not_used_for_eligibility(write_registry):
+    def mutate(rows):
+        for r in rows:
+            r["empirical_test"] = "passed"  # cannot change eligibility
+
+    reg = load_compatibility_registry(write_registry(mutate, columns=REQUIRED_COLUMNS + ("empirical_test",)))
+    assert reg.get_pair(A, B).empirical_test == "passed"
+    assert len(reg.eligible_pairs()) == 29
+    assert load_compatibility_registry(write_registry()).get_pair(A, B).empirical_test == ""
+
+
+def test_eligibility_of_unknown_and_self_pairs_is_an_error_not_a_default(registry):
+    with pytest.raises(UnknownPairError):
+        registry.is_eligible(A, "Gx(Gw)^3Gy")
+    with pytest.raises(ValueError, match="itself"):
+        registry.is_eligible(A, A)
 
 
 def test_missing_column_rejected(write_registry):

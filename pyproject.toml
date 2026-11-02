@@ -27,4 +27,7 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+markers = [
+    "real_data: runs the priority calculation, scheduler or an evaluation pipeline on the real recorded dataset",
+]
 

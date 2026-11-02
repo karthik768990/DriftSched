@@ -1,9 +1,15 @@
 """Machine-readable circuit-pair compatibility registry.
 
-The registry (``data/compatibility_registry.csv``) is the single source of truth
-for which circuit pairs may be compared. Compatibility is a scientific, structural
-label; empirical drift diagnostics (e.g. mean |Z|) never change it and may only
-influence scheduling priority in later phases.
+The registry (``data/compatibility_registry.csv``) is the single source of truth for which
+circuit pairs may be compared. **``reviewer_decision`` is the only eligibility authority**:
+
+* ``Comparable``     -> the pair is eligible for scheduling;
+* ``Not comparable`` -> the pair is excluded and can never be scheduled.
+
+Any other value (missing, blank, misspelt) is rejected when the registry is loaded; it is
+never read as ``Comparable``. ``compatibility_status`` and ``empirical_test`` are retained
+as informational provenance only and cannot make an excluded pair eligible (or an eligible
+pair excluded). Drift diagnostics never change a decision; they only order eligible pairs.
 """
 
 import csv
@@ -43,6 +49,27 @@ class CompatibilityStatus(str, Enum):
     INCOMPATIBLE = "incompatible"
 
 
+class ReviewerDecision(str, Enum):
+    """The reviewer's eligibility decision (the sole authority for scheduling)."""
+
+    COMPARABLE = "Comparable"
+    NOT_COMPARABLE = "Not comparable"
+
+    @classmethod
+    def parse(cls, raw: Optional[str]) -> "ReviewerDecision":
+        """Parse a registry cell; case and surrounding whitespace are ignored.
+
+        Raises:
+            ValueError: missing, blank or unrecognised text (never defaults to Comparable).
+        """
+        text = (raw or "").strip().casefold()
+        for member in cls:
+            if text == member.value.casefold():
+                return member
+        valid = ", ".join(repr(m.value) for m in cls)
+        raise ValueError(f"unrecognised reviewer_decision {raw!r} (expected one of: {valid})")
+
+
 class CompatibilityError(ValueError):
     """Raised when a registry file is malformed or fails validation."""
 
@@ -56,7 +83,11 @@ class UnknownPairError(KeyError):
 
 @dataclass(frozen=True)
 class CompatibilityPair:
-    """One immutable registry entry, with its evidence and provenance fields."""
+    """One immutable registry entry, with its evidence and provenance fields.
+
+    ``status`` and ``empirical_test`` are informational; eligibility comes only from
+    ``reviewer_decision`` (see ``is_eligible``).
+    """
 
     pair_id: int
     circuit_a: str
@@ -67,7 +98,21 @@ class CompatibilityPair:
     missing_information: str
     rationale: str
     source_reference: str
-    reviewer_decision: str
+    reviewer_decision: ReviewerDecision
+    empirical_test: str = ""
+
+    def __post_init__(self) -> None:
+        # Coerce/validate so a raw or misspelt decision can never be mistaken for Comparable.
+        try:
+            decision = ReviewerDecision.parse(self.reviewer_decision)
+        except ValueError as exc:
+            raise CompatibilityError(f"pair_id {self.pair_id}: {exc}") from None
+        object.__setattr__(self, "reviewer_decision", decision)
+
+    @property
+    def is_eligible(self) -> bool:
+        """True only for ``reviewer_decision == Comparable``; no other field is consulted."""
+        return self.reviewer_decision is ReviewerDecision.COMPARABLE
 
     @property
     def key(self) -> FrozenSet[str]:
@@ -149,18 +194,45 @@ class CompatibilityRegistry:
             ) from None
 
     def get_status(self, circuit_a: str, circuit_b: str) -> CompatibilityStatus:
+        """Informational ``compatibility_status``; it never decides eligibility."""
         return self.get_pair(circuit_a, circuit_b).status
 
+    def get_decision(self, circuit_a: str, circuit_b: str) -> ReviewerDecision:
+        return self.get_pair(circuit_a, circuit_b).reviewer_decision
+
+    def is_eligible(self, circuit_a: str, circuit_b: str) -> bool:
+        """True only if ``reviewer_decision`` is ``Comparable``.
+
+        Raises:
+            ValueError: self-pair.
+            UnknownPairError: the pair is not in the registry (never defaults to eligible).
+        """
+        return self.get_pair(circuit_a, circuit_b).is_eligible
+
     def is_compatible(self, circuit_a: str, circuit_b: str) -> bool:
-        """True only for ``CompatibilityStatus.COMPATIBLE``."""
-        return self.get_status(circuit_a, circuit_b) is CompatibilityStatus.COMPATIBLE
+        """Alias of ``is_eligible`` (reviewer decision only; ``compatibility_status`` is ignored)."""
+        return self.is_eligible(circuit_a, circuit_b)
 
     def pairs_for(self, circuit: str) -> Tuple[CompatibilityPair, ...]:
-        """All entries involving ``circuit``, in registry order."""
+        """All entries involving ``circuit`` (eligible or not), in registry order."""
         return tuple(p for p in self._pairs if circuit in (p.circuit_a, p.circuit_b))
 
+    def eligible_pairs(self) -> Tuple[CompatibilityPair, ...]:
+        """Entries marked ``Comparable``, in registry order."""
+        return tuple(p for p in self._pairs if p.is_eligible)
+
+    def excluded_pairs(self) -> Tuple[CompatibilityPair, ...]:
+        """Entries marked ``Not comparable``, in registry order."""
+        return tuple(p for p in self._pairs if not p.is_eligible)
+
     def compatible_pairs(self) -> Tuple[CompatibilityPair, ...]:
-        return tuple(p for p in self._pairs if p.status is CompatibilityStatus.COMPATIBLE)
+        """Alias of ``eligible_pairs`` (kept for backward compatibility)."""
+        return self.eligible_pairs()
+
+    def eligible_circuits(self) -> Tuple[str, ...]:
+        """Circuits that appear in at least one eligible pair, ordered by wait length."""
+        seen = {c for p in self.eligible_pairs() for c in (p.circuit_a, p.circuit_b)}
+        return tuple(sorted(seen, key=lambda c: (wait_length(c), c)))
 
 
 def _parse_bool(value: str, line: int) -> bool:
@@ -176,6 +248,10 @@ def _parse_row(row: Dict[str, Optional[str]], line: int) -> CompatibilityPair:
     if None in row or any(v is None for v in row.values()):
         raise CompatibilityError(f"line {line}: row has a wrong number of fields")
     fields = {k: (v or "").strip() for k, v in row.items()}
+    try:
+        decision = ReviewerDecision.parse(fields.get("reviewer_decision"))
+    except ValueError as exc:
+        raise CompatibilityError(f"line {line}: {exc}") from None
 
     try:
         pair_id = int(fields["pair_id"])
@@ -205,15 +281,17 @@ def _parse_row(row: Dict[str, Optional[str]], line: int) -> CompatibilityPair:
         missing_information=fields["missing_information"],
         rationale=fields["rationale"],
         source_reference=fields["source_reference"],
-        reviewer_decision=fields["reviewer_decision"],
+        reviewer_decision=decision,
+        empirical_test=fields.get("empirical_test", ""),
     )
 
 
 def validate_ramsey_registry(registry: CompatibilityRegistry) -> None:
-    """Validate the registry against the 14-circuit Ramsey dataset decision.
+    """Validate the registry's coverage of the 14-circuit Ramsey dataset.
 
-    Requires exactly 91 records, exactly the 14 expected circuit labels, every
-    unordered pair present once, and every pair ``compatible``.
+    Requires exactly 91 records, exactly the 14 expected circuit labels and every
+    unordered pair present once. Eligibility is not constrained here: each pair may be
+    ``Comparable`` or ``Not comparable`` (unrecognised decisions are rejected at parse time).
 
     Raises:
         CompatibilityError: on any violation.
@@ -233,12 +311,6 @@ def validate_ramsey_registry(registry: CompatibilityRegistry) -> None:
     if missing:
         raise CompatibilityError(
             f"Registry is missing {len(missing)} circuit pair(s), e.g. {missing[0]}"
-        )
-    not_compatible = [p for p in registry.pairs if p.status is not CompatibilityStatus.COMPATIBLE]
-    if not_compatible:
-        p = not_compatible[0]
-        raise CompatibilityError(
-            f"All Ramsey pairs must be 'compatible'; pair_id {p.pair_id} is {p.status.value!r}"
         )
 
 

@@ -64,3 +64,7 @@ f_w(t)   = cos( w pi / N * ( (t - t0)/t_step + 1/2 ) )            (DCT-like basi
 - The component count is mildly sensitive to the CV block count (K = 1 for 3 or 4 blocks, K = 2 for 5 or 6).
 - The scheduler, workload (round-robin requests), one-slot-per-shot budget and priorities are the frozen prior design; the drift-aware priority is the earlier windowed-|Z| score, not a score from this model.
 - No physical claim is made beyond the fit: the sources do not validate the absolute Hz scale (`t_w` assumed), nor a single-mechanism drift.
+
+## 6. Eligibility and run-specific priorities (update)
+
+The QCS evaluation schedules and scores only pairs whose registry `reviewer_decision` is `Comparable` (29 of 91); `Not comparable` pairs (62) are excluded everywhere. The drift model itself is still fit on every circuit's training data, because it models the device rather than the comparisons. Each scheduler run recalculates the drift-aware priorities from its own complete training portion for the eligible pairs and freezes them (see `docs/holdout_and_drift_aware_design.md`, section 9). Effect on the numbers: the eligible circuits are the low-wait-length ones (k up to 256), whose probabilities barely respond to the slow drift, so comparison errors are far smaller and every completed comparison is reliable at every tested threshold; the primary outcome therefore no longer separates the policies.

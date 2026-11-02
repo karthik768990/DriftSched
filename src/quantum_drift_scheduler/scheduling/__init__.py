@@ -39,9 +39,11 @@ from quantum_drift_scheduler.scheduling.simulator import run_simulation
 from quantum_drift_scheduler.scheduling.trace import load_custom_trace, load_recorded_trace
 from quantum_drift_scheduler.scheduling.workload import (
     DEFAULT_SLOTS_PER_SHOT,
+    SchedulerInput,
     build_pair_requests,
     build_slot_schedule,
     circuits_compatible,
+    prepare_scheduler_input,
     round_robin_matchings,
     shot_round_indices,
 )
@@ -61,6 +63,7 @@ __all__ = [
     "PairPolicy",
     "PairRequest",
     "PriorityLookup",
+    "SchedulerInput",
     "SchedulingError",
     "ShotArrival",
     "ShotPolicy",
@@ -81,6 +84,7 @@ __all__ = [
     "load_recorded_trace",
     "make_baseline_policy",
     "percentile",
+    "prepare_scheduler_input",
     "request_order_key",
     "round_robin_matchings",
     "run_simulation",

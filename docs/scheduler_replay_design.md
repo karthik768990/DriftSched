@@ -53,8 +53,7 @@ information (`build_pair_requests`). Circuits present in the trace are ordered b
 length `k`. The i-th shot of every circuit forms acquisition round `i`. Round `r` uses
 perfect matching `r mod (n - 1)` of a round-robin (circle-method) tournament; each matched
 pair of circuits yields one request pairing their round-`r` shots. For the 14 Ramsey
-circuits the 13 matchings partition all 91 pairs, so each pair recurs every 13 rounds and
-each shot belongs to exactly one request. A pair not marked `compatible` produces no
+circuits the 13 matchings partition all 91 pairs. With the shipped registry only the circuits that appear in a `Comparable` pair are used (9 of 14, 29 eligible pairs), and each shot belongs to at most one request. A pair whose `reviewer_decision` is not `Comparable` produces no
 request, and the simulator re-validates every request against the registry before running.
 
 Requests carry `first` (smaller `k`) and `second` (larger `k`), `ready_time` (the later
@@ -87,7 +86,7 @@ Every shot executes at most once and is consumed by at most one comparison, even
 custom workload lists a shot in several requests (stale requests are skipped). The
 simulator rejects: duplicate shot or request ids, requests referencing shots outside the
 trace, requests pairing a circuit with itself, pairs absent from the registry, pairs whose
-status is not `compatible`, requests listing the larger `k` first, non-binary outcomes,
+`reviewer_decision` is not `Comparable`, requests listing the larger `k` first, non-binary outcomes,
 out-of-order traces and unknown circuits.
 
 ## 6. Metrics

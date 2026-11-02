@@ -15,6 +15,7 @@ from quantum_drift_scheduler.scheduling import (
     build_pair_requests,
     build_slot_schedule,
     make_baseline_policy,
+    prepare_scheduler_input,
     request_order_key,
     round_robin_matchings,
     shot_round_indices,
@@ -88,11 +89,34 @@ def test_build_pair_requests_is_deterministic_and_policy_independent():
     assert build_pair_requests(trace, registry) == build_pair_requests(trace, registry)
 
 
-def test_build_pair_requests_skips_non_compatible_pairs():
-    registry = make_registry((1, 2, 4, 8), {(1, 8): CompatibilityStatus.INCOMPATIBLE, (2, 4): CompatibilityStatus.CONDITIONALLY_COMPATIBLE})
+def test_build_pair_requests_skips_not_comparable_pairs():
+    registry = make_registry((1, 2, 4, 8), not_comparable=[(1, 8), (2, 4)])
     trace = make_trace([(float(i), (1, 2, 4, 8)[i], 0) for i in range(4)])
     requests = build_pair_requests(trace, registry)
     assert requests == ()  # round 0 matches exactly (1,8) and (2,4)
+
+
+def test_compatibility_status_column_does_not_remove_requests():
+    # Only reviewer_decision decides; an informational status of "incompatible" changes nothing.
+    registry = make_registry((1, 2, 4, 8), {(1, 8): CompatibilityStatus.INCOMPATIBLE, (2, 4): CompatibilityStatus.INCOMPATIBLE})
+    trace = make_trace([(float(i), (1, 2, 4, 8)[i], 0) for i in range(4)])
+    assert len(build_pair_requests(trace, registry)) == 2
+
+
+def test_prepare_scheduler_input_keeps_only_reviewer_approved_comparisons():
+    registry = make_registry((1, 2, 4, 8), not_comparable=[(1, 8), (1, 4), (2, 8), (4, 8)])  # only (1,2) and (2,4)
+    rows = [(float(r * 10 + i), k, 0) for r in range(6) for i, k in enumerate((1, 2, 4, 8))]
+    trace = make_trace(rows)
+    prepared = prepare_scheduler_input(trace, registry)
+    approved = {frozenset((label(1), label(2))), frozenset((label(2), label(4)))}
+    assert prepared.requests and all(frozenset(r.pair_key) in approved for r in prepared.requests)
+    assert all(registry.is_eligible(*r.pair_key) for r in prepared.requests)
+    assert label(8) not in {s.circuit for s in prepared.source_shots}  # k=8 is in no Comparable pair
+    assert prepared.ineligible_circuit_shots == 6 and len(prepared.source_shots) == 2 * len(prepared.requests)
+    assert [s.shot_id for s in prepared.source_shots] == sorted(s.shot_id for s in prepared.source_shots)  # trace order
+    assert prepared.unrequested_shots == len(trace) - 6 - len(prepared.source_shots)
+    with pytest.raises(SimulationError, match="no 'Comparable' pairs"):
+        prepare_scheduler_input(trace, make_registry((1, 2), not_comparable=[(1, 2)]))
 
 
 def test_build_pair_requests_uses_supplied_rounds_for_a_subtrace():

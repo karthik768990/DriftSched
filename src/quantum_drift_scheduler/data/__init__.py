@@ -5,6 +5,7 @@ from quantum_drift_scheduler.data.compatibility import (
     CompatibilityPair,
     CompatibilityRegistry,
     CompatibilityStatus,
+    ReviewerDecision,
     UnknownPairError,
     load_compatibility_registry,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "CompatibilityPair",
     "CompatibilityRegistry",
     "CompatibilityStatus",
+    "ReviewerDecision",
     "UnknownPairError",
     "load_compatibility_registry",
 ]

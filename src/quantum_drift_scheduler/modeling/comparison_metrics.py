@@ -65,8 +65,15 @@ def compute_comparison_errors(
     time_b: np.ndarray,
     window_origin: float,
     window_seconds: float,
+    reference_times: Optional[np.ndarray] = None,
 ) -> ComparisonErrors:
-    """Comparison errors for aligned arrays of comparisons (empty input is allowed)."""
+    """Comparison errors for aligned arrays of comparisons (empty input is allowed).
+
+    By default the common reference time is the midpoint of the window containing the
+    comparison's *earlier execution*. Pass ``reference_times`` (one per comparison) to fix the
+    reference independently of when a scheduler happened to execute, e.g. the window of the
+    request's arrival; the same request then has the same reference value under every policy.
+    """
     la, lb = np.asarray(wait_length_a, dtype=float), np.asarray(wait_length_b, dtype=float)
     ta, tb = np.asarray(time_a, dtype=float), np.asarray(time_b, dtype=float)
     if not (la.shape == lb.shape == ta.shape == tb.shape):
@@ -76,7 +83,16 @@ def compute_comparison_errors(
     if np.any(la < 1) or np.any(lb < 1):
         raise ComparisonMetricError("Wait lengths must be positive")
     first = np.minimum(ta, tb)
-    t_ref = reference_time(first, window_origin, window_seconds)
+    if reference_times is None:
+        t_ref = reference_time(first, window_origin, window_seconds)
+        windows = window_index(first, window_origin, window_seconds)
+    else:
+        t_ref = np.asarray(reference_times, dtype=float)
+        if t_ref.shape != ta.shape:
+            raise ComparisonMetricError("reference_times must have one entry per comparison")
+        if not np.all(np.isfinite(t_ref)):
+            raise ComparisonMetricError("Reference timestamps must be finite")
+        windows = window_index(t_ref, window_origin, window_seconds)
     measured = model.probability(la, ta) - model.probability(lb, tb)
     reference = model.probability(la, t_ref) - model.probability(lb, t_ref)
     synchronous = model.probability(la, first) - model.probability(lb, first)
@@ -85,7 +101,7 @@ def compute_comparison_errors(
         reference_delta=reference,
         error=np.abs(measured - reference),
         reference_time=t_ref,
-        window_index=window_index(first, window_origin, window_seconds),
+        window_index=windows,
         synchronous_error=np.abs(measured - synchronous),
     )
 

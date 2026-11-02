@@ -12,6 +12,7 @@ from typing import Any, Dict, List
 
 import numpy as np
 
+from quantum_drift_scheduler.analysis.priorities import priority_table_to_dict
 from quantum_drift_scheduler.config import DEFAULT_CONFIG
 from quantum_drift_scheduler.modeling.circuit_grouping import empirical_probabilities
 from quantum_drift_scheduler.modeling.pipeline import PipelineResult
@@ -152,6 +153,15 @@ def build_results(result: PipelineResult) -> Dict[str, Any]:
         "scheduler": {
             "boundary": result.scheduler.split.boundary,
             "holdout_shots": len(result.scheduler.split.holdout),
+            "simulated_source_shots": len(result.scheduler.source_shots),
+            "eligibility": {
+                "authority": "reviewer_decision",
+                "eligible_pairs": [list(p) for p in result.scheduler.eligible_pairs],
+                "excluded_pair_count": result.scheduler.excluded_pair_count,
+                "ineligible_circuit_shots_excluded": result.scheduler.ineligible_circuit_shots,
+                "unrequested_shots_excluded": result.scheduler.unrequested_shots,
+            },
+            "priorities_for_this_run": priority_table_to_dict(result.scheduler.priorities),
             "total_slots": result.scheduler.schedule.total_slots,
             "slot_seconds": result.scheduler.schedule.slot_seconds,
             "workload_requests": result.scheduler.workload_requests,

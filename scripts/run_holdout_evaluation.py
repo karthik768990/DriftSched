@@ -71,8 +71,11 @@ def format_report(evaluation: HoldoutEvaluation, dataset: str, priorities_path: 
         f"Holdout range (s):       [{split.holdout_range[0]!r}, {split.holdout_range[1]!r}]  shots={len(split.holdout)}",
         f"Slot schedule:           {evaluation.schedule.total_slots} slots x {evaluation.schedule.slot_seconds:.6f} s "
         f"(slots per shot = {evaluation.slots_per_shot})",
-        f"Pair-request workload:   {evaluation.workload_requests} requests "
-        f"({evaluation.unrequested_shots} holdout shots without a request)",
+        f"Eligibility:            reviewer_decision is the only authority: {len(evaluation.eligible_pairs)} Comparable "
+        f"pairs scheduled, {evaluation.excluded_pair_count} Not comparable excluded",
+        f"Pair-request workload:   {evaluation.workload_requests} requests over {len(evaluation.source_shots)} "
+        f"simulated holdout shots ({evaluation.ineligible_circuit_shots} shots of circuits in no Comparable pair and "
+        f"{evaluation.unrequested_shots} unrequested shots excluded for every policy)",
         f"Training fingerprint:    {meta.training_fingerprint}",
         f"Holdout fingerprint:     {evaluation.holdout_fingerprint}",
         "",
@@ -83,7 +86,8 @@ def format_report(evaluation: HoldoutEvaluation, dataset: str, priorities_path: 
         "",
         f"Score coverage:          {evaluation.priorities.positive_count} pairs with positive score, "
         f"{evaluation.priorities.zero_count} with zero score "
-        f"(all {len(evaluation.priorities.priorities)} remain 'compatible')",
+        f"(priorities exist only for the {len(evaluation.priorities.priorities)} Comparable pairs, "
+        "recalculated for this run from the complete training portion)",
         "Top 10 learned priorities (higher = schedule sooner; score = 1 / (training mean|Z| + 1e-12)):",
         f"  {'rank':<5}{'circuit_a':<16}{'circuit_b':<16}{'mean|Z|':>9}{'mean|D|':>9}{'valid':>7}{'score':>10}",
     ]

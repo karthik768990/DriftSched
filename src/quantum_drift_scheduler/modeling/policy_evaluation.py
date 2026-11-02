@@ -7,6 +7,7 @@ slot budget and prebuilt request workload. This module only *scores* those timel
 * ``Delta_measured`` / ``Delta_reference`` / ``E_AB`` come from the supplied drift model
   and the actual execution timestamps (``comparison_metrics``); they are model-derived,
   not observed measurements, and **no outcomes are simulated**.
+* Only pairs whose registry ``reviewer_decision`` is ``Comparable`` are scheduled and scored.
 * A comparison is *reliable* iff it completed and ``E_AB <= reliability_threshold``; the
   threshold is a fixed configuration value (see ``config.RELIABILITY_THRESHOLD``).
 * Primary outcome: reliable comparisons per device-hour of the (identical) slot budget.
@@ -40,7 +41,7 @@ from quantum_drift_scheduler.scheduling import (
     ConsecutivePairPolicy,
     PairRequest,
     ShotArrival,
-    build_pair_requests,
+    prepare_scheduler_input,
     run_simulation,
 )
 
@@ -107,13 +108,20 @@ def build_policy_arrays(
     window_origin: float,
     window_seconds: float,
     reliability_threshold: float,
+    reference_times: Optional[np.ndarray] = None,
 ) -> Dict[str, PolicyArrays]:
-    """Score every policy's holdout timeline against ``model`` on the common workload."""
+    """Score every policy's holdout timeline against ``model`` on the common workload.
+
+    ``reference_times`` (one per request, aligned with ``requests``) fixes each request's common
+    reference timestamp independently of the policy; see ``compute_comparison_errors``.
+    """
     ids = tuple(r.request_id for r in requests)
     if len(set(ids)) != len(ids):
         raise PolicyEvaluationError("Duplicate request ids in the workload")
     position = {rid: i for i, rid in enumerate(ids)}
     n = len(requests)
+    if reference_times is not None and len(reference_times) != n:
+        raise PolicyEvaluationError("reference_times must have one entry per request")
     k_a = np.array([r.wait_length_first for r in requests], dtype=float)
     k_b = np.array([r.wait_length_second for r in requests], dtype=float)
 
@@ -144,6 +152,7 @@ def build_policy_arrays(
             errs = compute_comparison_errors(
                 model, k_a[completed], arrays["execution_a"][completed],
                 k_b[completed], arrays["execution_b"][completed], window_origin, window_seconds,
+                reference_times=None if reference_times is None else np.asarray(reference_times)[completed],
             )
             measured[completed], reference[completed] = errs.measured_delta, errs.reference_delta
             error[completed], sync[completed] = errs.error, errs.synchronous_error
@@ -273,10 +282,11 @@ def training_block_length(
     training-fitted ``model``, standardises each pair's errors, and applies
     ``choose_block_length`` (integrated autocorrelation time, whole workload cycles).
     """
-    requests = build_pair_requests(train_trace, registry)
+    prepared = prepare_scheduler_input(train_trace, registry)
+    requests = prepared.requests
     if not requests:
         raise ObservationError("Training trace produced no comparison requests")
-    result = run_simulation(train_trace, registry, ConsecutivePairPolicy(), requests=requests)
+    result = run_simulation(prepared.source_shots, registry, ConsecutivePairPolicy(), requests=requests)
     by_request = {c.request_id: c for c in result.comparisons}
     ordered = [by_request[r.request_id] for r in requests if r.request_id in by_request]
     if len(ordered) < 20:
@@ -296,4 +306,4 @@ def training_block_length(
         m = pairs == key
         sd = errs[m].std()
         series[m] = (errs[m] - errs[m].mean()) / (sd if sd > 0 else 1.0)
-    return choose_block_length(series, cycle_length=len(registry.compatible_pairs()), n_items=n_holdout_requests)
+    return choose_block_length(series, cycle_length=len(registry.eligible_pairs()), n_items=n_holdout_requests)

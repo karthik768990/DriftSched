@@ -8,8 +8,15 @@ windowing and pairwise-drift diagnostics (``compute_windowed_stats`` and
 
 A pair with fewer than ``min_valid_transitions`` valid training transitions (or a
 non-finite ``mean_abs_z``) gets ``priority_score = 0.0``. Priority never changes
-compatibility: every record keeps the registry status ``compatible`` and no
-threshold on ``mean_abs_z`` is applied. No physical Ramsey/T2* model is fitted.
+eligibility: only pairs whose registry ``reviewer_decision`` is ``Comparable`` are scored
+(``Not comparable`` pairs receive no priority at all), and no threshold on ``mean_abs_z``
+is applied. No physical Ramsey/T2* model is fitted.
+
+Priorities are *run-specific*: ``learn_pair_priorities`` is called once per scheduler run
+on that run's complete training portion and the resulting immutable table is passed
+straight to the policy. Nothing is read back from disk, the artifact version rejects tables
+written by older code, and ``PriorityTable.assert_matches`` detects a table that was computed
+from different training data or a different set of eligible pairs.
 """
 
 import hashlib
@@ -27,7 +34,6 @@ from quantum_drift_scheduler.analysis.windowing import (
 )
 from quantum_drift_scheduler.data.compatibility import (
     CompatibilityRegistry,
-    CompatibilityStatus,
     wait_length,
 )
 from quantum_drift_scheduler.data.models import CircuitExperimentRecord
@@ -37,7 +43,7 @@ PRIORITY_EPSILON = 1e-12
 SCORE_FORMULA = "priority_score = 1.0 / (mean_abs_z + 1e-12); 0.0 if training data is insufficient"
 DEFAULT_MIN_VALID_TRANSITIONS = 10
 DEFAULT_MIN_OBSERVATIONS_PER_WINDOW = 5
-ARTIFACT_VERSION = 1
+ARTIFACT_VERSION = 2  # v2: reviewer_decision-based eligibility, eligible-pair fingerprint
 
 
 class PriorityError(ValueError):
@@ -54,7 +60,7 @@ class PairPriority:
 
     circuit_a: str
     circuit_b: str
-    compatibility_status: str
+    reviewer_decision: str
     valid_transitions: int
     unusable_transitions: int
     mean_abs_d: Optional[float]
@@ -81,6 +87,7 @@ class PriorityMetadata:
     train_end: float
     train_shot_count: int
     training_fingerprint: str
+    eligible_pairs_fingerprint: str
     min_valid_transitions: int
     min_observations_per_window: int
     epsilon: float
@@ -122,14 +129,23 @@ class PriorityTable:
         return sum(1 for p in self.priorities if p.priority_score == 0.0)
 
     def validate_against(self, registry: CompatibilityRegistry) -> None:
-        """Require exactly one record per ``compatible`` registry pair."""
-        expected = {p.key for p in registry.compatible_pairs()}
+        """Require exactly one record per ``Comparable`` registry pair (and none for others)."""
+        expected = {p.key for p in registry.eligible_pairs()}
         found = {p.key for p in self.priorities}
         if expected != found:
             raise PriorityError(
-                f"Priority table does not match the registry: missing={len(expected - found)}, "
-                f"unexpected={len(found - expected)}"
+                f"Priority table does not match the registry's Comparable pairs: "
+                f"missing={len(expected - found)}, unexpected={len(found - expected)}"
             )
+
+    def assert_matches(self, train_shots: Sequence[ShotArrival], registry: CompatibilityRegistry) -> None:
+        """Raise ``PriorityError`` unless this table was computed from exactly these training
+        shots and this registry's eligible pairs (guards against stale or reused priorities)."""
+        self.validate_against(registry)
+        if self.metadata.training_fingerprint != training_fingerprint(train_shots):
+            raise PriorityError("Stale priorities: the table was computed from different training data")
+        if self.metadata.eligible_pairs_fingerprint != eligible_pairs_fingerprint(registry):
+            raise PriorityError("Stale priorities: the table was computed for a different set of eligible pairs")
 
 
 def training_fingerprint(train_shots: Sequence[ShotArrival]) -> str:
@@ -138,6 +154,12 @@ def training_fingerprint(train_shots: Sequence[ShotArrival]) -> str:
     for shot in train_shots:
         digest.update(f"{shot.shot_id}|{shot.arrival_time!r}|{shot.circuit}|{shot.outcome}\n".encode("utf-8"))
     return digest.hexdigest()
+
+
+def eligible_pairs_fingerprint(registry: CompatibilityRegistry) -> str:
+    """SHA-256 over the sorted eligible (``Comparable``) pairs of ``registry``."""
+    keys = sorted("|".join(sorted(p.key)) for p in registry.eligible_pairs())
+    return hashlib.sha256("\n".join(keys).encode("utf-8")).hexdigest()
 
 
 def _records_from_shots(train_shots: Sequence[ShotArrival]) -> List[CircuitExperimentRecord]:
@@ -195,9 +217,13 @@ def learn_pair_priorities(
             f"learning (first: {late[0].shot_id!r}); only training data may be used"
         )
 
-    records = _records_from_shots(train_shots)
+    eligible = registry.eligible_pairs()
+    if not eligible:
+        raise PriorityError("The registry has no 'Comparable' pairs; there is nothing to prioritise")
+    needed = set(registry.eligible_circuits())
+    records = [r for r in _records_from_shots(train_shots) if r.circuit_label in needed]
     present = {r.circuit_label for r in records}
-    missing = sorted(set(registry.circuits) - present)
+    missing = sorted(needed - present)
     if missing:
         raise PriorityError(f"Training partition has no shots for circuit(s): {missing}")
 
@@ -210,13 +236,13 @@ def learn_pair_priorities(
     }
 
     raw = []
-    for pair in registry.compatible_pairs():
+    for pair in eligible:
         a, b = sorted((pair.circuit_a, pair.circuit_b), key=lambda c: (wait_length(c), c))
         diag = analyze_pairwise_drift(stats[a], stats[b], min_observations_per_window)
         mean_abs_z = _finite_or_none(diag.mean_absolute_z)
         sufficient = diag.valid_transitions >= min_valid_transitions and mean_abs_z is not None
         score = 1.0 / (mean_abs_z + PRIORITY_EPSILON) if sufficient else 0.0
-        raw.append((a, b, pair.status, diag, mean_abs_z, sufficient, score))
+        raw.append((a, b, pair.reviewer_decision, diag, mean_abs_z, sufficient, score))
 
     ranked = sorted(raw, key=lambda r: (-r[6], wait_length(r[0]), wait_length(r[1])))
     rank_of = {(r[0], r[1]): i + 1 for i, r in enumerate(ranked)}
@@ -224,7 +250,7 @@ def learn_pair_priorities(
         PairPriority(
             circuit_a=a,
             circuit_b=b,
-            compatibility_status=status.value,
+            reviewer_decision=decision.value,
             valid_transitions=diag.valid_transitions,
             unusable_transitions=diag.unusable_transitions,
             mean_abs_d=_finite_or_none(diag.mean_absolute_disparity),
@@ -234,7 +260,7 @@ def learn_pair_priorities(
             priority_score=score,
             rank=rank_of[(a, b)],
         )
-        for a, b, status, diag, mean_abs_z, sufficient, score in raw
+        for a, b, decision, diag, mean_abs_z, sufficient, score in raw
     )
     table = PriorityTable(
         priorities=priorities,
@@ -247,6 +273,7 @@ def learn_pair_priorities(
             train_end=max(s.arrival_time for s in train_shots),
             train_shot_count=len(train_shots),
             training_fingerprint=training_fingerprint(train_shots),
+            eligible_pairs_fingerprint=eligible_pairs_fingerprint(registry),
             min_valid_transitions=min_valid_transitions,
             min_observations_per_window=min_observations_per_window,
             epsilon=PRIORITY_EPSILON,
@@ -271,6 +298,7 @@ def priority_table_to_dict(table: PriorityTable) -> dict:
             "train_end": m.train_end,
             "train_shot_count": m.train_shot_count,
             "training_fingerprint": m.training_fingerprint,
+            "eligible_pairs_fingerprint": m.eligible_pairs_fingerprint,
             "min_valid_transitions": m.min_valid_transitions,
             "min_observations_per_window": m.min_observations_per_window,
             "epsilon": m.epsilon,
@@ -282,7 +310,7 @@ def priority_table_to_dict(table: PriorityTable) -> dict:
             {
                 "circuit_a": p.circuit_a,
                 "circuit_b": p.circuit_b,
-                "compatibility_status": p.compatibility_status,
+                "reviewer_decision": p.reviewer_decision,
                 "valid_transitions": p.valid_transitions,
                 "unusable_transitions": p.unusable_transitions,
                 "mean_abs_d": p.mean_abs_d,

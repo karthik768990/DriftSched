@@ -6,7 +6,7 @@
 **Authoritative Registry:** `data/compatibility_registry.csv` (loader: `src/quantum_drift_scheduler/data/compatibility.py`)  
 
 > [!IMPORTANT]
-> **Final decision for this release.** All 91 Ramsey circuit pairs are `compatible`. The decision rests only on circuit structure: every circuit belongs to the same Ramsey family and only the wait length `(Gw)^k` differs. It is recorded in `data/compatibility_registry.csv`, the single source of truth read by the application. Empirical drift diagnostics (mean |Z|, phase wrapping, long-wait decay) do **not** change compatibility; they may influence scheduling *priority* in a later phase. Sections 5-10 below are the historical design analysis that led to this decision; where they describe `candidate_for_review` or pending approval, this note supersedes them.
+> **Current decision.** `reviewer_decision` in `data/compatibility_registry.csv` is the only authority on eligibility: `Comparable` pairs (29 of 91) may be scheduled and `Not comparable` pairs (62) never are. `compatibility_status` and `empirical_test` are provenance only. Empirical drift diagnostics (mean |Z|, phase wrapping, long-wait decay) do **not** change eligibility; they only order eligible pairs. The earlier statement that all 91 pairs were approved is superseded. Sections 5-10 are the historical design analysis.
 
 ---
 

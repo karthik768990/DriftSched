@@ -9,6 +9,7 @@ import numpy as np
 import pytest
 
 from quantum_drift_scheduler.analysis.holdout import SplitError
+from quantum_drift_scheduler.data.compatibility import load_compatibility_registry
 from quantum_drift_scheduler.modeling import config as qcs_config
 from quantum_drift_scheduler.modeling.circuit_grouping import GroupingError
 from quantum_drift_scheduler.modeling.config import RELIABILITY_THRESHOLD, FullEvaluationConfig
@@ -102,7 +103,10 @@ def test_real_dataset_policy_evaluation_is_matched(real):
         assert np.all(np.abs(a.slot_b[a.completed] - a.slot_a[a.completed]) == 1)
     assert np.abs(arrays["arrival-order"].slot_b - arrays["arrival-order"].slot_a)[first.completed].max() > 1
     shots = {name: a.executed_shots for name, a in arrays.items()}
-    assert all(0.999 * 20959 <= n <= 20959 for n in shots.values())
+    n_source = len(real.scheduler.source_shots)  # reviewer-approved comparisons only, identical for all policies
+    assert 0 < n_source < 20959 and all(0.99 * n_source <= n <= n_source for n in shots.values())
+    eligible = {frozenset((p.circuit_a, p.circuit_b)) for p in load_compatibility_registry().eligible_pairs()}
+    assert all(frozenset((a, b)) in eligible for arr in arrays.values() for a, b in zip(arr.circuit_a, arr.circuit_b))
 
 
 def test_real_dataset_intervals_and_differences(real):

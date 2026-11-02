@@ -22,6 +22,7 @@ from quantum_drift_scheduler.scheduling import (
     compute_metrics,
     load_recorded_trace,
     percentile,
+    prepare_scheduler_input,
     run_simulation,
 )
 from quantum_drift_scheduler.scheduling.workload import make_request
@@ -177,13 +178,20 @@ def test_policies_share_budget_and_workload():
 
 
 @pytest.mark.parametrize("policy", POLICIES)
-def test_every_completed_comparison_is_registry_compatible(policy):
-    registry = make_registry((1, 2, 4, 8), {(1, 2): CompatibilityStatus.INCOMPATIBLE})
-    trace = _mixed_trace()
-    result = run_simulation(trace, registry, policy())
+def test_excluded_pairs_are_never_completed(policy):
+    registry = make_registry((1, 2, 4, 8), not_comparable=[(1, 2), (4, 8)])
+    result = run_simulation(_mixed_trace(), registry, policy())
     assert result.comparisons
-    assert all(registry.is_compatible(c.circuit_a, c.circuit_b) for c in result.comparisons)
-    assert not any({c.circuit_a, c.circuit_b} == {label(1), label(2)} for c in result.comparisons)
+    assert all(registry.is_eligible(c.circuit_a, c.circuit_b) for c in result.comparisons)
+    banned = ({label(1), label(2)}, {label(4), label(8)})
+    assert not any({c.circuit_a, c.circuit_b} in banned for c in result.comparisons)
+
+
+@pytest.mark.parametrize("policy", POLICIES)
+def test_status_column_does_not_exclude_a_comparable_pair(policy):
+    registry = make_registry((1, 2, 4, 8), {(1, 2): CompatibilityStatus.INCOMPATIBLE})  # status only
+    result = run_simulation(_mixed_trace(), registry, policy())
+    assert any({c.circuit_a, c.circuit_b} == {label(1), label(2)} for c in result.comparisons)
 
 
 @pytest.mark.parametrize("policy", POLICIES)
@@ -207,14 +215,17 @@ def test_empty_and_single_shot_inputs(policy):
 # ---------------------------------------------------------------- guards
 
 
-def test_workload_with_incompatible_or_missing_pair_is_rejected():
+def test_workload_with_not_comparable_or_missing_pair_is_rejected():
     trace = make_trace([(0.0, 1, 1), (0.0, 2, 0)])
     request = requests_of(trace, [(0, 1)])
+    registry = make_registry((1, 2), not_comparable=[(1, 2)])
+    for policy in POLICIES:
+        with pytest.raises(SimulationError, match="only 'Comparable' pairs may complete"):
+            run_simulation(trace, registry, policy(), grid(2), request)
     for status in (CompatibilityStatus.INCOMPATIBLE, CompatibilityStatus.CONDITIONALLY_COMPATIBLE):
-        registry = make_registry((1, 2), {(1, 2): status})
+        informational = make_registry((1, 2), {(1, 2): status})  # status alone cannot reject a Comparable pair
         for policy in POLICIES:
-            with pytest.raises(SimulationError, match="only 'compatible' pairs may complete"):
-                run_simulation(trace, registry, policy(), grid(2), request)
+            assert len(run_simulation(trace, informational, policy(), grid(2), request).comparisons) == 1
     full = make_registry((1, 2, 4))
     missing = CompatibilityRegistry([p for p in full.pairs if {p.circuit_a, p.circuit_b} != {label(1), label(2)}])
     for policy in POLICIES:
@@ -308,13 +319,18 @@ def recorded():
 @pytest.mark.parametrize("policy", POLICIES)
 def test_default_recorded_dataset_replay_runs(recorded, policy):
     registry, trace = recorded
-    result = run_simulation(trace, registry, policy())
+    prepared = prepare_scheduler_input(trace, registry)
+    result = run_simulation(prepared.source_shots, registry, policy(), requests=prepared.requests)
     m = compute_metrics(result)
-    assert m.source_shots == 84000 and m.total_slots == 84000
-    assert m.executed_shots + m.unexecuted_shots == 84000
-    assert m.completed_comparisons >= 0.99 * 42000  # tail/idle loss only
+    n = len(prepared.source_shots)
+    assert 0 < n < 84000 and m.source_shots == n and m.total_slots == n
+    assert m.executed_shots + m.unexecuted_shots == n
+    assert m.completed_comparisons >= 0.99 * len(prepared.requests)  # tail/idle loss only
     assert len({sid for c in result.comparisons for sid in c.shot_ids}) == 2 * m.completed_comparisons
-    assert all(registry.is_compatible(c.circuit_a, c.circuit_b) for c in result.comparisons)
+    eligible = {frozenset((p.circuit_a, p.circuit_b)) for p in registry.eligible_pairs()}
+    assert all(frozenset(c.pair_key) in eligible for c in result.comparisons)  # only reviewer-approved pairs
+    assert {e.circuit for e in result.executed} <= set(registry.eligible_circuits())
+    assert {s.circuit for s in prepared.source_shots} <= set(registry.eligible_circuits())
     assert all(math.isclose(c.time_separation, c.slot_separation * result.schedule.slot_seconds) for c in result.comparisons)
     if policy is ConsecutivePairPolicy:
         assert m.slot_separation.maximum == 1.0
@@ -376,4 +392,6 @@ def test_cli_rejects_bad_arguments(tmp_path, capsys):
 def test_cli_default_dataset_runs(capsys):
     code, out, err = run_cli(capsys, "--policy", "consecutive-pair")
     assert code == 0, err
-    assert "Source shots:            84000" in out
+    registry, trace = load_compatibility_registry(), load_recorded_trace()
+    n = len(prepare_scheduler_input(trace, registry).source_shots)
+    assert f"Source shots:            {n}" in out and n < 84000  # only reviewer-approved comparisons

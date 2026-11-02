@@ -21,7 +21,6 @@ from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from quantum_drift_scheduler.data.compatibility import (
     CompatibilityRegistry,
-    CompatibilityStatus,
     UnknownPairError,
     wait_length,
 )
@@ -66,7 +65,7 @@ def validate_trace(trace: Sequence[ShotArrival], registry: CompatibilityRegistry
 def validate_requests(
     requests: Sequence[PairRequest], trace: Sequence[ShotArrival], registry: CompatibilityRegistry
 ) -> None:
-    """Reject a workload that references foreign shots or non-``compatible`` pairs."""
+    """Reject a workload that references foreign shots or non-``Comparable`` pairs."""
     by_id = {shot.shot_id: shot for shot in trace}
     ids: Set[str] = set()
     for request in requests:
@@ -82,15 +81,15 @@ def validate_requests(
         if a == b:
             raise SimulationError(f"Request {request.request_id!r} pairs two shots of circuit {a!r}")
         try:
-            status = registry.get_status(a, b)
+            decision = registry.get_decision(a, b)
         except UnknownPairError:
             raise SimulationError(
                 f"Request {request.request_id!r} pair ({a!r}, {b!r}) is not in the registry"
             ) from None
-        if status is not CompatibilityStatus.COMPATIBLE:
+        if not registry.is_eligible(a, b):  # reviewer_decision is the only eligibility authority
             raise SimulationError(
-                f"Request {request.request_id!r} pair ({a!r}, {b!r}) has status {status.value!r}; "
-                "only 'compatible' pairs may complete"
+                f"Request {request.request_id!r} pair ({a!r}, {b!r}) has reviewer_decision {decision.value!r}; "
+                "only 'Comparable' pairs may complete"
             )
         if (wait_length(a), a) > (wait_length(b), b):
             raise SimulationError(
@@ -111,7 +110,8 @@ def run_simulation(
 
     Args:
         trace: Shots in non-decreasing ``(arrival_time, source_index)`` order.
-        registry: Compatibility registry; only ``compatible`` pairs may complete.
+        registry: Compatibility registry; only pairs whose ``reviewer_decision`` is
+            ``Comparable`` may complete.
         policy: A shot policy (``dispatch_unit == "shot"``) or pair policy (``"pair"``).
         schedule: Slot grid. Default: ``build_slot_schedule(trace, slots_per_shot)``.
         requests: Prebuilt pair-request workload. Default: ``build_pair_requests(trace)``.

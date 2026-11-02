@@ -11,6 +11,7 @@ from quantum_drift_scheduler.analysis.holdout import split_trace
 from quantum_drift_scheduler.analysis.priorities import (
     LeakageError,
     PriorityError,
+    eligible_pairs_fingerprint,
     learn_pair_priorities,
     load_priority_table,
     priority_table_to_dict,
@@ -68,7 +69,7 @@ def test_score_formula_and_fields():
         assert p.sufficient_data and p.valid_transitions >= 10
         assert p.priority_score == pytest.approx(1.0 / (p.mean_abs_z + 1e-12))
         assert p.mean_abs_d is not None and p.rms_d is not None and p.rms_d >= p.mean_abs_d
-        assert p.compatibility_status == "compatible"
+        assert p.reviewer_decision == "Comparable"
     assert [p.rank for p in sorted(table.priorities, key=lambda p: -p.priority_score)] == [1, 2, 3]
     assert table.metadata.score_formula.startswith("priority_score = 1.0 / (mean_abs_z + 1e-12)")
 
@@ -125,7 +126,7 @@ def test_zero_score_when_training_data_insufficient():
     assert table.positive_count == 0 and table.zero_count == 3
     for p in table.priorities:
         assert p.priority_score == 0.0 and not p.sufficient_data
-        assert p.compatibility_status == "compatible"  # compatibility is untouched
+        assert p.reviewer_decision == "Comparable"  # eligibility is untouched
         assert p.valid_transitions > 0 and p.mean_abs_z is not None  # diagnostics are still recorded
     assert sorted(p.rank for p in table.priorities) == [1, 2, 3]  # ranks stay deterministic
 
@@ -165,23 +166,81 @@ def test_invalid_learning_arguments():
         learn_pair_priorities(split.train, registry, min_valid_transitions=0, **kwargs)
 
 
-def test_all_91_default_pairs_scored_and_remain_compatible():
+def test_only_comparable_default_pairs_receive_priorities():
     registry = load_compatibility_registry()
     trace = load_recorded_trace()
-    split = split_trace(trace, 0.75, required_circuits=registry.circuits)
+    split = split_trace(trace, 0.75, required_circuits=registry.eligible_circuits())
     table = learn_pair_priorities(split.train, registry, split.boundary, split.min_timestamp, 0.75)
-    assert len(table.priorities) == 91
-    assert table.positive_count + table.zero_count == 91
-    assert table.positive_count == 91 and table.zero_count == 0
-    assert all(p.compatibility_status == "compatible" and p.sufficient_data for p in table.priorities)
+    eligible = {p.key for p in registry.eligible_pairs()}
+    assert len(table.priorities) == 29 and {p.key for p in table.priorities} == eligible
+    assert table.positive_count + table.zero_count == 29 and table.positive_count == 29
+    assert all(p.reviewer_decision == "Comparable" and p.sufficient_data for p in table.priorities)
     assert all(math.isfinite(p.priority_score) and p.priority_score > 0 for p in table.priorities)
-    assert len(registry.compatible_pairs()) == 91  # registry itself is untouched
-    assert all(registry.is_compatible(p.circuit_a, p.circuit_b) for p in table.priorities)
-    assert sorted(p.rank for p in table.priorities) == list(range(1, 92))
-    top = table.top(10)
-    assert len(top) == 10 and top[0].priority_score >= top[-1].priority_score
-    for p in table.priorities:  # canonical orientation: smaller wait length first
+    for excluded in registry.excluded_pairs():  # Not comparable pairs have no priority at all
+        with pytest.raises(PriorityError, match="No learned priority"):
+            table.score(excluded.circuit_a, excluded.circuit_b)
+    assert len(registry.eligible_pairs()) == 29 and len(registry.excluded_pairs()) == 62  # registry untouched
+    assert sorted(p.rank for p in table.priorities) == list(range(1, 30))
+    assert table.metadata.train_shot_count == len(split.train) == 63041  # the complete training portion
+    for p in table.priorities:
         assert p.priority_score == pytest.approx(1.0 / (p.mean_abs_z + 1e-12))
+
+
+def test_not_comparable_pairs_get_no_priority_however_strong_their_drift_agreement():
+    trace = drift_trace()
+    registry = make_registry((1, 2, 4), not_comparable=[(1, 2)])  # (1, 2) shares drift: it would rank first
+    split = split_trace(trace, 0.75, required_circuits=registry.eligible_circuits())
+    table = learn_pair_priorities(split.train, registry, split.boundary, split.min_timestamp, 0.75, WINDOW)
+    assert {p.key for p in table.priorities} == {frozenset((label(1), label(4))), frozenset((label(2), label(4)))}
+    with pytest.raises(PriorityError, match="No learned priority"):
+        table.score(label(1), label(2))
+    with pytest.raises(PriorityError, match="nothing to prioritise"):
+        learn_pair_priorities(split.train, make_registry((1, 2, 4), not_comparable=[(1, 2), (1, 4), (2, 4)]),
+                              split.boundary, split.min_timestamp, 0.75, WINDOW)
+
+
+def test_priorities_use_the_complete_training_portion_not_a_recent_window():
+    trace = drift_trace()
+    split, table = learn(trace)
+    n_windows = int(math.floor((math.nextafter(split.boundary, -math.inf) - split.min_timestamp) / WINDOW)) + 1
+    assert n_windows >= 15
+    assert all(p.valid_transitions == n_windows - 1 for p in table.priorities)  # every window of the training period
+    assert table.metadata.train_shot_count == len(split.train)
+    assert table.metadata.train_start == split.train[0].arrival_time and table.metadata.train_end == split.train[-1].arrival_time
+
+    def flip(lo, hi):
+        return tuple(dataclasses.replace(s, outcome=1 - s.outcome) if lo <= s.arrival_time < hi else s for s in trace)
+
+    first_window = flip(split.min_timestamp, split.min_timestamp + WINDOW)
+    last_window = flip(split.boundary - WINDOW, split.boundary)
+    assert learn(first_window)[1] != table  # the earliest training data matters ...
+    assert learn(last_window)[1] != table  # ... and so does the latest: nothing is truncated
+
+
+def test_stale_tables_are_detected():
+    trace = drift_trace()
+    split, table = learn(trace)
+    registry = make_registry((1, 2, 4))
+    table.assert_matches(split.train, registry)  # fresh: passes
+    other_train = tuple(dataclasses.replace(s, outcome=1 - s.outcome) if s.circuit == label(1) else s for s in split.train)
+    with pytest.raises(PriorityError, match="different training data"):
+        table.assert_matches(other_train, registry)
+    with pytest.raises(PriorityError, match="Comparable pairs"):
+        table.assert_matches(split.train, make_registry((1, 2, 4), not_comparable=[(1, 2)]))
+    assert eligible_pairs_fingerprint(registry) != eligible_pairs_fingerprint(make_registry((1, 2, 4), not_comparable=[(1, 2)]))
+    assert eligible_pairs_fingerprint(registry) == eligible_pairs_fingerprint(make_registry((1, 2, 4)))
+
+
+def test_priority_table_is_immutable_once_built():
+    _, table = learn(drift_trace())
+    before = priority_table_to_dict(table)
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        table.priorities = ()
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        table.priorities[0].priority_score = 99.0
+    with pytest.raises(dataclasses.FrozenInstanceError):
+        table.metadata.boundary = 0.0
+    assert isinstance(table.priorities, tuple) and priority_table_to_dict(table) == before
 
 
 def test_artifact_round_trip_and_strict_json(tmp_path):
@@ -191,9 +250,11 @@ def test_artifact_round_trip_and_strict_json(tmp_path):
     assert load_priority_table(path) == table
     assert path.read_text(encoding="utf-8") == path.read_text(encoding="utf-8")
     data = json.loads(path.read_text(encoding="utf-8"), parse_constant=lambda c: pytest.fail(f"non-finite {c}"))
-    assert data["artifact_version"] == 1 and len(data["priorities"]) == 3
+    assert data["artifact_version"] == 2 and len(data["priorities"]) == 3
     assert data["positive_score_pairs"] == 3 and data["zero_score_pairs"] == 0
     assert data["metadata"]["training_fingerprint"] == table.metadata.training_fingerprint
+    assert data["metadata"]["eligible_pairs_fingerprint"] == table.metadata.eligible_pairs_fingerprint
+    assert all(row["reviewer_decision"] == "Comparable" for row in data["priorities"])
 
 
 def test_artifact_rejects_malformed_files(tmp_path):
@@ -201,8 +262,11 @@ def test_artifact_rejects_malformed_files(tmp_path):
     bad.write_text("{not json", encoding="utf-8")
     with pytest.raises(PriorityError, match="not valid JSON"):
         load_priority_table(bad)
-    bad.write_text(json.dumps({"artifact_version": 1}), encoding="utf-8")
+    bad.write_text(json.dumps({"artifact_version": 2}), encoding="utf-8")
     with pytest.raises(PriorityError, match="Malformed"):
+        load_priority_table(bad)
+    bad.write_text(json.dumps({"artifact_version": 1, "metadata": {}, "priorities": []}), encoding="utf-8")
+    with pytest.raises(PriorityError, match="Unsupported"):  # stale v1 artifacts can never be loaded
         load_priority_table(bad)
     bad.write_text(json.dumps({"artifact_version": 99, "metadata": {}, "priorities": []}), encoding="utf-8")
     with pytest.raises(PriorityError, match="Unsupported"):
