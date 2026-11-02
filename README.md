@@ -335,3 +335,39 @@ python scripts/run_deployment_validation.py     # results/deployment_validation/
 The validation fits on an earlier interval (basis span from that interval alone) and forecasts the next one, for the DCT-like model, a last-value hold, a per-circuit constant and p = 0.5, over 4 folds (9 in a sensitivity design). Result: neither drift forecast beats both baselines, in any subset, so no forecasting skill is claimed. Read `results/deployment_validation/deployment_validation_report.md`. The final holdout remains reserved for one pre-registered evaluation.
 
 **What is tracked in git.** Generated outputs under `results/` are reproducible from the scripts and are git-ignored, except the written reports (`*.md`) and JSON summaries (`summary.json`, `results.json`, `diagnostic_summary.json`). Run the scripts to regenerate the CSVs and plots. `data/derived/` is also ignored.
+
+---
+
+## 14. Scheduler bottleneck diagnostics
+
+Offline, observational study of why the scheduler does not raise throughput (queue concurrency, device utilisation, waiting-time breakdown, priority effectiveness, device-speed sensitivity, candidate policies). No production code is changed and no drift model is used.
+
+```powershell
+python scripts/diagnose_scheduler_bottleneck.py   # results/scheduler_bottleneck_diagnostics/ (about 1 minute)
+```
+
+Read `results/scheduler_bottleneck_diagnostics/scheduler_diagnostic_report.md`.
+
+---
+
+## 15. Predetermined workload and fair policy replay
+
+Freezes one request workload (stable ids, pair identities, shot requirements, immutable release time and planned measurement time), hands the same objects to all three policies, and audits the contents of every input and result. Actual execution times come only from the simulator. Production policy, device, registry and metric code are untouched.
+
+```powershell
+python scripts/run_predetermined_workload_evaluation.py   # results/predetermined_workload_evaluation/ (about 45 s)
+```
+
+Read `results/predetermined_workload_evaluation/experiment_report.md`. A failed fairness audit invalidates the run and exits non-zero.
+
+---
+
+## 16. Device-capacity sensitivity
+
+The service-slot duration of the earlier evaluations (0.756836322 s) is derived from the workload (its mean inter-arrival gap), not measured hardware. This experiment makes the duration an explicit parameter and replays the frozen workload through the three policies under four labelled scenarios, over a fixed wall-clock horizon.
+
+```powershell
+python scripts/run_capacity_sensitivity_evaluation.py   # results/capacity_sensitivity_evaluation/ (about 45 s)
+```
+
+Read `results/capacity_sensitivity_evaluation/experiment_report.md`. No duration is verified hardware capacity; a failed audit invalidates the run.
