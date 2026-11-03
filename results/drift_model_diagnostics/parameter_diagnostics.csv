@@ -1,0 +1,74 @@
+section,name,value,std_error,note
+fitted_parameter,A,0.4892552828468299,0.0018427270822246676,
+fitted_parameter,"c = B/min(A,1-A)",1.0,,on its upper bound (held fixed in the Hessian)
+fitted_parameter,B,0.4892552828468299,,
+fitted_parameter,l0 (idles),13641.680584242311,,
+fitted_parameter,ln(1/l0),-9.520885133796165,0.04555761550763992,
+fitted_parameter,gamma_0 (Hz),0.13155865822339377,0.0016292548757457811,
+fitted_parameter,gamma_1 (Hz),-0.19233954419973553,0.0024557376447639856,
+fitted_parameter,gamma_2 (Hz),-0.2254379140192572,0.002745105879058468,
+fit_status,converged,True,,CONVERGENCE: NORM OF PROJECTED GRADIENT <= PGTOL
+fit_status,mean_nll_training,0.6452219252092566,,n=63041; BIC=81417.2
+fit_status,pipeline_starts_nll,0.655485;0.655485;0.655485;0.645222;0.645222;0.645222,,the best start was kept
+identifiability,hessian_positive_definite,True,,
+identifiability,hessian_condition_number,1165.8272606317048,,
+multistart,random_starts,30,,30 converged
+multistart,best_random_start_nll_minus_pipeline_nll,1.3523626662959032e-12,,negative would mean the pipeline missed a better optimum
+multistart_cluster,optimum_0,0.645221925210609,,reached by 5 of 30 starts
+multistart_cluster,optimum_1,0.6486793878991823,,reached by 1 of 30 starts
+multistart_cluster,optimum_2,0.6554850368283335,,reached by 1 of 30 starts
+multistart_cluster,optimum_3,0.6681266015551802,,reached by 1 of 30 starts
+multistart_cluster,optimum_4,0.6742668582896519,,reached by 1 of 30 starts
+multistart_cluster,optimum_5,0.6747224812186977,,reached by 2 of 30 starts
+multistart_cluster,optimum_6,0.6764097077062947,,reached by 2 of 30 starts
+multistart_cluster,optimum_7,0.6793457451087502,,reached by 1 of 30 starts
+multistart_cluster,optimum_8,0.6803288859515897,,reached by 2 of 30 starts
+multistart_cluster,optimum_9,0.6843963948618282,,reached by 2 of 30 starts
+multistart_cluster,optimum_10,0.6856261753744057,,reached by 2 of 30 starts
+multistart_cluster,optimum_11,0.6859592715707776,,reached by 1 of 30 starts
+multistart_cluster,optimum_12,0.6871069537035761,,reached by 1 of 30 starts
+multistart_cluster,optimum_13,0.6875343325038228,,reached by 1 of 30 starts
+multistart_cluster,optimum_14,0.6877848541714099,,reached by 1 of 30 starts
+multistart_cluster,optimum_15,0.6880290888115665,,reached by 1 of 30 starts
+multistart_cluster,optimum_16,0.6885140897028132,,reached by 1 of 30 starts
+multistart_cluster,optimum_17,0.689724360832835,,reached by 2 of 30 starts
+multistart_cluster,optimum_18,0.6905468734745982,,reached by 1 of 30 starts
+multistart_cluster,optimum_19,0.6914571250105432,,reached by 1 of 30 starts
+basis,t0,0.120257,,
+basis,t_step,4.868254052199023,,
+basis,N,4503,,
+reflection,omega(t_mirror+60s) - omega(t_mirror-60s),0.0,,Hz; zero = exact reflection
+reflection,omega(t_mirror+600s) - omega(t_mirror-600s),-4.163336342344337e-17,,Hz; zero = exact reflection
+reflection,omega(t_mirror+1800s) - omega(t_mirror-1800s),-5.551115123125783e-17,,Hz; zero = exact reflection
+reflection,omega(t_mirror+3600s) - omega(t_mirror-3600s),-2.220446049250313e-16,,Hz; zero = exact reflection
+reflection,omega(t_mirror+7000s) - omega(t_mirror-7000s),-2.7755575615628914e-16,,Hz; zero = exact reflection
+detuning,t_mirror,21919.4341270261,,
+detuning,boundary,21920.355064249998,,
+detuning,mirror_minus_boundary_seconds,-0.9209372238983633,,
+detuning,slope_at_mirror_hz_per_s,0.0,,
+detuning,frozen_omega_train_range,"[-0.28621873342853926, 0.37750853720072525]",,
+detuning,frozen_omega_holdout_range,"[0.09846112027965673, 0.34023655318443147]",,
+detuning,frozen_omega_at_boundary,0.0984602945823008,,
+detuning,components_half_periods_over_training,"[0.5, 1.0]",,
+detuning,tracked_oracle_omega_holdout_range,"[-0.4407726062991543, -0.13201405321928075]",,
+detuning,tracked_oracle_omega_at_boundary,-0.13201405321928075,,
+detuning,tracked_oracle_slope_hz_per_hour,-0.1487762218777861,,
+detuning,frozen_slope_hz_per_hour_over_holdout,0.11988307733559345,,
+detuning,mean_abs_difference_frozen_vs_oracle_hz,0.4914828096813741,,
+detuning,correlation_frozen_vs_oracle,-0.9829224364892583,,
+detuning,oracle_below_training_minimum_fraction,0.5163934426229508,,
+phase_sensitivity,l=1,0.0012352310274085401,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 2500.000 Hz
+phase_sensitivity,l=2,0.0024704620548170802,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 1250.000 Hz
+phase_sensitivity,l=4,0.0049409241096341604,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 625.000 Hz
+phase_sensitivity,l=8,0.009881848219268321,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 312.500 Hz
+phase_sensitivity,l=16,0.019763696438536642,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 156.250 Hz
+phase_sensitivity,l=32,0.039527392877073284,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 78.125 Hz
+phase_sensitivity,l=64,0.07905478575414657,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 39.062 Hz
+phase_sensitivity,l=128,0.15810957150829313,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 19.531 Hz
+phase_sensitivity,l=256,0.31621914301658627,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 9.766 Hz
+phase_sensitivity,l=512,0.6324382860331725,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 4.883 Hz
+phase_sensitivity,l=1024,1.264876572066345,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 2.441 Hz
+phase_sensitivity,l=2048,2.52975314413269,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 1.221 Hz
+phase_sensitivity,l=4096,5.05950628826538,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 0.610 Hz
+phase_sensitivity,l=8192,10.11901257653076,,phase error (rad) from the mean |frozen-oracle| detuning gap; 1 fringe = 0.305 Hz
+consistency,rebuilt_model_equals_stored_three_policy_model,True,,

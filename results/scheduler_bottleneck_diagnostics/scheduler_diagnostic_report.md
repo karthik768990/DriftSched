@@ -2,6 +2,8 @@
 
 Offline and observational. No production scheduler, model, priority, registry, split, threshold or metric code was changed; no earlier result directory was modified (md5-verified); no drift model was used; nothing here is a claim about measurement reliability. Candidate policies are compared on the **training-partition** workload; the holdout workload is used only to reproduce the production figures and to report the same metrics, never to choose or tune anything.
 
+> **Correction (added after the capacity-sensitivity evaluation).** An earlier version of this report attributed the four incomplete holdout requests to "a backlog that never drains at load 1.0" (in section C, device utilisation, and in the note under the candidates table). The verified explanation (`results/capacity_sensitivity_evaluation/experiment_report.md`, section 6) is that they are the final acquisition round: it was released about 0.7 s before the simulation horizon ended, and a pair needs about 1.5 s (two slots of 0.7568 s), so the horizon closed before they could finish. They are a simulation-cutoff effect, not backlog caused by an offered load of about 1.0, and they are unrelated to starvation by scheduling priority. The separate finding that drift-aware leaves low-priority requests waiting far longer (longest holdout queue wait 37.1 s against 6.1 s under FIFO) is unchanged and remains unresolved. No number or table in this report has changed.
+
 ## Verdict
 
 The scheduler is not inefficient in the way the headline table suggests. **The device is the bottleneck, and the evaluation sets it to a knife edge.** The slot grid is built so that capacity exactly equals the trace's mean arrival rate (offered load 1.0001 on the holdout, 1.000 on training). At that load the queue never empties, every policy keeps the device 99.8 to 99.9% busy, and every policy completes the same 4,820 comparisons. Nothing a policy does can raise completions: they are capacity-bound.
@@ -63,7 +65,7 @@ Workload constraint: because the round-robin matching fixes each shot's single p
 | holdout, pair policies | 7,301.96 s | 7,295.90 s | 6.05 s (8 slots) | 99.92% |
 | training, all policies | 21,917 s | | 45.3 s (60 slots) | 99.79% |
 
-Idle causes in the pair policies on the holdout: 7 slots idle while a lone shot waited for its partner (scheduler-induced, at most 0.7 s each) and 1 because no two-slot block fits at the end of the grid. Arrival-order's 7 idle slots are unavoidable (nothing pending). Even if all 8 were filled, at most 4 more comparisons (0.08%) could complete. Four requests (8 shots) remain incomplete at the end because the backlog never drains at load 1.0. The scheduler is **not** leaving usable capacity idle.
+Idle causes in the pair policies on the holdout: 7 slots idle while a lone shot waited for its partner (scheduler-induced, at most 0.7 s each) and 1 because no two-slot block fits at the end of the grid. Arrival-order's 7 idle slots are unavoidable (nothing pending). Even if all 8 were filled, at most 4 more comparisons (0.08%) could complete. Four requests (8 shots) remain incomplete at the end of the simulation: they are the final acquisition round, released about 0.7 s before the simulation horizon ended, while a pair needs about 1.5 s, so the horizon closed before they could finish (see the correction note at the top). This is a cutoff effect, not backlog from the offered load and not starvation by priority. The scheduler is **not** leaving usable capacity idle.
 
 ### D. Waiting-time breakdown (seconds per shot, holdout; reconstruction matches production exactly)
 
@@ -124,7 +126,7 @@ Compared on the training workload (selection set); the holdout row is shown for 
 | 6. batching (2 ready or 2 slots) | 14,479 / 4,820 | 21.87 s | 53.5 s | 55.1 / 6.2 s | 0 |
 | 6. batching (3 ready or 4 slots) | 14,478 / 4,819 | 23.16 s | 55.0 s | 56.6 / 7.5 s | 0 |
 
-\* flattered: starved requests are unexecuted and uncounted. Separation is 0.755 s (training) / 0.757 s (holdout) for every pair-based candidate. Candidates 2 (pair-aware FIFO with a bound; that is consecutive-pair itself), 4 (idle-fill), 5 (incomplete pairs) and 7 (fairness; covered by candidate 3) were analysed rather than simulated: idle slots total 0.1 to 0.2% of capacity and the incomplete requests are the backlog left at the end, so neither has headroom.
+\* flattered: starved requests are unexecuted and uncounted. Separation is 0.755 s (training) / 0.757 s (holdout) for every pair-based candidate. Candidates 2 (pair-aware FIFO with a bound; that is consecutive-pair itself), 4 (idle-fill), 5 (incomplete pairs) and 7 (fairness; covered by candidate 3) were analysed rather than simulated: idle slots total 0.1 to 0.2% of capacity and on the holdout the 4 incomplete requests are the final round truncated by the simulation horizon (see the correction note at the top), so neither has headroom.
 
 No candidate completes more comparisons or lowers the mean wait. Any priority bound strict enough to prevent starvation (up to about 38 s on the deep training backlog) makes the order identical to FIFO; looser bounds keep priority but bring waits of 80 to 150 s back.
 

@@ -2,6 +2,8 @@
 
 Recorded-trace timing replay of **one frozen workload** through the three unchanged production policies. Not a real-QPU experiment. Recorded outcomes are replayed as observed; nothing is newly measured. Comparison errors are derived from a drift model that failed forecasting validation, so they are not evidence of real-device accuracy. No production scheduler, policy, model, registry, priority, device-capacity or metric code was changed, and no earlier result directory was modified (md5-verified).
 
+> **Correction (added after the capacity-sensitivity evaluation).** An earlier version of this report attributed the four incomplete requests (section 7) to "the backlog left when the grid ends" at an offered load of 1.0. The verified explanation (`results/capacity_sensitivity_evaluation/experiment_report.md`, section 6) is that they are the final acquisition round: it was released about 0.7 s before the simulation horizon ended, and a pair needs about 1.5 s (two slots of 0.7568 s), so the horizon closed before they could finish. They are a simulation-cutoff effect, not backlog caused by an offered load of about 1.0, and they are unrelated to starvation by scheduling priority. The separate finding that drift-aware leaves low-priority requests waiting far longer (longest shot wait 34.81 s against 7.28 s) is unchanged and remains unresolved. No number or table in this report has changed.
+
 ## 1. How the old workload and arrival times were built
 
 | step | where | what happens |
@@ -47,7 +49,7 @@ Honest limitation of this construction: A and B are still derived from historica
 | model error E_AB (vs planned time), mean / max | 1.0e-5 / 5.0e-5 | 1.0e-5 / 5.0e-5 | 1.0e-5 / 3.0e-5 |
 | reliable per device-hour (threshold 0.05) | 2,376.3 | 2,376.3 | 2,376.3 |
 
-Four requests are incomplete in every policy: the backlog left when the grid ends (the device is at offered load 1.0).
+Four requests are incomplete in every policy: they are the final acquisition round, released about 0.7 s before the simulation horizon ended, while a pair needs about 1.5 s (two slots of 0.7568 s), so the horizon closed before they could finish. This is a simulation-cutoff effect, not backlog from the offered load of 1.0 and not starvation by priority (see the correction note at the top).
 
 ## 8. How this differs from the previous evaluation
 
@@ -68,7 +70,7 @@ Partly, and in the way that can be defended. Release, planned and actual times a
 ## 10. Remaining limitations
 
 * Release times replay the recorded cadence (round starts); they are not user submissions. A different arrival process would need new data or an explicit modelling decision.
-* The device grid is unchanged (as required), which keeps the offered load at 1.0; waiting levels, the incomplete tail and drift-aware's starvation are properties of that load. Capacity, starvation guards and random workloads were deliberately out of scope.
+* The device grid is unchanged (as required), which keeps the offered load at 1.0; waiting levels and drift-aware's starvation are properties of that load (the four incomplete requests are not: they are the final round truncated by the simulation horizon, see the correction note at the top). Capacity, starvation guards and random workloads were deliberately out of scope.
 * Outcomes are replayed, not re-measured; comparison errors come from a drift model that failed forecasting validation and sit at a ceiling far below the reliability threshold.
 * One trace, one partition (holdout), deterministic replay; no sampling uncertainty is reported.
 * Drift-aware priorities are the frozen training-derived table, used unchanged and not tuned on anything here.

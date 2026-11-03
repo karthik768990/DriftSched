@@ -1,0 +1,145 @@
+{
+ "purpose": "explicit device service duration as an experimental parameter; no duration is verified hardware capacity",
+ "scenarios": [
+  {
+   "name": "historical_baseline",
+   "service_seconds_internal": 0.7568363221726959,
+   "service_seconds_as_stated": 0.756836322,
+   "service_rate_shots_per_second": 1.3212896510162717,
+   "source": "workload-derived: (last - first arrival) / (N - 1) of the evaluated workload, i.e. its mean inter-arrival gap",
+   "interpretation": "existing historical simulation assumption; offered load N/(N-1) by construction; not hardware capacity",
+   "hardware_verified": false,
+   "timeline": {
+    "scenario": "historical_baseline",
+    "service_seconds": 0.7568363221726959,
+    "service_rate_shots_per_second": 1.3212896510162717,
+    "total_slots": 9648,
+    "grid_start": 21921.9,
+    "last_slot_start": 29223.1,
+    "horizon_end": 29223.1,
+    "horizon_seconds": 7301.199999999997,
+    "total_potential_service_seconds": 7301.956836322171,
+    "total_potential_service_hours": 2.0283213434228253,
+    "release_horizon_last_release": 29222.4,
+    "release_horizon_seconds": 7300.5,
+    "requests": 4824,
+    "total_shot_budget": 9648,
+    "offered_load": 1.0001036591686536,
+    "shot_capacity_in_horizon": 9648,
+    "capacity_over_demand": 1.0
+   }
+  },
+  {
+   "name": "slower_device",
+   "service_seconds_internal": 0.8325199543899656,
+   "service_seconds_as_stated": 0.83252,
+   "service_rate_shots_per_second": 1.2011724100147922,
+   "source": "sensitivity assumption: baseline x 1.10 (10% longer service duration)",
+   "interpretation": "modelling assumption only; not a device specification",
+   "hardware_verified": false,
+   "timeline": {
+    "scenario": "slower_device",
+    "service_seconds": 0.8325199543899656,
+    "service_rate_shots_per_second": 1.2011724100147922,
+    "total_slots": 8771,
+    "grid_start": 21921.9,
+    "last_slot_start": 29223.1,
+    "horizon_end": 29223.1,
+    "horizon_seconds": 7301.199999999997,
+    "total_potential_service_seconds": 7302.032519954389,
+    "total_potential_service_hours": 2.028342366653997,
+    "release_horizon_last_release": 29222.4,
+    "release_horizon_seconds": 7300.5,
+    "requests": 4824,
+    "total_shot_budget": 9648,
+    "offered_load": 1.100114025085519,
+    "shot_capacity_in_horizon": 8771,
+    "capacity_over_demand": 0.9091003316749585
+   }
+  },
+  {
+   "name": "faster_device",
+   "service_seconds_internal": 0.6811526899554263,
+   "service_seconds_as_stated": 0.681153,
+   "service_rate_shots_per_second": 1.4680996122403018,
+   "source": "sensitivity assumption: baseline x 0.90 (10% shorter service duration)",
+   "interpretation": "modelling assumption only; not a device specification",
+   "hardware_verified": false,
+   "timeline": {
+    "scenario": "faster_device",
+    "service_seconds": 0.6811526899554263,
+    "service_rate_shots_per_second": 1.4680996122403018,
+    "total_slots": 10719,
+    "grid_start": 21921.9,
+    "last_slot_start": 29222.494530942262,
+    "horizon_end": 29223.1,
+    "horizon_seconds": 7301.199999999997,
+    "total_potential_service_seconds": 7301.275683632215,
+    "total_potential_service_hours": 2.028132134342282,
+    "release_horizon_last_release": 29222.4,
+    "release_horizon_seconds": 7300.5,
+    "requests": 4824,
+    "total_shot_budget": 9648,
+    "offered_load": 0.9000932932517882,
+    "shot_capacity_in_horizon": 10719,
+    "capacity_over_demand": 1.1110074626865671
+   }
+  },
+  {
+   "name": "recorded_cadence_reference",
+   "service_seconds_internal": 0.3485714285714286,
+   "service_seconds_as_stated": 0.3486,
+   "service_rate_shots_per_second": 2.8688524590163933,
+   "source": "recorded 14-circuit cycle cadence: 4.88 s / 14 (stated as 0.3486 s)",
+   "interpretation": "a recorded logging cadence of the original experiment; NOT verified hardware capacity",
+   "hardware_verified": false,
+   "timeline": {
+    "scenario": "recorded_cadence_reference",
+    "service_seconds": 0.3485714285714286,
+    "service_rate_shots_per_second": 2.8688524590163933,
+    "total_slots": 20947,
+    "grid_start": 21921.9,
+    "last_slot_start": 29223.077142857146,
+    "horizon_end": 29223.1,
+    "horizon_seconds": 7301.199999999997,
+    "total_potential_service_seconds": 7301.5257142857145,
+    "total_potential_service_hours": 2.0282015873015875,
+    "release_horizon_last_release": 29222.4,
+    "release_horizon_seconds": 7300.5,
+    "requests": 4824,
+    "total_shot_budget": 9648,
+    "offered_load": 0.46061156287420485,
+    "shot_capacity_in_horizon": 20947,
+    "capacity_over_demand": 2.1711235489220564
+   }
+  }
+ ],
+ "timeline_semantics": "fixed wall-clock horizon: slots = floor((H - start)/d) + 1 over [start, H]; H = start of the last historical slot; release times unchanged",
+ "device_time_denominators": {
+  "budget": "total_slots * d (production primary; differs between scenarios by < 1 slot)",
+  "busy": "executed shots * d (actual device time used)"
+ },
+ "workload": {
+  "fingerprint_sha256_with_historical_device": "16efca32e41087df7255ea9e7cfcd71802f2fc192763fee63cea5b5cefcc3c86",
+  "requests": 4824,
+  "eligible_pairs": 29,
+  "total_shot_budget": 9648,
+  "requests_fingerprint_device_excluded": "143f592d5ed295393f8884d9941ed99fbdb1c6b14f0d6a91a70ff5dfdddeea55",
+  "independent_rebuild_identical": true
+ },
+ "drift_input_fingerprint": "9b38399b6dfcc1b3f131d56d1e9c72b60420ec573ce21b246fa5426a27afc461",
+ "reliability_threshold": 0.05,
+ "provenance": {
+  "queue_and_timing": "production simulator replay of the frozen workload on each scenario grid",
+  "comparison_error": "drift-model-derived (model has not shown deployment-faithful forecasting skill); not measured reliability",
+  "outcomes": "recorded outcomes replayed; nothing newly measured"
+ },
+ "limitations": [
+  "no service duration is verified hardware capacity",
+  "0.756836322 s is workload-derived (mean inter-arrival gap)",
+  "0.3486 s is a recorded cadence reference",
+  "faster/slower are +/-10% modelling assumptions",
+  "one frozen workload, deterministic replay: not a multiple-workload statistical study",
+  "recorded outcomes are replayed; this is not a QPU experiment"
+ ]
+}

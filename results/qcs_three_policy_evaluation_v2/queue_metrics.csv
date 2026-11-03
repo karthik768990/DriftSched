@@ -1,0 +1,172 @@
+scenario,row_type,policy_or_difference,metric,estimate,ci_lower,ci_upper,unit,provenance
+primary (drift x1),policy,arrival-order,separation_mean,2.0616723879932524,2.0601021881547177,2.063212567385995,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,separation_median,2.2705089665178093,2.2705089665178093,2.2705089665178093,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,waiting_mean,3.196843595519564,3.1286632644272805,3.2641030025801254,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,waiting_median,3.1830569088833727,3.1300514408642357,3.2472715611065723,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,separation_p95,3.7841816108630155,,,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,separation_max,4.541017933039257,,,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,waiting_p95,5.492205867109258,,,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,waiting_max,6.4758370477902645,,,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,idle_slots,7.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,executed_shots,9641.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,unexecuted_shots,7.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,total_slots,9648.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+primary (drift x1),policy,arrival-order,busy_seconds,7296.6589820669615,,,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,separation_mean,0.7568363221726951,0.7568363221726876,0.7568363221727014,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,separation_median,0.7568363221726031,0.7568363221726031,0.7568363221726031,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,waiting_mean,3.639482930001895,3.5763204860054656,3.7062785966080396,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,waiting_median,3.646138695969057,3.5765211983015432,3.7180877474871976,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,separation_p95,0.7568363221726031,,,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,separation_max,0.7568363221762411,,,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,waiting_p95,5.927285166370892,,,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,waiting_max,6.88726028817473,,,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,idle_slots,8.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,executed_shots,9640.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,unexecuted_shots,8.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,total_slots,9648.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+primary (drift x1),policy,consecutive-pair,busy_seconds,7295.902145744789,,,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,separation_mean,0.7568363221726951,0.7568363221726876,0.7568363221727014,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,separation_median,0.7568363221726031,0.7568363221726031,0.7568363221726031,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,waiting_mean,3.639482930001895,3.5754186816676152,3.708523293988966,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,waiting_median,2.8002695138366107,2.7542097284145712,2.831284337100442,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,separation_p95,0.7568363221726031,,,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,separation_max,0.7568363221762411,,,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,waiting_p95,5.383628070905244,,,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,waiting_max,37.8196952420476,,,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,idle_slots,8.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,executed_shots,9640.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,unexecuted_shots,8.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,total_slots,9648.0,,,count,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+primary (drift x1),policy,drift-aware,busy_seconds,7295.902145744789,,,s,recorded-trace timing replay
+primary (drift x1),paired_difference,consecutive-pair - arrival-order,separation_mean,-1.3048360658205573,-1.3063762452132996,-1.3032658659820238,s,recorded-trace timing replay
+primary (drift x1),paired_difference,consecutive-pair - arrival-order,waiting_mean,0.44263933448233095,0.3263277091108451,0.5663024050456097,s,recorded-trace timing replay
+primary (drift x1),paired_difference,consecutive-pair - arrival-order,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+primary (drift x1),paired_difference,drift-aware - arrival-order,separation_mean,-1.3048360658205573,-1.3063762452132996,-1.303265865982024,s,recorded-trace timing replay
+primary (drift x1),paired_difference,drift-aware - arrival-order,waiting_mean,0.44263933448233095,0.3244643167078838,0.5634647204327716,s,recorded-trace timing replay
+primary (drift x1),paired_difference,drift-aware - arrival-order,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+primary (drift x1),paired_difference,drift-aware - consecutive-pair,separation_mean,0.0,-1.5543122344752192e-15,1.5543122344752192e-15,s,recorded-trace timing replay
+primary (drift x1),paired_difference,drift-aware - consecutive-pair,waiting_mean,0.0,-0.01788580654135573,0.016630317195336843,s,recorded-trace timing replay
+primary (drift x1),paired_difference,drift-aware - consecutive-pair,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,separation_mean,2.0616723879932524,2.0601021881547177,2.063212567385995,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,separation_median,2.2705089665178093,2.2705089665178093,2.2705089665178093,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,waiting_mean,3.196843595519564,3.1286632644272805,3.2641030025801254,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,waiting_median,3.1830569088833727,3.1300514408642357,3.2472715611065723,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,separation_p95,3.7841816108630155,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,separation_max,4.541017933039257,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,waiting_p95,5.492205867109258,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,waiting_max,6.4758370477902645,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,idle_slots,7.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,executed_shots,9641.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,unexecuted_shots,7.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,total_slots,9648.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,arrival-order,busy_seconds,7296.6589820669615,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,separation_mean,0.7568363221726951,0.7568363221726876,0.7568363221727014,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,separation_median,0.7568363221726031,0.7568363221726031,0.7568363221726031,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,waiting_mean,3.639482930001895,3.5763204860054656,3.7062785966080396,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,waiting_median,3.646138695969057,3.5765211983015432,3.7180877474871976,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,separation_p95,0.7568363221726031,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,separation_max,0.7568363221762411,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,waiting_p95,5.927285166370892,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,waiting_max,6.88726028817473,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,idle_slots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,executed_shots,9640.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,unexecuted_shots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,total_slots,9648.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,consecutive-pair,busy_seconds,7295.902145744789,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,separation_mean,0.7568363221726951,0.7568363221726876,0.7568363221727014,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,separation_median,0.7568363221726031,0.7568363221726031,0.7568363221726031,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,waiting_mean,3.639482930001895,3.5754186816676152,3.708523293988966,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,waiting_median,2.8002695138366107,2.7542097284145712,2.831284337100442,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,separation_p95,0.7568363221726031,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,separation_max,0.7568363221762411,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,waiting_p95,5.383628070905244,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,waiting_max,37.8196952420476,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,idle_slots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,executed_shots,9640.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,unexecuted_shots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,total_slots,9648.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),policy,drift-aware,busy_seconds,7295.902145744789,,,s,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,consecutive-pair - arrival-order,separation_mean,-1.3048360658205573,-1.3063762452132996,-1.3032658659820238,s,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,consecutive-pair - arrival-order,waiting_mean,0.44263933448233095,0.3263277091108451,0.5663024050456097,s,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,consecutive-pair - arrival-order,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,drift-aware - arrival-order,separation_mean,-1.3048360658205573,-1.3063762452132996,-1.303265865982024,s,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,drift-aware - arrival-order,waiting_mean,0.44263933448233095,0.3244643167078838,0.5634647204327716,s,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,drift-aware - arrival-order,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,drift-aware - consecutive-pair,separation_mean,0.0,-1.5543122344752192e-15,1.5543122344752192e-15,s,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,drift-aware - consecutive-pair,waiting_mean,0.0,-0.01788580654135573,0.016630317195336843,s,recorded-trace timing replay
+synthetic-stress (drift x10),paired_difference,drift-aware - consecutive-pair,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,separation_mean,2.0616723879932524,2.0601021881547177,2.063212567385995,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,separation_median,2.2705089665178093,2.2705089665178093,2.2705089665178093,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,waiting_mean,3.196843595519564,3.1286632644272805,3.2641030025801254,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,waiting_median,3.1830569088833727,3.1300514408642357,3.2472715611065723,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,separation_p95,3.7841816108630155,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,separation_max,4.541017933039257,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,waiting_p95,5.492205867109258,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,waiting_max,6.4758370477902645,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,idle_slots,7.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,executed_shots,9641.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,unexecuted_shots,7.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,total_slots,9648.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,arrival-order,busy_seconds,7296.6589820669615,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,separation_mean,0.7568363221726951,0.7568363221726876,0.7568363221727014,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,separation_median,0.7568363221726031,0.7568363221726031,0.7568363221726031,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,waiting_mean,3.639482930001895,3.5763204860054656,3.7062785966080396,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,waiting_median,3.646138695969057,3.5765211983015432,3.7180877474871976,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,separation_p95,0.7568363221726031,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,separation_max,0.7568363221762411,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,waiting_p95,5.927285166370892,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,waiting_max,6.88726028817473,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,idle_slots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,executed_shots,9640.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,unexecuted_shots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,total_slots,9648.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,consecutive-pair,busy_seconds,7295.902145744789,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,separation_mean,0.7568363221726951,0.7568363221726876,0.7568363221727014,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,separation_median,0.7568363221726031,0.7568363221726031,0.7568363221726031,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,waiting_mean,3.639482930001895,3.5754186816676152,3.708523293988966,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,waiting_median,2.8002695138366107,2.7542097284145712,2.831284337100442,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,completed_comparisons,4820.0,4812.0,4824.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,completion_rate,0.9991708126036484,0.9975124378109452,1.0,fraction,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,separation_p95,0.7568363221726031,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,separation_max,0.7568363221762411,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,waiting_p95,5.383628070905244,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,waiting_max,37.8196952420476,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,idle_slots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,executed_shots,9640.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,unexecuted_shots,8.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,total_slots,9648.0,,,count,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,budget_seconds,7301.956836322171,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),policy,drift-aware,busy_seconds,7295.902145744789,,,s,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,consecutive-pair - arrival-order,separation_mean,-1.3048360658205573,-1.3063762452132996,-1.3032658659820238,s,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,consecutive-pair - arrival-order,waiting_mean,0.44263933448233095,0.3263277091108451,0.5663024050456097,s,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,consecutive-pair - arrival-order,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,drift-aware - arrival-order,separation_mean,-1.3048360658205573,-1.3063762452132996,-1.303265865982024,s,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,drift-aware - arrival-order,waiting_mean,0.44263933448233095,0.3244643167078838,0.5634647204327716,s,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,drift-aware - arrival-order,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,drift-aware - consecutive-pair,separation_mean,0.0,-1.5543122344752192e-15,1.5543122344752192e-15,s,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,drift-aware - consecutive-pair,waiting_mean,0.0,-0.01788580654135573,0.016630317195336843,s,recorded-trace timing replay
+synthetic-stress (drift x100),paired_difference,drift-aware - consecutive-pair,completed_comparisons,0.0,0.0,0.0,comparisons,recorded-trace timing replay

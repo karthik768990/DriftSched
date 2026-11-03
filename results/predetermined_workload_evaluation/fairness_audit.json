@@ -1,0 +1,240 @@
+{
+ "workload_fingerprint": "16efca32e41087df7255ea9e7cfcd71802f2fc192763fee63cea5b5cefcc3c86",
+ "passed": true,
+ "checks": [
+  {
+   "name": "workload fingerprint identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "16efca32e41087df vs 16efca32e41087df"
+  },
+  {
+   "name": "request count identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "4824 / 4824 vs 4824"
+  },
+  {
+   "name": "pair identities and multiplicities identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "shot requirements identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "release times identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "planned measurement times identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "total shot budget identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "9648 vs 9648"
+  },
+  {
+   "name": "eligible pair set identical and Comparable-only",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "29 vs 29 pairs"
+  },
+  {
+   "name": "device capacity and slot duration identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "Device(start_time=21921.9, slot_seconds=0.7568363221726959, total_slots=9648) vs Device(start_time=21921.9, slot_seconds=0.7568363221726959, total_slots=9648)"
+  },
+  {
+   "name": "drift inputs identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3"
+  },
+  {
+   "name": "comparison references identical",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "results reference only frozen requests and release times",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "input unchanged by the run",
+   "policy": "arrival-order",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "workload fingerprint identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "16efca32e41087df vs 16efca32e41087df"
+  },
+  {
+   "name": "request count identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "4824 / 4824 vs 4824"
+  },
+  {
+   "name": "pair identities and multiplicities identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "shot requirements identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "release times identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "planned measurement times identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "total shot budget identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "9648 vs 9648"
+  },
+  {
+   "name": "eligible pair set identical and Comparable-only",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "29 vs 29 pairs"
+  },
+  {
+   "name": "device capacity and slot duration identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "Device(start_time=21921.9, slot_seconds=0.7568363221726959, total_slots=9648) vs Device(start_time=21921.9, slot_seconds=0.7568363221726959, total_slots=9648)"
+  },
+  {
+   "name": "drift inputs identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3"
+  },
+  {
+   "name": "comparison references identical",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "results reference only frozen requests and release times",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "input unchanged by the run",
+   "policy": "consecutive-pair",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "workload fingerprint identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "16efca32e41087df vs 16efca32e41087df"
+  },
+  {
+   "name": "request count identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "4824 / 4824 vs 4824"
+  },
+  {
+   "name": "pair identities and multiplicities identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "shot requirements identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "release times identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "planned measurement times identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "identical"
+  },
+  {
+   "name": "total shot budget identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "9648 vs 9648"
+  },
+  {
+   "name": "eligible pair set identical and Comparable-only",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "29 vs 29 pairs"
+  },
+  {
+   "name": "device capacity and slot duration identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "Device(start_time=21921.9, slot_seconds=0.7568363221726959, total_slots=9648) vs Device(start_time=21921.9, slot_seconds=0.7568363221726959, total_slots=9648)"
+  },
+  {
+   "name": "drift inputs identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3"
+  },
+  {
+   "name": "comparison references identical",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "results reference only frozen requests and release times",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "ok"
+  },
+  {
+   "name": "input unchanged by the run",
+   "policy": "drift-aware",
+   "passed": true,
+   "detail": "ok"
+  }
+ ]
+}

@@ -1,5 +1,15 @@
+# Everything in the project is tracked (code, data, results, docs, tests) EXCEPT the items below:
+# installed dependencies, virtual environments, caches, build output, secrets and OS/editor files.
+
+# Dependencies and virtual environments
+node_modules/
 /.venv/
 /venv/
+/env/
+.env
+.env.*
+
+# Python caches and build output
 __pycache__/
 *.py[cod]
 *$py.class
@@ -7,23 +17,17 @@ __pycache__/
 dist/
 build/
 .pytest_cache/
+.mypy_cache/
+.ruff_cache/
 .coverage
 htmlcov/
 .ipynb_checkpoints/
+
+# Logs and temporary files
 *.log
-.vscode
-data/derived/
+*.tmp
 
-# Generated experiment outputs are reproducible from the scripts; keep only the written reports and JSON summaries
-results/**
-!results/*/
-!results/**/*.md
-!results/**/summary.json
-!results/**/results.json
-!results/**/diagnostic_summary.json
-
-# Local tooling / OS
-.claude/
+# OS and editor files
 .DS_Store
 Thumbs.db
-*.tmp
+.vscode/

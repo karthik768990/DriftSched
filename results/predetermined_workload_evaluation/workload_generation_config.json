@@ -1,0 +1,28 @@
+{
+ "construction_method": "release_time = earliest recorded timestamp among the round's workload shots; planned_time = recorded timestamp at which the pair's recorded outcomes were complete (later shot); deterministic, no random seed",
+ "dataset": "data/dataset.txt",
+ "dataset_sha256": "a341b8a26545b6315d4adb6e19d93a0983e9f18a7c2258441cd8eeab34b6e717",
+ "device_note": "slot grid identical to the previous evaluation (capacity unchanged)",
+ "eligibility_authority": "reviewer_decision == Comparable (compatibility_status is informational)",
+ "outcomes": "recorded outcomes carried as metadata for replay; nothing is newly measured",
+ "partition": "holdout (last 25% of the timeline, the partition the three-policy evaluation scores)",
+ "random_seed": null,
+ "randomness": "none: the workload is a deterministic function of the recorded trace and the registry",
+ "registry": "data/compatibility_registry.csv",
+ "registry_sha256": "584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed",
+ "request_pairing": "existing production round-robin matching over the Comparable pairs (unchanged)",
+ "shots_per_request": "1 shot of each of the two circuits (2 per request), as in the previous evaluation",
+ "slots_per_shot": 1.0,
+ "split_boundary": 21920.355064249998,
+ "train_fraction": 0.75,
+ "workload_version": "predetermined-workload-v1",
+ "request_count": 4824,
+ "eligible_pair_count": 29,
+ "total_shot_budget": 9648,
+ "fingerprint_sha256": "16efca32e41087df7255ea9e7cfcd71802f2fc192763fee63cea5b5cefcc3c86",
+ "device": {
+  "start_time": 21921.9,
+  "slot_seconds": 0.7568363221726959,
+  "total_slots": 9648
+ }
+}
