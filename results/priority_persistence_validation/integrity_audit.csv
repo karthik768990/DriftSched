@@ -1,0 +1,17 @@
+check,passed,detail
+boundary_matches_production_split,True,boundary=21920.355064249998; recorded production boundary=21920.355064249998
+only_training_shots_used,True,"63041 training shots, max time 21919.8 < 21920.355064249998; production recorded 63041 training shots; holdout rows dropped before any computation"
+eligibility_from_reviewer_decision_only,True,29 Comparable pairs; every origin scores exactly this set
+pair_order_identical_across_origins_and_baselines,True,"one pair list, one outcome vector per origin, all predictors aligned to it"
+priority_uses_only_observations_before_origin_and_ignores_future_outcomes,True,"per origin: max past time < origin, metadata.train_end < origin, fingerprint matches, and flipping all later outcomes leaves the table identical"
+future_statistics_ignore_past_outcomes,True,flipping every outcome before the origin leaves future |D| and Z^2 identical
+validation_intervals_disjoint_and_inside_training,True,"[6600.1,9600.1); [9600.1,12600.1); [12600.1,15600.1); [15600.1,18600.1); [18600.1,21600.1)"
+production_priority_formula_unchanged,True,score == 1/(mean|Z| + 1e-12) for every sufficient pair at every origin
+priority_sufficiency_reported,True,0 pair-origin(s) with insufficient past data (score 0)
+full_training_priorities_reproduce_existing_production_output,True,learn_pair_priorities at the production boundary equals results/priority_analysis_v2/priority_results.csv (29 pairs)
+min_future_transitions_reported,True,minimum 4 valid future transitions; 0 excluded pair-origin(s): []
+horizon_and_origin_counts,True,"5 origins, 4 future transitions per pair"
+no_tracked_file_modified,True,git status (tracked files) is clean
+deterministic_repeat,True,two independent end-to-end runs give digest b63b24d6d4c0796c
+previous_result_files_unchanged,True,132 existing result files hashed before and after
+dataset_and_registry_unchanged,True,sha256 of dataset.txt and compatibility_registry.csv unchanged
