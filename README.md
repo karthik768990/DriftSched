@@ -371,3 +371,15 @@ python scripts/run_capacity_sensitivity_evaluation.py   # results/capacity_sensi
 ```
 
 Read `results/capacity_sensitivity_evaluation/experiment_report.md`. No duration is verified hardware capacity; a failed audit invalidates the run.
+
+---
+
+## 17. Experimental age-aware drift scheduling
+
+`drift-aware-age` adds an age bonus that grows with waiting time to the frozen drift priority (`effective = drift_priority + R * waiting / H`), as a separate experimental policy; the existing policies are unchanged. `H` is calibrated from training data only. It is evaluated on the frozen workload under the four capacity scenarios, with starvation indicators.
+
+```powershell
+python scripts/run_age_aware_evaluation.py   # results/age_aware_scheduler_evaluation/ (about 60 s)
+```
+
+Read `results/age_aware_scheduler_evaluation/experiment_report.md`.
