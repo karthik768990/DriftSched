@@ -1,0 +1,821 @@
+policy,check,passed,detail,drift_rate_factor,drift_seed
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1.0,0
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1.0,0
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,0
+arrival-order,same request count,True,8256,1.0,0
+arrival-order,same source shots,True,,1.0,0
+arrival-order,no shot executed twice,True,,1.0,0
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1.0,0
+arrival-order,each completed request used exactly its own two shots,True,,1.0,0
+arrival-order,no execution before arrival,True,,1.0,0
+arrival-order,only eligible registry pairs executed,True,,1.0,0
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1.0,0
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,0
+consecutive-pair,same request count,True,8256,1.0,0
+consecutive-pair,same source shots,True,,1.0,0
+consecutive-pair,no shot executed twice,True,,1.0,0
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,0
+consecutive-pair,each completed request used exactly its own two shots,True,,1.0,0
+consecutive-pair,no execution before arrival,True,,1.0,0
+consecutive-pair,only eligible registry pairs executed,True,,1.0,0
+consecutive-pair,pair atomicity (consecutive slots),True,,1.0,0
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,0
+drift-aware,same request count,True,8256,1.0,0
+drift-aware,same source shots,True,,1.0,0
+drift-aware,no shot executed twice,True,,1.0,0
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,0
+drift-aware,each completed request used exactly its own two shots,True,,1.0,0
+drift-aware,no execution before arrival,True,,1.0,0
+drift-aware,only eligible registry pairs executed,True,,1.0,0
+drift-aware,pair atomicity (consecutive slots),True,,1.0,0
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,0
+drift-aware-age,same request count,True,8256,1.0,0
+drift-aware-age,same source shots,True,,1.0,0
+drift-aware-age,no shot executed twice,True,,1.0,0
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,0
+drift-aware-age,each completed request used exactly its own two shots,True,,1.0,0
+drift-aware-age,no execution before arrival,True,,1.0,0
+drift-aware-age,only eligible registry pairs executed,True,,1.0,0
+drift-aware-age,pair atomicity (consecutive slots),True,,1.0,0
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1.0,0
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1.0,0
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1.0,0
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1.0,1
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1.0,1
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,1
+arrival-order,same request count,True,8256,1.0,1
+arrival-order,same source shots,True,,1.0,1
+arrival-order,no shot executed twice,True,,1.0,1
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1.0,1
+arrival-order,each completed request used exactly its own two shots,True,,1.0,1
+arrival-order,no execution before arrival,True,,1.0,1
+arrival-order,only eligible registry pairs executed,True,,1.0,1
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1.0,1
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,1
+consecutive-pair,same request count,True,8256,1.0,1
+consecutive-pair,same source shots,True,,1.0,1
+consecutive-pair,no shot executed twice,True,,1.0,1
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,1
+consecutive-pair,each completed request used exactly its own two shots,True,,1.0,1
+consecutive-pair,no execution before arrival,True,,1.0,1
+consecutive-pair,only eligible registry pairs executed,True,,1.0,1
+consecutive-pair,pair atomicity (consecutive slots),True,,1.0,1
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,1
+drift-aware,same request count,True,8256,1.0,1
+drift-aware,same source shots,True,,1.0,1
+drift-aware,no shot executed twice,True,,1.0,1
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,1
+drift-aware,each completed request used exactly its own two shots,True,,1.0,1
+drift-aware,no execution before arrival,True,,1.0,1
+drift-aware,only eligible registry pairs executed,True,,1.0,1
+drift-aware,pair atomicity (consecutive slots),True,,1.0,1
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,1
+drift-aware-age,same request count,True,8256,1.0,1
+drift-aware-age,same source shots,True,,1.0,1
+drift-aware-age,no shot executed twice,True,,1.0,1
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,1
+drift-aware-age,each completed request used exactly its own two shots,True,,1.0,1
+drift-aware-age,no execution before arrival,True,,1.0,1
+drift-aware-age,only eligible registry pairs executed,True,,1.0,1
+drift-aware-age,pair atomicity (consecutive slots),True,,1.0,1
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1.0,1
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1.0,1
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1.0,1
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1.0,2
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1.0,2
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,2
+arrival-order,same request count,True,8256,1.0,2
+arrival-order,same source shots,True,,1.0,2
+arrival-order,no shot executed twice,True,,1.0,2
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1.0,2
+arrival-order,each completed request used exactly its own two shots,True,,1.0,2
+arrival-order,no execution before arrival,True,,1.0,2
+arrival-order,only eligible registry pairs executed,True,,1.0,2
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1.0,2
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,2
+consecutive-pair,same request count,True,8256,1.0,2
+consecutive-pair,same source shots,True,,1.0,2
+consecutive-pair,no shot executed twice,True,,1.0,2
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,2
+consecutive-pair,each completed request used exactly its own two shots,True,,1.0,2
+consecutive-pair,no execution before arrival,True,,1.0,2
+consecutive-pair,only eligible registry pairs executed,True,,1.0,2
+consecutive-pair,pair atomicity (consecutive slots),True,,1.0,2
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,2
+drift-aware,same request count,True,8256,1.0,2
+drift-aware,same source shots,True,,1.0,2
+drift-aware,no shot executed twice,True,,1.0,2
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,2
+drift-aware,each completed request used exactly its own two shots,True,,1.0,2
+drift-aware,no execution before arrival,True,,1.0,2
+drift-aware,only eligible registry pairs executed,True,,1.0,2
+drift-aware,pair atomicity (consecutive slots),True,,1.0,2
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,2
+drift-aware-age,same request count,True,8256,1.0,2
+drift-aware-age,same source shots,True,,1.0,2
+drift-aware-age,no shot executed twice,True,,1.0,2
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,2
+drift-aware-age,each completed request used exactly its own two shots,True,,1.0,2
+drift-aware-age,no execution before arrival,True,,1.0,2
+drift-aware-age,only eligible registry pairs executed,True,,1.0,2
+drift-aware-age,pair atomicity (consecutive slots),True,,1.0,2
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1.0,2
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1.0,2
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1.0,2
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1.0,3
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1.0,3
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,3
+arrival-order,same request count,True,8256,1.0,3
+arrival-order,same source shots,True,,1.0,3
+arrival-order,no shot executed twice,True,,1.0,3
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1.0,3
+arrival-order,each completed request used exactly its own two shots,True,,1.0,3
+arrival-order,no execution before arrival,True,,1.0,3
+arrival-order,only eligible registry pairs executed,True,,1.0,3
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1.0,3
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,3
+consecutive-pair,same request count,True,8256,1.0,3
+consecutive-pair,same source shots,True,,1.0,3
+consecutive-pair,no shot executed twice,True,,1.0,3
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,3
+consecutive-pair,each completed request used exactly its own two shots,True,,1.0,3
+consecutive-pair,no execution before arrival,True,,1.0,3
+consecutive-pair,only eligible registry pairs executed,True,,1.0,3
+consecutive-pair,pair atomicity (consecutive slots),True,,1.0,3
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,3
+drift-aware,same request count,True,8256,1.0,3
+drift-aware,same source shots,True,,1.0,3
+drift-aware,no shot executed twice,True,,1.0,3
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,3
+drift-aware,each completed request used exactly its own two shots,True,,1.0,3
+drift-aware,no execution before arrival,True,,1.0,3
+drift-aware,only eligible registry pairs executed,True,,1.0,3
+drift-aware,pair atomicity (consecutive slots),True,,1.0,3
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,3
+drift-aware-age,same request count,True,8256,1.0,3
+drift-aware-age,same source shots,True,,1.0,3
+drift-aware-age,no shot executed twice,True,,1.0,3
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,3
+drift-aware-age,each completed request used exactly its own two shots,True,,1.0,3
+drift-aware-age,no execution before arrival,True,,1.0,3
+drift-aware-age,only eligible registry pairs executed,True,,1.0,3
+drift-aware-age,pair atomicity (consecutive slots),True,,1.0,3
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1.0,3
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1.0,3
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1.0,3
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1.0,4
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1.0,4
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,4
+arrival-order,same request count,True,8256,1.0,4
+arrival-order,same source shots,True,,1.0,4
+arrival-order,no shot executed twice,True,,1.0,4
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1.0,4
+arrival-order,each completed request used exactly its own two shots,True,,1.0,4
+arrival-order,no execution before arrival,True,,1.0,4
+arrival-order,only eligible registry pairs executed,True,,1.0,4
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1.0,4
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,4
+consecutive-pair,same request count,True,8256,1.0,4
+consecutive-pair,same source shots,True,,1.0,4
+consecutive-pair,no shot executed twice,True,,1.0,4
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,4
+consecutive-pair,each completed request used exactly its own two shots,True,,1.0,4
+consecutive-pair,no execution before arrival,True,,1.0,4
+consecutive-pair,only eligible registry pairs executed,True,,1.0,4
+consecutive-pair,pair atomicity (consecutive slots),True,,1.0,4
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,4
+drift-aware,same request count,True,8256,1.0,4
+drift-aware,same source shots,True,,1.0,4
+drift-aware,no shot executed twice,True,,1.0,4
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,4
+drift-aware,each completed request used exactly its own two shots,True,,1.0,4
+drift-aware,no execution before arrival,True,,1.0,4
+drift-aware,only eligible registry pairs executed,True,,1.0,4
+drift-aware,pair atomicity (consecutive slots),True,,1.0,4
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1.0,4
+drift-aware-age,same request count,True,8256,1.0,4
+drift-aware-age,same source shots,True,,1.0,4
+drift-aware-age,no shot executed twice,True,,1.0,4
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1.0,4
+drift-aware-age,each completed request used exactly its own two shots,True,,1.0,4
+drift-aware-age,no execution before arrival,True,,1.0,4
+drift-aware-age,only eligible registry pairs executed,True,,1.0,4
+drift-aware-age,pair atomicity (consecutive slots),True,,1.0,4
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1.0,4
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1.0,4
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1.0,4
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,10.0,0
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,10.0,0
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,0
+arrival-order,same request count,True,8256,10.0,0
+arrival-order,same source shots,True,,10.0,0
+arrival-order,no shot executed twice,True,,10.0,0
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,10.0,0
+arrival-order,each completed request used exactly its own two shots,True,,10.0,0
+arrival-order,no execution before arrival,True,,10.0,0
+arrival-order,only eligible registry pairs executed,True,,10.0,0
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,10.0,0
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,0
+consecutive-pair,same request count,True,8256,10.0,0
+consecutive-pair,same source shots,True,,10.0,0
+consecutive-pair,no shot executed twice,True,,10.0,0
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,0
+consecutive-pair,each completed request used exactly its own two shots,True,,10.0,0
+consecutive-pair,no execution before arrival,True,,10.0,0
+consecutive-pair,only eligible registry pairs executed,True,,10.0,0
+consecutive-pair,pair atomicity (consecutive slots),True,,10.0,0
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,0
+drift-aware,same request count,True,8256,10.0,0
+drift-aware,same source shots,True,,10.0,0
+drift-aware,no shot executed twice,True,,10.0,0
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,0
+drift-aware,each completed request used exactly its own two shots,True,,10.0,0
+drift-aware,no execution before arrival,True,,10.0,0
+drift-aware,only eligible registry pairs executed,True,,10.0,0
+drift-aware,pair atomicity (consecutive slots),True,,10.0,0
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,0
+drift-aware-age,same request count,True,8256,10.0,0
+drift-aware-age,same source shots,True,,10.0,0
+drift-aware-age,no shot executed twice,True,,10.0,0
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,0
+drift-aware-age,each completed request used exactly its own two shots,True,,10.0,0
+drift-aware-age,no execution before arrival,True,,10.0,0
+drift-aware-age,only eligible registry pairs executed,True,,10.0,0
+drift-aware-age,pair atomicity (consecutive slots),True,,10.0,0
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,10.0,0
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,10.0,0
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,10.0,0
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,10.0,1
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,10.0,1
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,1
+arrival-order,same request count,True,8256,10.0,1
+arrival-order,same source shots,True,,10.0,1
+arrival-order,no shot executed twice,True,,10.0,1
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,10.0,1
+arrival-order,each completed request used exactly its own two shots,True,,10.0,1
+arrival-order,no execution before arrival,True,,10.0,1
+arrival-order,only eligible registry pairs executed,True,,10.0,1
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,10.0,1
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,1
+consecutive-pair,same request count,True,8256,10.0,1
+consecutive-pair,same source shots,True,,10.0,1
+consecutive-pair,no shot executed twice,True,,10.0,1
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,1
+consecutive-pair,each completed request used exactly its own two shots,True,,10.0,1
+consecutive-pair,no execution before arrival,True,,10.0,1
+consecutive-pair,only eligible registry pairs executed,True,,10.0,1
+consecutive-pair,pair atomicity (consecutive slots),True,,10.0,1
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,1
+drift-aware,same request count,True,8256,10.0,1
+drift-aware,same source shots,True,,10.0,1
+drift-aware,no shot executed twice,True,,10.0,1
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,1
+drift-aware,each completed request used exactly its own two shots,True,,10.0,1
+drift-aware,no execution before arrival,True,,10.0,1
+drift-aware,only eligible registry pairs executed,True,,10.0,1
+drift-aware,pair atomicity (consecutive slots),True,,10.0,1
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,1
+drift-aware-age,same request count,True,8256,10.0,1
+drift-aware-age,same source shots,True,,10.0,1
+drift-aware-age,no shot executed twice,True,,10.0,1
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,1
+drift-aware-age,each completed request used exactly its own two shots,True,,10.0,1
+drift-aware-age,no execution before arrival,True,,10.0,1
+drift-aware-age,only eligible registry pairs executed,True,,10.0,1
+drift-aware-age,pair atomicity (consecutive slots),True,,10.0,1
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,10.0,1
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,10.0,1
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,10.0,1
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,10.0,2
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,10.0,2
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,2
+arrival-order,same request count,True,8256,10.0,2
+arrival-order,same source shots,True,,10.0,2
+arrival-order,no shot executed twice,True,,10.0,2
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,10.0,2
+arrival-order,each completed request used exactly its own two shots,True,,10.0,2
+arrival-order,no execution before arrival,True,,10.0,2
+arrival-order,only eligible registry pairs executed,True,,10.0,2
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,10.0,2
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,2
+consecutive-pair,same request count,True,8256,10.0,2
+consecutive-pair,same source shots,True,,10.0,2
+consecutive-pair,no shot executed twice,True,,10.0,2
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,2
+consecutive-pair,each completed request used exactly its own two shots,True,,10.0,2
+consecutive-pair,no execution before arrival,True,,10.0,2
+consecutive-pair,only eligible registry pairs executed,True,,10.0,2
+consecutive-pair,pair atomicity (consecutive slots),True,,10.0,2
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,2
+drift-aware,same request count,True,8256,10.0,2
+drift-aware,same source shots,True,,10.0,2
+drift-aware,no shot executed twice,True,,10.0,2
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,2
+drift-aware,each completed request used exactly its own two shots,True,,10.0,2
+drift-aware,no execution before arrival,True,,10.0,2
+drift-aware,only eligible registry pairs executed,True,,10.0,2
+drift-aware,pair atomicity (consecutive slots),True,,10.0,2
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,2
+drift-aware-age,same request count,True,8256,10.0,2
+drift-aware-age,same source shots,True,,10.0,2
+drift-aware-age,no shot executed twice,True,,10.0,2
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,2
+drift-aware-age,each completed request used exactly its own two shots,True,,10.0,2
+drift-aware-age,no execution before arrival,True,,10.0,2
+drift-aware-age,only eligible registry pairs executed,True,,10.0,2
+drift-aware-age,pair atomicity (consecutive slots),True,,10.0,2
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,10.0,2
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,10.0,2
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,10.0,2
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,10.0,3
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,10.0,3
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,3
+arrival-order,same request count,True,8256,10.0,3
+arrival-order,same source shots,True,,10.0,3
+arrival-order,no shot executed twice,True,,10.0,3
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,10.0,3
+arrival-order,each completed request used exactly its own two shots,True,,10.0,3
+arrival-order,no execution before arrival,True,,10.0,3
+arrival-order,only eligible registry pairs executed,True,,10.0,3
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,10.0,3
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,3
+consecutive-pair,same request count,True,8256,10.0,3
+consecutive-pair,same source shots,True,,10.0,3
+consecutive-pair,no shot executed twice,True,,10.0,3
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,3
+consecutive-pair,each completed request used exactly its own two shots,True,,10.0,3
+consecutive-pair,no execution before arrival,True,,10.0,3
+consecutive-pair,only eligible registry pairs executed,True,,10.0,3
+consecutive-pair,pair atomicity (consecutive slots),True,,10.0,3
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,3
+drift-aware,same request count,True,8256,10.0,3
+drift-aware,same source shots,True,,10.0,3
+drift-aware,no shot executed twice,True,,10.0,3
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,3
+drift-aware,each completed request used exactly its own two shots,True,,10.0,3
+drift-aware,no execution before arrival,True,,10.0,3
+drift-aware,only eligible registry pairs executed,True,,10.0,3
+drift-aware,pair atomicity (consecutive slots),True,,10.0,3
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,3
+drift-aware-age,same request count,True,8256,10.0,3
+drift-aware-age,same source shots,True,,10.0,3
+drift-aware-age,no shot executed twice,True,,10.0,3
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,3
+drift-aware-age,each completed request used exactly its own two shots,True,,10.0,3
+drift-aware-age,no execution before arrival,True,,10.0,3
+drift-aware-age,only eligible registry pairs executed,True,,10.0,3
+drift-aware-age,pair atomicity (consecutive slots),True,,10.0,3
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,10.0,3
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,10.0,3
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,10.0,3
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,10.0,4
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,10.0,4
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,4
+arrival-order,same request count,True,8256,10.0,4
+arrival-order,same source shots,True,,10.0,4
+arrival-order,no shot executed twice,True,,10.0,4
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,10.0,4
+arrival-order,each completed request used exactly its own two shots,True,,10.0,4
+arrival-order,no execution before arrival,True,,10.0,4
+arrival-order,only eligible registry pairs executed,True,,10.0,4
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,10.0,4
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,4
+consecutive-pair,same request count,True,8256,10.0,4
+consecutive-pair,same source shots,True,,10.0,4
+consecutive-pair,no shot executed twice,True,,10.0,4
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,4
+consecutive-pair,each completed request used exactly its own two shots,True,,10.0,4
+consecutive-pair,no execution before arrival,True,,10.0,4
+consecutive-pair,only eligible registry pairs executed,True,,10.0,4
+consecutive-pair,pair atomicity (consecutive slots),True,,10.0,4
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,4
+drift-aware,same request count,True,8256,10.0,4
+drift-aware,same source shots,True,,10.0,4
+drift-aware,no shot executed twice,True,,10.0,4
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,4
+drift-aware,each completed request used exactly its own two shots,True,,10.0,4
+drift-aware,no execution before arrival,True,,10.0,4
+drift-aware,only eligible registry pairs executed,True,,10.0,4
+drift-aware,pair atomicity (consecutive slots),True,,10.0,4
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",10.0,4
+drift-aware-age,same request count,True,8256,10.0,4
+drift-aware-age,same source shots,True,,10.0,4
+drift-aware-age,no shot executed twice,True,,10.0,4
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,10.0,4
+drift-aware-age,each completed request used exactly its own two shots,True,,10.0,4
+drift-aware-age,no execution before arrival,True,,10.0,4
+drift-aware-age,only eligible registry pairs executed,True,,10.0,4
+drift-aware-age,pair atomicity (consecutive slots),True,,10.0,4
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,10.0,4
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,10.0,4
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,10.0,4
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,100.0,0
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,100.0,0
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,0
+arrival-order,same request count,True,8256,100.0,0
+arrival-order,same source shots,True,,100.0,0
+arrival-order,no shot executed twice,True,,100.0,0
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,100.0,0
+arrival-order,each completed request used exactly its own two shots,True,,100.0,0
+arrival-order,no execution before arrival,True,,100.0,0
+arrival-order,only eligible registry pairs executed,True,,100.0,0
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,100.0,0
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,0
+consecutive-pair,same request count,True,8256,100.0,0
+consecutive-pair,same source shots,True,,100.0,0
+consecutive-pair,no shot executed twice,True,,100.0,0
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,0
+consecutive-pair,each completed request used exactly its own two shots,True,,100.0,0
+consecutive-pair,no execution before arrival,True,,100.0,0
+consecutive-pair,only eligible registry pairs executed,True,,100.0,0
+consecutive-pair,pair atomicity (consecutive slots),True,,100.0,0
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,0
+drift-aware,same request count,True,8256,100.0,0
+drift-aware,same source shots,True,,100.0,0
+drift-aware,no shot executed twice,True,,100.0,0
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,0
+drift-aware,each completed request used exactly its own two shots,True,,100.0,0
+drift-aware,no execution before arrival,True,,100.0,0
+drift-aware,only eligible registry pairs executed,True,,100.0,0
+drift-aware,pair atomicity (consecutive slots),True,,100.0,0
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,0
+drift-aware-age,same request count,True,8256,100.0,0
+drift-aware-age,same source shots,True,,100.0,0
+drift-aware-age,no shot executed twice,True,,100.0,0
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,0
+drift-aware-age,each completed request used exactly its own two shots,True,,100.0,0
+drift-aware-age,no execution before arrival,True,,100.0,0
+drift-aware-age,only eligible registry pairs executed,True,,100.0,0
+drift-aware-age,pair atomicity (consecutive slots),True,,100.0,0
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,100.0,0
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,100.0,0
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,100.0,0
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,100.0,1
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,100.0,1
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,1
+arrival-order,same request count,True,8256,100.0,1
+arrival-order,same source shots,True,,100.0,1
+arrival-order,no shot executed twice,True,,100.0,1
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,100.0,1
+arrival-order,each completed request used exactly its own two shots,True,,100.0,1
+arrival-order,no execution before arrival,True,,100.0,1
+arrival-order,only eligible registry pairs executed,True,,100.0,1
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,100.0,1
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,1
+consecutive-pair,same request count,True,8256,100.0,1
+consecutive-pair,same source shots,True,,100.0,1
+consecutive-pair,no shot executed twice,True,,100.0,1
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,1
+consecutive-pair,each completed request used exactly its own two shots,True,,100.0,1
+consecutive-pair,no execution before arrival,True,,100.0,1
+consecutive-pair,only eligible registry pairs executed,True,,100.0,1
+consecutive-pair,pair atomicity (consecutive slots),True,,100.0,1
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,1
+drift-aware,same request count,True,8256,100.0,1
+drift-aware,same source shots,True,,100.0,1
+drift-aware,no shot executed twice,True,,100.0,1
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,1
+drift-aware,each completed request used exactly its own two shots,True,,100.0,1
+drift-aware,no execution before arrival,True,,100.0,1
+drift-aware,only eligible registry pairs executed,True,,100.0,1
+drift-aware,pair atomicity (consecutive slots),True,,100.0,1
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,1
+drift-aware-age,same request count,True,8256,100.0,1
+drift-aware-age,same source shots,True,,100.0,1
+drift-aware-age,no shot executed twice,True,,100.0,1
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,1
+drift-aware-age,each completed request used exactly its own two shots,True,,100.0,1
+drift-aware-age,no execution before arrival,True,,100.0,1
+drift-aware-age,only eligible registry pairs executed,True,,100.0,1
+drift-aware-age,pair atomicity (consecutive slots),True,,100.0,1
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,100.0,1
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,100.0,1
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,100.0,1
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,100.0,2
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,100.0,2
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,2
+arrival-order,same request count,True,8256,100.0,2
+arrival-order,same source shots,True,,100.0,2
+arrival-order,no shot executed twice,True,,100.0,2
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,100.0,2
+arrival-order,each completed request used exactly its own two shots,True,,100.0,2
+arrival-order,no execution before arrival,True,,100.0,2
+arrival-order,only eligible registry pairs executed,True,,100.0,2
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,100.0,2
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,2
+consecutive-pair,same request count,True,8256,100.0,2
+consecutive-pair,same source shots,True,,100.0,2
+consecutive-pair,no shot executed twice,True,,100.0,2
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,2
+consecutive-pair,each completed request used exactly its own two shots,True,,100.0,2
+consecutive-pair,no execution before arrival,True,,100.0,2
+consecutive-pair,only eligible registry pairs executed,True,,100.0,2
+consecutive-pair,pair atomicity (consecutive slots),True,,100.0,2
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,2
+drift-aware,same request count,True,8256,100.0,2
+drift-aware,same source shots,True,,100.0,2
+drift-aware,no shot executed twice,True,,100.0,2
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,2
+drift-aware,each completed request used exactly its own two shots,True,,100.0,2
+drift-aware,no execution before arrival,True,,100.0,2
+drift-aware,only eligible registry pairs executed,True,,100.0,2
+drift-aware,pair atomicity (consecutive slots),True,,100.0,2
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,2
+drift-aware-age,same request count,True,8256,100.0,2
+drift-aware-age,same source shots,True,,100.0,2
+drift-aware-age,no shot executed twice,True,,100.0,2
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,2
+drift-aware-age,each completed request used exactly its own two shots,True,,100.0,2
+drift-aware-age,no execution before arrival,True,,100.0,2
+drift-aware-age,only eligible registry pairs executed,True,,100.0,2
+drift-aware-age,pair atomicity (consecutive slots),True,,100.0,2
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,100.0,2
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,100.0,2
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,100.0,2
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,100.0,3
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,100.0,3
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,3
+arrival-order,same request count,True,8256,100.0,3
+arrival-order,same source shots,True,,100.0,3
+arrival-order,no shot executed twice,True,,100.0,3
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,100.0,3
+arrival-order,each completed request used exactly its own two shots,True,,100.0,3
+arrival-order,no execution before arrival,True,,100.0,3
+arrival-order,only eligible registry pairs executed,True,,100.0,3
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,100.0,3
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,3
+consecutive-pair,same request count,True,8256,100.0,3
+consecutive-pair,same source shots,True,,100.0,3
+consecutive-pair,no shot executed twice,True,,100.0,3
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,3
+consecutive-pair,each completed request used exactly its own two shots,True,,100.0,3
+consecutive-pair,no execution before arrival,True,,100.0,3
+consecutive-pair,only eligible registry pairs executed,True,,100.0,3
+consecutive-pair,pair atomicity (consecutive slots),True,,100.0,3
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,3
+drift-aware,same request count,True,8256,100.0,3
+drift-aware,same source shots,True,,100.0,3
+drift-aware,no shot executed twice,True,,100.0,3
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,3
+drift-aware,each completed request used exactly its own two shots,True,,100.0,3
+drift-aware,no execution before arrival,True,,100.0,3
+drift-aware,only eligible registry pairs executed,True,,100.0,3
+drift-aware,pair atomicity (consecutive slots),True,,100.0,3
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,3
+drift-aware-age,same request count,True,8256,100.0,3
+drift-aware-age,same source shots,True,,100.0,3
+drift-aware-age,no shot executed twice,True,,100.0,3
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,3
+drift-aware-age,each completed request used exactly its own two shots,True,,100.0,3
+drift-aware-age,no execution before arrival,True,,100.0,3
+drift-aware-age,only eligible registry pairs executed,True,,100.0,3
+drift-aware-age,pair atomicity (consecutive slots),True,,100.0,3
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,100.0,3
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,100.0,3
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,100.0,3
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,100.0,4
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,100.0,4
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,4
+arrival-order,same request count,True,8256,100.0,4
+arrival-order,same source shots,True,,100.0,4
+arrival-order,no shot executed twice,True,,100.0,4
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,100.0,4
+arrival-order,each completed request used exactly its own two shots,True,,100.0,4
+arrival-order,no execution before arrival,True,,100.0,4
+arrival-order,only eligible registry pairs executed,True,,100.0,4
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,100.0,4
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,4
+consecutive-pair,same request count,True,8256,100.0,4
+consecutive-pair,same source shots,True,,100.0,4
+consecutive-pair,no shot executed twice,True,,100.0,4
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,4
+consecutive-pair,each completed request used exactly its own two shots,True,,100.0,4
+consecutive-pair,no execution before arrival,True,,100.0,4
+consecutive-pair,only eligible registry pairs executed,True,,100.0,4
+consecutive-pair,pair atomicity (consecutive slots),True,,100.0,4
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,4
+drift-aware,same request count,True,8256,100.0,4
+drift-aware,same source shots,True,,100.0,4
+drift-aware,no shot executed twice,True,,100.0,4
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,4
+drift-aware,each completed request used exactly its own two shots,True,,100.0,4
+drift-aware,no execution before arrival,True,,100.0,4
+drift-aware,only eligible registry pairs executed,True,,100.0,4
+drift-aware,pair atomicity (consecutive slots),True,,100.0,4
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",100.0,4
+drift-aware-age,same request count,True,8256,100.0,4
+drift-aware-age,same source shots,True,,100.0,4
+drift-aware-age,no shot executed twice,True,,100.0,4
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,100.0,4
+drift-aware-age,each completed request used exactly its own two shots,True,,100.0,4
+drift-aware-age,no execution before arrival,True,,100.0,4
+drift-aware-age,only eligible registry pairs executed,True,,100.0,4
+drift-aware-age,pair atomicity (consecutive slots),True,,100.0,4
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,100.0,4
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,100.0,4
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,100.0,4
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1000.0,0
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1000.0,0
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,0
+arrival-order,same request count,True,8256,1000.0,0
+arrival-order,same source shots,True,,1000.0,0
+arrival-order,no shot executed twice,True,,1000.0,0
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1000.0,0
+arrival-order,each completed request used exactly its own two shots,True,,1000.0,0
+arrival-order,no execution before arrival,True,,1000.0,0
+arrival-order,only eligible registry pairs executed,True,,1000.0,0
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1000.0,0
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,0
+consecutive-pair,same request count,True,8256,1000.0,0
+consecutive-pair,same source shots,True,,1000.0,0
+consecutive-pair,no shot executed twice,True,,1000.0,0
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,0
+consecutive-pair,each completed request used exactly its own two shots,True,,1000.0,0
+consecutive-pair,no execution before arrival,True,,1000.0,0
+consecutive-pair,only eligible registry pairs executed,True,,1000.0,0
+consecutive-pair,pair atomicity (consecutive slots),True,,1000.0,0
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,0
+drift-aware,same request count,True,8256,1000.0,0
+drift-aware,same source shots,True,,1000.0,0
+drift-aware,no shot executed twice,True,,1000.0,0
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,0
+drift-aware,each completed request used exactly its own two shots,True,,1000.0,0
+drift-aware,no execution before arrival,True,,1000.0,0
+drift-aware,only eligible registry pairs executed,True,,1000.0,0
+drift-aware,pair atomicity (consecutive slots),True,,1000.0,0
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,0
+drift-aware-age,same request count,True,8256,1000.0,0
+drift-aware-age,same source shots,True,,1000.0,0
+drift-aware-age,no shot executed twice,True,,1000.0,0
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,0
+drift-aware-age,each completed request used exactly its own two shots,True,,1000.0,0
+drift-aware-age,no execution before arrival,True,,1000.0,0
+drift-aware-age,only eligible registry pairs executed,True,,1000.0,0
+drift-aware-age,pair atomicity (consecutive slots),True,,1000.0,0
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1000.0,0
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1000.0,0
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1000.0,0
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1000.0,1
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1000.0,1
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,1
+arrival-order,same request count,True,8256,1000.0,1
+arrival-order,same source shots,True,,1000.0,1
+arrival-order,no shot executed twice,True,,1000.0,1
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1000.0,1
+arrival-order,each completed request used exactly its own two shots,True,,1000.0,1
+arrival-order,no execution before arrival,True,,1000.0,1
+arrival-order,only eligible registry pairs executed,True,,1000.0,1
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1000.0,1
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,1
+consecutive-pair,same request count,True,8256,1000.0,1
+consecutive-pair,same source shots,True,,1000.0,1
+consecutive-pair,no shot executed twice,True,,1000.0,1
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,1
+consecutive-pair,each completed request used exactly its own two shots,True,,1000.0,1
+consecutive-pair,no execution before arrival,True,,1000.0,1
+consecutive-pair,only eligible registry pairs executed,True,,1000.0,1
+consecutive-pair,pair atomicity (consecutive slots),True,,1000.0,1
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,1
+drift-aware,same request count,True,8256,1000.0,1
+drift-aware,same source shots,True,,1000.0,1
+drift-aware,no shot executed twice,True,,1000.0,1
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,1
+drift-aware,each completed request used exactly its own two shots,True,,1000.0,1
+drift-aware,no execution before arrival,True,,1000.0,1
+drift-aware,only eligible registry pairs executed,True,,1000.0,1
+drift-aware,pair atomicity (consecutive slots),True,,1000.0,1
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,1
+drift-aware-age,same request count,True,8256,1000.0,1
+drift-aware-age,same source shots,True,,1000.0,1
+drift-aware-age,no shot executed twice,True,,1000.0,1
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,1
+drift-aware-age,each completed request used exactly its own two shots,True,,1000.0,1
+drift-aware-age,no execution before arrival,True,,1000.0,1
+drift-aware-age,only eligible registry pairs executed,True,,1000.0,1
+drift-aware-age,pair atomicity (consecutive slots),True,,1000.0,1
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1000.0,1
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1000.0,1
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1000.0,1
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1000.0,2
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1000.0,2
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,2
+arrival-order,same request count,True,8256,1000.0,2
+arrival-order,same source shots,True,,1000.0,2
+arrival-order,no shot executed twice,True,,1000.0,2
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1000.0,2
+arrival-order,each completed request used exactly its own two shots,True,,1000.0,2
+arrival-order,no execution before arrival,True,,1000.0,2
+arrival-order,only eligible registry pairs executed,True,,1000.0,2
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1000.0,2
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,2
+consecutive-pair,same request count,True,8256,1000.0,2
+consecutive-pair,same source shots,True,,1000.0,2
+consecutive-pair,no shot executed twice,True,,1000.0,2
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,2
+consecutive-pair,each completed request used exactly its own two shots,True,,1000.0,2
+consecutive-pair,no execution before arrival,True,,1000.0,2
+consecutive-pair,only eligible registry pairs executed,True,,1000.0,2
+consecutive-pair,pair atomicity (consecutive slots),True,,1000.0,2
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,2
+drift-aware,same request count,True,8256,1000.0,2
+drift-aware,same source shots,True,,1000.0,2
+drift-aware,no shot executed twice,True,,1000.0,2
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,2
+drift-aware,each completed request used exactly its own two shots,True,,1000.0,2
+drift-aware,no execution before arrival,True,,1000.0,2
+drift-aware,only eligible registry pairs executed,True,,1000.0,2
+drift-aware,pair atomicity (consecutive slots),True,,1000.0,2
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,2
+drift-aware-age,same request count,True,8256,1000.0,2
+drift-aware-age,same source shots,True,,1000.0,2
+drift-aware-age,no shot executed twice,True,,1000.0,2
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,2
+drift-aware-age,each completed request used exactly its own two shots,True,,1000.0,2
+drift-aware-age,no execution before arrival,True,,1000.0,2
+drift-aware-age,only eligible registry pairs executed,True,,1000.0,2
+drift-aware-age,pair atomicity (consecutive slots),True,,1000.0,2
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1000.0,2
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1000.0,2
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1000.0,2
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1000.0,3
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1000.0,3
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,3
+arrival-order,same request count,True,8256,1000.0,3
+arrival-order,same source shots,True,,1000.0,3
+arrival-order,no shot executed twice,True,,1000.0,3
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1000.0,3
+arrival-order,each completed request used exactly its own two shots,True,,1000.0,3
+arrival-order,no execution before arrival,True,,1000.0,3
+arrival-order,only eligible registry pairs executed,True,,1000.0,3
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1000.0,3
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,3
+consecutive-pair,same request count,True,8256,1000.0,3
+consecutive-pair,same source shots,True,,1000.0,3
+consecutive-pair,no shot executed twice,True,,1000.0,3
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,3
+consecutive-pair,each completed request used exactly its own two shots,True,,1000.0,3
+consecutive-pair,no execution before arrival,True,,1000.0,3
+consecutive-pair,only eligible registry pairs executed,True,,1000.0,3
+consecutive-pair,pair atomicity (consecutive slots),True,,1000.0,3
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,3
+drift-aware,same request count,True,8256,1000.0,3
+drift-aware,same source shots,True,,1000.0,3
+drift-aware,no shot executed twice,True,,1000.0,3
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,3
+drift-aware,each completed request used exactly its own two shots,True,,1000.0,3
+drift-aware,no execution before arrival,True,,1000.0,3
+drift-aware,only eligible registry pairs executed,True,,1000.0,3
+drift-aware,pair atomicity (consecutive slots),True,,1000.0,3
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,3
+drift-aware-age,same request count,True,8256,1000.0,3
+drift-aware-age,same source shots,True,,1000.0,3
+drift-aware-age,no shot executed twice,True,,1000.0,3
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,3
+drift-aware-age,each completed request used exactly its own two shots,True,,1000.0,3
+drift-aware-age,no execution before arrival,True,,1000.0,3
+drift-aware-age,only eligible registry pairs executed,True,,1000.0,3
+drift-aware-age,pair atomicity (consecutive slots),True,,1000.0,3
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1000.0,3
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1000.0,3
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1000.0,3
+all,workload fingerprint equals the saved fingerprint,True,3ec7ed848e6bde61,1000.0,4
+all,five-hour horizon: total_slots * service_seconds equals horizon,True,18000 x 1.0 s,1000.0,4
+arrival-order,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,4
+arrival-order,same request count,True,8256,1000.0,4
+arrival-order,same source shots,True,,1000.0,4
+arrival-order,no shot executed twice,True,,1000.0,4
+arrival-order,slot accounting: executed + idle = total slots,True,16185 + 1815 vs 18000,1000.0,4
+arrival-order,each completed request used exactly its own two shots,True,,1000.0,4
+arrival-order,no execution before arrival,True,,1000.0,4
+arrival-order,only eligible registry pairs executed,True,,1000.0,4
+arrival-order,arrival-order is not required to be atomic (reported separation),True,max slot separation 7,1000.0,4
+consecutive-pair,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,4
+consecutive-pair,same request count,True,8256,1000.0,4
+consecutive-pair,same source shots,True,,1000.0,4
+consecutive-pair,no shot executed twice,True,,1000.0,4
+consecutive-pair,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,4
+consecutive-pair,each completed request used exactly its own two shots,True,,1000.0,4
+consecutive-pair,no execution before arrival,True,,1000.0,4
+consecutive-pair,only eligible registry pairs executed,True,,1000.0,4
+consecutive-pair,pair atomicity (consecutive slots),True,,1000.0,4
+drift-aware,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,4
+drift-aware,same request count,True,8256,1000.0,4
+drift-aware,same source shots,True,,1000.0,4
+drift-aware,no shot executed twice,True,,1000.0,4
+drift-aware,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,4
+drift-aware,each completed request used exactly its own two shots,True,,1000.0,4
+drift-aware,no execution before arrival,True,,1000.0,4
+drift-aware,only eligible registry pairs executed,True,,1000.0,4
+drift-aware,pair atomicity (consecutive slots),True,,1000.0,4
+drift-aware-age,same slot grid,True,"SlotSchedule(start_time=7200.0, slot_seconds=1.0, total_slots=18000)",1000.0,4
+drift-aware-age,same request count,True,8256,1000.0,4
+drift-aware-age,same source shots,True,,1000.0,4
+drift-aware-age,no shot executed twice,True,,1000.0,4
+drift-aware-age,slot accounting: executed + idle = total slots,True,16184 + 1816 vs 18000,1000.0,4
+drift-aware-age,each completed request used exactly its own two shots,True,,1000.0,4
+drift-aware-age,no execution before arrival,True,,1000.0,4
+drift-aware-age,only eligible registry pairs executed,True,,1000.0,4
+drift-aware-age,pair atomicity (consecutive slots),True,,1000.0,4
+consecutive-pair,offline replica reproduces the production consecutive-pair schedule,True,,1000.0,4
+drift-aware,priorities learned from data strictly before the horizon,True,train_end 7198.581429 < horizon start 7200.0,1000.0,4
+all,delta_measured recomputed from the drift at the actual execution times,True,req-r000000-00,1000.0,4

@@ -1,0 +1,37 @@
+{
+ "policy": "drift-aware-age",
+ "formula": "effective(r,t) = drift_priority(r) + R * max(0, t - release_r) / H; highest effective priority first; ties by request_order_key",
+ "H_horizon_seconds": 19.473016208796093,
+ "R_priority_range": 0.6768032400926716,
+ "coefficient_per_second": 0.03475595320394973,
+ "tau_round_seconds": 4.868254052199023,
+ "selected_rounds_k": 4,
+ "candidate_rounds": [
+  1,
+  2,
+  4,
+  8,
+  16
+ ],
+ "selection_criterion": "largest H (weakest age escalation) among k*tau, k in (1,2,4,8,16), such that on the training workload (a) no request waits more than 60 s (unfinished requests counted at their observed age) and (b) p99 request wait <= 1.25 x consecutive-pair; if none qualifies the smallest H is used and the configuration is PROVISIONAL",
+ "provisional": false,
+ "reference_runs_on_training": {
+  "consecutive_pair": {
+   "p99_wait_s": 51.8143102273281,
+   "max_wait_s": 52.58395671692051,
+   "top_third_mean_wait_s": 20.280689985566774,
+   "mean_wait_s": 20.010815843712685
+  },
+  "drift_aware": {
+   "p99_wait_s": 663.46794530378,
+   "max_wait_s": 732.9452013417867,
+   "top_third_mean_wait_s": 0.9482904846738801,
+   "mean_wait_s": 20.010815843712685
+  },
+  "p99_limit_s": 64.76788778416012,
+  "max_wait_limit_s": 60.0
+ },
+ "calibration_data": "training partition only: 13509 requests released before the holdout boundary 21920.355064249998",
+ "holdout_used_for_selection": false,
+ "overtake_bound": "a request can only be overtaken by requests released at most H seconds after it (conditional bound; not a maximum-wait guarantee)"
+}

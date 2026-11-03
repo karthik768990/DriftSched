@@ -156,6 +156,7 @@ def build_results(result: PipelineResult) -> Dict[str, Any]:
             "simulated_source_shots": len(result.scheduler.source_shots),
             "eligibility": {
                 "authority": "reviewer_decision",
+                "registry": result.scheduler.registry_provenance,
                 "eligible_pairs": [list(p) for p in result.scheduler.eligible_pairs],
                 "excluded_pair_count": result.scheduler.excluded_pair_count,
                 "ineligible_circuit_shots_excluded": result.scheduler.ineligible_circuit_shots,

@@ -1,0 +1,107 @@
+{
+ "provenance": "SIMULATED workload, drift and outcomes; not hardware data",
+ "workload_file": "C:\\Users\\Karthik Tamarapalli\\projects_workbook\\DriftSched\\results\\five_hour_synthetic_workload\\five_hour_workload.json",
+ "workload_fingerprint": "3ec7ed848e6bde6191e8618ed033717c78c03398a2f925fbe394836f1722d328",
+ "requests": 8256,
+ "equations": {
+  "horizon_seconds": 18000.0,
+  "service_seconds_assumed": 1.0,
+  "total_slots": 18000,
+  "device_seconds": 18000.0,
+  "device_hours": 5.0,
+  "capacity_requests_per_second": 0.5,
+  "max_completable_requests": 9000,
+  "mean_offered_load": 0.8999999999999999,
+  "expected_requests": 8100.0,
+  "overloaded_blocks": [
+   2,
+   5,
+   6,
+   10,
+   13
+  ],
+  "note": "service_seconds is an assumed device parameter, not measured hardware capacity"
+ },
+ "policies": [
+  "consecutive-pair"
+ ],
+ "default_policy": "consecutive-pair",
+ "drift_rate_factors": [
+  1.0
+ ],
+ "drift_seeds": 1,
+ "drift_model": {
+  "model": "p_k(t) = A + B exp(-k decay) sin(2 pi k t_w Omega(t)); Omega(t) = gamma_0 + sum_j a_j sin(2 pi rate t / P_j + phi_j)",
+  "config": {
+   "seed": 0,
+   "rate_factor": 1.0,
+   "offset": 0.4892552828468299,
+   "contrast": 0.4892552828468299,
+   "decay_rate": 7.33047511136651e-05,
+   "t_w_seconds": 0.0004,
+   "gamma0_hz": 0.13155865822339377,
+   "n_components": 12,
+   "min_period_s": 600.0,
+   "max_period_s": 21600.0,
+   "amplitude_hz": 0.2
+  },
+  "fingerprint": "9f9341170e905dab74c521534c8a81b5708da3524bd4811ee0d12cb752ac4d82",
+  "periods_s": [
+   600.0,
+   831.0617533320468,
+   1151.1060630855602,
+   1594.4003717650598,
+   2208.408614120564,
+   3058.8732248743872,
+   4236.854242474265,
+   5868.479192271643,
+   8128.44767820318,
+   11258.736632192238,
+   15594.509009755717,
+   21600.0
+  ],
+  "amplitudes_hz": [
+   0.03333333333333333,
+   0.03923013187476175,
+   0.04617009740733594,
+   0.054337770298811566,
+   0.0639503368380867,
+   0.07526340442780728,
+   0.08857779843139219,
+   0.10424756140918741,
+   0.12268936745114244,
+   0.14439360194218262,
+   0.16993740138191038,
+   0.2
+  ],
+  "provenance": "SIMULATED. Circuit response constants from the fitted project model; fluctuation spectrum assumed."
+ },
+ "registry": {
+  "path": "data/compatibility_registry.csv",
+  "schema": "automated",
+  "sha256": "7b1815873a34f21433893d8bb97ca28745e9857416929ed0a41270fc62429709",
+  "content_sha256": "9204db00e4829446de402fbe8c87cd28cf4a44a810d2aa03b13712b24e33e709",
+  "total_pairs": 91,
+  "eligible_pairs": 15
+ },
+ "audits": {
+  "checks": 13,
+  "failed": 0
+ },
+ "reliability_levels": {
+  "primary_preregistered": 0.05,
+  "labelled_sensitivity": [
+   0.01,
+   0.02
+  ]
+ },
+ "limitations": [
+  "SIMULATED workload and SIMULATED drift: no value here is a quantum-device measurement and no recorded observation is replayed.",
+  "The device service time per slot is an assumed parameter, not measured hardware capacity; one slot is one logical job whatever its repetition count.",
+  "The drift fluctuation spectrum is assumed (circuit response constants are the project's fitted ones). Drift rate factors above 1 are labelled stress scenarios.",
+  "The automated registry decisions were generated using held-out recorded observations; this experiment cannot validate them.",
+  "The recorded-data drift-priority persistence validation was inconclusive. Priorities here are learned from a simulated pre-horizon campaign and are not validated against real drift.",
+  "Mean errors over completed comparisons depend on WHICH requests a policy completed; use the paired differences (requests completed under both policies).",
+  "One workload realisation and a small number of drift realisations; intervals reflect time blocks within a run, not workload-to-workload variation."
+ ]
+}

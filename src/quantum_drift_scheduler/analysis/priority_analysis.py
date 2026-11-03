@@ -662,6 +662,7 @@ def run_priority_analysis(config: PriorityAnalysisConfig) -> PriorityAnalysisRes
         "registry": {
             "path": str(config.registry_path), "sha256": _sha256(Path(config.registry_path)),
             "eligibility_authority": "reviewer_decision (compatibility_status is never consulted)",
+            "provenance": registry.provenance(),
             "total_pairs": len(registry), "eligible_comparable": len(registry.eligible_pairs()),
             "excluded_not_comparable": len(registry.excluded_pairs()),
             "eligible_circuits": list(registry.eligible_circuits()),

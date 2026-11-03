@@ -172,15 +172,15 @@ def test_only_comparable_default_pairs_receive_priorities():
     split = split_trace(trace, 0.75, required_circuits=registry.eligible_circuits())
     table = learn_pair_priorities(split.train, registry, split.boundary, split.min_timestamp, 0.75)
     eligible = {p.key for p in registry.eligible_pairs()}
-    assert len(table.priorities) == 29 and {p.key for p in table.priorities} == eligible
-    assert table.positive_count + table.zero_count == 29 and table.positive_count == 29
+    assert len(table.priorities) == 15 and {p.key for p in table.priorities} == eligible
+    assert table.positive_count + table.zero_count == 15 and table.positive_count == 15
     assert all(p.reviewer_decision == "Comparable" and p.sufficient_data for p in table.priorities)
     assert all(math.isfinite(p.priority_score) and p.priority_score > 0 for p in table.priorities)
     for excluded in registry.excluded_pairs():  # Not comparable pairs have no priority at all
         with pytest.raises(PriorityError, match="No learned priority"):
             table.score(excluded.circuit_a, excluded.circuit_b)
-    assert len(registry.eligible_pairs()) == 29 and len(registry.excluded_pairs()) == 62  # registry untouched
-    assert sorted(p.rank for p in table.priorities) == list(range(1, 30))
+    assert len(registry.eligible_pairs()) == 15 and len(registry.excluded_pairs()) == 76  # registry untouched
+    assert sorted(p.rank for p in table.priorities) == list(range(1, 16))
     assert table.metadata.train_shot_count == len(split.train) == 63041  # the complete training portion
     for p in table.priorities:
         assert p.priority_score == pytest.approx(1.0 / (p.mean_abs_z + 1e-12))

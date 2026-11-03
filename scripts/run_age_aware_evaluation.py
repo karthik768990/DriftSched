@@ -71,6 +71,11 @@ from quantum_drift_scheduler.scheduling.predetermined_workload import (  # noqa:
 )
 
 OUT_DEFAULT = DEFAULT_CONFIG.base_dir / "results" / "age_aware_scheduler_evaluation"
+REGEN_DEFAULT = DEFAULT_CONFIG.base_dir / "results" / "registry_integrated_evaluation"
+HELDOUT_CAVEAT = ("The automated pair decisions in the registry CSV were generated using held-out observations. They are not "
+                  "independently validated against the same held-out data, so this evaluation cannot be read as independent proof of "
+                  "scheduler accuracy. The CSV test statistics are not used to refit the drift model or the priority function, and "
+                  "the drift priorities themselves are not scientifically validated (persistence validation was inconclusive).")
 FROZEN_PATH = DEFAULT_CONFIG.base_dir / "results" / "predetermined_workload_evaluation" / "frozen_workload.json"
 RISK2_METRICS = DEFAULT_CONFIG.base_dir / "results" / "capacity_sensitivity_evaluation" / "policy_metrics_by_scenario.csv"
 EXPECTED_FINGERPRINT = "16efca32e41087df7255ea9e7cfcd71802f2fc192763fee63cea5b5cefcc3c86"
@@ -102,10 +107,15 @@ def write_csv(path: Path, rows: Sequence[Dict[str, Any]], columns: Optional[Sequ
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--output-dir", type=Path, default=OUT_DEFAULT)
+    ap.add_argument("--output-dir", type=Path, default=None,
+                    help=f"default {OUT_DEFAULT.name}; {REGEN_DEFAULT.name} with --regenerate-workload")
     ap.add_argument("--overwrite", action="store_true")
+    ap.add_argument("--registry", type=Path, default=None, help="registry CSV (default data/compatibility_registry.csv)")
+    ap.add_argument("--regenerate-workload", action="store_true",
+                    help="build the workload from the loaded registry (needed whenever its eligible pairs differ from those "
+                         "of the frozen workload); the frozen workload file is only read for its generation settings")
     args = ap.parse_args(argv)
-    out = args.output_dir
+    out = args.output_dir or (REGEN_DEFAULT if args.regenerate_workload else OUT_DEFAULT)
     if ((out / "summary.json").exists() or (out / "INVALID_fairness_audit_failed.csv").exists()) and not args.overwrite:
         print(f"error: {out} already contains a run; use a new --output-dir or --overwrite", file=sys.stderr)
         return 1
@@ -113,14 +123,27 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     t0 = time.time()
     say = lambda m: print(f"[{time.time() - t0:6.1f}s] {m}", flush=True)
 
-    registry = load_compatibility_registry()
+    registry = load_compatibility_registry(args.registry)  # loaded once; its fingerprint is recorded in every output
+    say(f"registry {registry.source} ({registry.schema} schema) sha256 {registry.fingerprint[:16]}: "
+        f"{len(registry.eligible_pairs())} of {len(registry)} pairs eligible")
     trace = load_recorded_trace()
     ev = run_holdout_evaluation(trace, registry)
-    frozen = load_workload(FROZEN_PATH)
-    if frozen.fingerprint != EXPECTED_FINGERPRINT:
-        print(f"error: frozen workload fingerprint {frozen.fingerprint} != {EXPECTED_FINGERPRINT}", file=sys.stderr)
-        return 3
-    consistent = build_predetermined_workload(ev.requests, ev.schedule, registry, dict(frozen.config)).fingerprint == frozen.fingerprint
+    legacy = load_workload(FROZEN_PATH)
+    if args.regenerate_workload:
+        settings = dict(legacy.config)
+        settings.update({"registry": registry.source, "registry_sha256": registry.fingerprint,
+                         "registry_provenance": registry.provenance(), "eligibility_authority": registry.provenance()["eligibility_authority"],
+                         "regenerated_from_registry": True, "legacy_frozen_workload_fingerprint": legacy.fingerprint})
+        frozen = build_predetermined_workload(ev.requests, ev.schedule, registry, settings)
+        expected_fp = frozen.fingerprint
+        consistent = build_predetermined_workload(ev.requests, ev.schedule, registry, settings).fingerprint == frozen.fingerprint
+        say(f"regenerated workload: {len(frozen.requests)} requests, fingerprint {frozen.fingerprint[:16]} (legacy frozen {legacy.fingerprint[:16]})")
+    else:
+        frozen, expected_fp = legacy, EXPECTED_FINGERPRINT
+        if frozen.fingerprint != EXPECTED_FINGERPRINT:
+            print(f"error: frozen workload fingerprint {frozen.fingerprint} != {EXPECTED_FINGERPRINT}", file=sys.stderr)
+            return 3
+        consistent = build_predetermined_workload(ev.requests, ev.schedule, registry, dict(frozen.config)).fingerprint == frozen.fingerprint
 
     # ---- 1. training-only calibration of H (the holdout workload is not an input)
     say("calibrating the age horizon on the training partition")
@@ -133,6 +156,16 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     say(f"selected k={cal.selected_rounds} rounds: H = {cfg.horizon_seconds:.4f} s, R = {cfg.priority_range:.4f}, "
         f"coefficient {cfg.coefficient_per_second:.5f} per s; provisional = {cal.provisional}")
     write_csv(out / "calibration_candidates.csv", cal.candidates)
+    per_pair = {}
+    for q in frozen.requests:
+        key = frozenset((q.circuit_first, q.circuit_second))
+        per_pair[key] = per_pair.get(key, 0) + 1
+    write_csv(out / "registry_eligibility.csv", [
+        {"pair_id": p.pair_id, "circuit_a": p.circuit_a, "circuit_b": p.circuit_b, "k_a": p.k_a, "k_b": p.k_b,
+         "automated_decision": p.automated_decision.value if p.automated_decision else "", "decision_reason": p.decision_reason,
+         "eligible": p.is_eligible, "correction_type": p.correction_type.value if p.correction_type else "",
+         "eligibility_reason": p.eligibility_reason, "requests_generated": per_pair.get(p.key, 0),
+         "registry_sha256": registry.fingerprint} for p in registry.pairs])
     params = {
         "policy": DRIFT_AWARE_AGE,
         "formula": "effective(r,t) = drift_priority(r) + R * max(0, t - release_r) / H; highest effective priority first; ties by request_order_key",
@@ -151,12 +184,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     model, origin = stage.model, ev.split.min_timestamp
     drift_fp = drift_fingerprint(model, stage.basis)
     references = tuple(r.planned_time for r in frozen.requests)
-    scenarios = default_scenarios(frozen.device.slot_seconds)
+    scenarios = default_scenarios(frozen.device.slot_seconds, check_expected=not args.regenerate_workload)
+    if args.regenerate_workload:  # the baseline is this workload's own slot duration; do not echo the legacy stated values
+        scenarios = tuple(dataclasses.replace(sc, stated_seconds=sc.service_seconds) for sc in scenarios)
     base_sim = to_simulator_input(frozen, input_source=f"frozen-workload:{frozen.fingerprint[:16]}")
     pri = ev.priorities
     age_policy = DriftAgePolicy(pri, cfg)
     production = {"arrival-order": ArrivalOrderPolicy(), "consecutive-pair": ConsecutivePairPolicy(), "drift-aware": DriftAwarePairPolicy(pri)}
-    risk2 = list(csv.DictReader(open(RISK2_METRICS, encoding="utf-8"))) if RISK2_METRICS.exists() else []
+    risk2 = list(csv.DictReader(open(RISK2_METRICS, encoding="utf-8"))) if RISK2_METRICS.exists() and not args.regenerate_workload else []
 
     metrics: List[Dict[str, Any]] = []
     per_request: List[Dict[str, Any]] = []
@@ -169,7 +204,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         results = {n: run_simulation(sim.shots, registry, p, schedule=sim.schedule, requests=sim.requests) for n, p in production.items()}
         results[DRIFT_AWARE_AGE] = sd.simulate_pair_dispatch(wl, DRIFT_AWARE_AGE, age_policy.chooser())
         inputs = {n: make_policy_input(n, sim, registry, drift_fp, references) for n in POLICIES}
-        checks: List[AuditCheck] = list(audit_scenario(frozen, EXPECTED_FINGERPRINT, sc, inputs)) + list(
+        checks: List[AuditCheck] = list(audit_scenario(frozen, expected_fp, sc, inputs)) + list(
             audit_fairness(sw, inputs, results, drift_fp, references).checks)
         # replica fidelity: the offline simulator reproduces production for the static-key policies
         for n, key in (("consecutive-pair", request_order_key),
@@ -183,6 +218,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         checks.append(AuditCheck("pair atomicity preserved (consecutive slots)", DRIFT_AWARE_AGE, atomic, "all pairs in consecutive slots" if atomic else "non-adjacent pair"))
         eligible = all(registry.is_eligible(c.circuit_a, c.circuit_b) for c in age_res.comparisons)
         checks.append(AuditCheck("only Comparable pairs executed", DRIFT_AWARE_AGE, eligible, "ok" if eligible else "ineligible pair executed"))
+        for n in POLICIES:
+            ok = all(registry.is_eligible(c.circuit_a, c.circuit_b) for c in results[n].comparisons)
+            checks.append(AuditCheck("registry eligibility respected by every executed comparison", n, ok, "ok" if ok else "excluded pair executed"))
         shots = [s for c in age_res.comparisons for s in (c.shot_id_a, c.shot_id_b)]
         checks.append(AuditCheck("no shot reused; budget respected", DRIFT_AWARE_AGE, len(shots) == len(set(shots)) and len(age_res.executed) <= frozen.total_shot_budget, "ok"))
         for c in checks:
@@ -194,6 +232,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             end = sw.device.start_time + (sw.device.total_slots - 1) * sw.device.slot_seconds
             m.update(starvation_summary(rows, end, sw.device.slot_seconds, horizon))
             m["workload_fingerprint_frozen"] = frozen.fingerprint
+            m["registry_sha256"] = registry.fingerprint
+            m["registry_content_sha256"] = registry.content_fingerprint
             metrics.append(m)
             starts = request_starts(rows)
             oc = overtaking_counts([r["release_time"] for r in rows], starts)["counts"]
@@ -239,6 +279,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                                  "metric": k, "value_a": a, "value_b": b, "difference_a_minus_b": None if a is None or b is None else a - b})
     write_csv(out / "policy_comparison.csv", cmp_rows)
     cfg_out = {"parameters": params, "scenarios": [sc.to_dict() for sc in scenarios], "frozen_workload_fingerprint": frozen.fingerprint,
+               "workload_mode": "regenerated from the loaded registry" if args.regenerate_workload else "frozen workload replay",
+               "registry": registry.provenance(), "requests_generated": len(frozen.requests),
+               "heldout_label_caveat": HELDOUT_CAVEAT,
                "drift_input_fingerprint": drift_fp, "reliability_threshold": RELIABILITY_THRESHOLD,
                "limitations": ["no capacity value is verified hardware capacity", "recorded outcomes replayed; not a QPU experiment",
                                "model-derived comparison error is not measured reliability; the drift model has not shown deployment-faithful skill",

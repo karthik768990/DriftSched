@@ -17,8 +17,8 @@ counterfactual hardware predictions and the observed outcome difference is not a
 physical comparison error.
 """
 
-from dataclasses import asdict, dataclass
-from typing import Optional, Sequence, Tuple
+from dataclasses import asdict, dataclass, field
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 from quantum_drift_scheduler.analysis.holdout import (
     DEFAULT_TRAIN_FRACTION,
@@ -86,6 +86,7 @@ class HoldoutEvaluation:
     eligible_pairs: Tuple[Tuple[str, str], ...] = ()
     excluded_pair_count: int = 0
     ineligible_circuit_shots: int = 0
+    registry_provenance: Dict[str, Any] = field(default_factory=dict)  # which exact registry produced this run
 
     @property
     def leakage_check(self) -> str:
@@ -190,6 +191,7 @@ def run_holdout_evaluation(
         eligible_pairs=tuple((p.circuit_a, p.circuit_b) for p in registry.eligible_pairs()),
         excluded_pair_count=len(registry.excluded_pairs()),
         ineligible_circuit_shots=prepared.ineligible_circuit_shots,
+        registry_provenance=registry.provenance(),
     )
 
 
@@ -216,6 +218,7 @@ def evaluation_to_dict(evaluation: HoldoutEvaluation) -> dict:
         },
         "eligibility": {
             "authority": "reviewer_decision",
+            "registry": evaluation.registry_provenance,
             "eligible_pairs": [list(p) for p in evaluation.eligible_pairs],
             "excluded_pair_count": evaluation.excluded_pair_count,
             "ineligible_circuit_shots_excluded": evaluation.ineligible_circuit_shots,

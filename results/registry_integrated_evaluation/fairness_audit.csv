@@ -1,0 +1,303 @@
+scenario,policy,check,passed,detail
+historical_baseline,all,frozen workload fingerprint unchanged,True,aa86c09e72287a49 vs expected aa86c09e72287a49
+historical_baseline,all,slot timeline is the scenario's wall-clock-horizon grid,True,"8982 slots of 0.8129384255650819 s from 21921.9, last slot starts 29222.9 <= 29222.9"
+historical_baseline,arrival-order,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+historical_baseline,arrival-order,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,arrival-order,same shot and request objects as the other policies,True,ok
+historical_baseline,consecutive-pair,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+historical_baseline,consecutive-pair,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,consecutive-pair,same shot and request objects as the other policies,True,ok
+historical_baseline,drift-aware,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+historical_baseline,drift-aware,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,drift-aware,same shot and request objects as the other policies,True,ok
+historical_baseline,drift-aware-age,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+historical_baseline,drift-aware-age,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,drift-aware-age,same shot and request objects as the other policies,True,ok
+historical_baseline,arrival-order,workload fingerprint identical,True,aa86c09e72287a49 vs aa86c09e72287a49
+historical_baseline,arrival-order,request count identical,True,4491 / 4491 vs 4491
+historical_baseline,arrival-order,pair identities and multiplicities identical,True,identical
+historical_baseline,arrival-order,shot requirements identical,True,identical
+historical_baseline,arrival-order,release times identical,True,identical
+historical_baseline,arrival-order,planned measurement times identical,True,identical
+historical_baseline,arrival-order,total shot budget identical,True,8982 vs 8982
+historical_baseline,arrival-order,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+historical_baseline,arrival-order,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,arrival-order,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+historical_baseline,arrival-order,comparison references identical,True,ok
+historical_baseline,arrival-order,results reference only frozen requests and release times,True,ok
+historical_baseline,arrival-order,input unchanged by the run,True,ok
+historical_baseline,consecutive-pair,workload fingerprint identical,True,aa86c09e72287a49 vs aa86c09e72287a49
+historical_baseline,consecutive-pair,request count identical,True,4491 / 4491 vs 4491
+historical_baseline,consecutive-pair,pair identities and multiplicities identical,True,identical
+historical_baseline,consecutive-pair,shot requirements identical,True,identical
+historical_baseline,consecutive-pair,release times identical,True,identical
+historical_baseline,consecutive-pair,planned measurement times identical,True,identical
+historical_baseline,consecutive-pair,total shot budget identical,True,8982 vs 8982
+historical_baseline,consecutive-pair,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+historical_baseline,consecutive-pair,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,consecutive-pair,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+historical_baseline,consecutive-pair,comparison references identical,True,ok
+historical_baseline,consecutive-pair,results reference only frozen requests and release times,True,ok
+historical_baseline,consecutive-pair,input unchanged by the run,True,ok
+historical_baseline,drift-aware,workload fingerprint identical,True,aa86c09e72287a49 vs aa86c09e72287a49
+historical_baseline,drift-aware,request count identical,True,4491 / 4491 vs 4491
+historical_baseline,drift-aware,pair identities and multiplicities identical,True,identical
+historical_baseline,drift-aware,shot requirements identical,True,identical
+historical_baseline,drift-aware,release times identical,True,identical
+historical_baseline,drift-aware,planned measurement times identical,True,identical
+historical_baseline,drift-aware,total shot budget identical,True,8982 vs 8982
+historical_baseline,drift-aware,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+historical_baseline,drift-aware,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,drift-aware,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+historical_baseline,drift-aware,comparison references identical,True,ok
+historical_baseline,drift-aware,results reference only frozen requests and release times,True,ok
+historical_baseline,drift-aware,input unchanged by the run,True,ok
+historical_baseline,drift-aware-age,workload fingerprint identical,True,aa86c09e72287a49 vs aa86c09e72287a49
+historical_baseline,drift-aware-age,request count identical,True,4491 / 4491 vs 4491
+historical_baseline,drift-aware-age,pair identities and multiplicities identical,True,identical
+historical_baseline,drift-aware-age,shot requirements identical,True,identical
+historical_baseline,drift-aware-age,release times identical,True,identical
+historical_baseline,drift-aware-age,planned measurement times identical,True,identical
+historical_baseline,drift-aware-age,total shot budget identical,True,8982 vs 8982
+historical_baseline,drift-aware-age,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+historical_baseline,drift-aware-age,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982) vs Device(start_time=21921.9, slot_seconds=0.8129384255650819, total_slots=8982)"
+historical_baseline,drift-aware-age,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+historical_baseline,drift-aware-age,comparison references identical,True,ok
+historical_baseline,drift-aware-age,results reference only frozen requests and release times,True,ok
+historical_baseline,drift-aware-age,input unchanged by the run,True,ok
+historical_baseline,consecutive-pair,offline simulator reproduces production,True,identical executions
+historical_baseline,drift-aware,offline simulator reproduces production,True,identical executions
+historical_baseline,drift-aware-age,pair atomicity preserved (consecutive slots),True,all pairs in consecutive slots
+historical_baseline,drift-aware-age,only Comparable pairs executed,True,ok
+historical_baseline,arrival-order,registry eligibility respected by every executed comparison,True,ok
+historical_baseline,consecutive-pair,registry eligibility respected by every executed comparison,True,ok
+historical_baseline,drift-aware,registry eligibility respected by every executed comparison,True,ok
+historical_baseline,drift-aware-age,registry eligibility respected by every executed comparison,True,ok
+historical_baseline,drift-aware-age,no shot reused; budget respected,True,ok
+slower_device,all,frozen workload fingerprint unchanged,True,aa86c09e72287a49 vs expected aa86c09e72287a49
+slower_device,all,slot timeline is the scenario's wall-clock-horizon grid,True,"8165 slots of 0.8942322681215902 s from 21921.9, last slot starts 29222.412236944663 <= 29222.9"
+slower_device,arrival-order,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+slower_device,arrival-order,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,arrival-order,same shot and request objects as the other policies,True,ok
+slower_device,consecutive-pair,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+slower_device,consecutive-pair,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,consecutive-pair,same shot and request objects as the other policies,True,ok
+slower_device,drift-aware,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+slower_device,drift-aware,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,drift-aware,same shot and request objects as the other policies,True,ok
+slower_device,drift-aware-age,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+slower_device,drift-aware-age,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,drift-aware-age,same shot and request objects as the other policies,True,ok
+slower_device,arrival-order,workload fingerprint identical,True,297bce99b96d0da6 vs 297bce99b96d0da6
+slower_device,arrival-order,request count identical,True,4491 / 4491 vs 4491
+slower_device,arrival-order,pair identities and multiplicities identical,True,identical
+slower_device,arrival-order,shot requirements identical,True,identical
+slower_device,arrival-order,release times identical,True,identical
+slower_device,arrival-order,planned measurement times identical,True,identical
+slower_device,arrival-order,total shot budget identical,True,8982 vs 8982
+slower_device,arrival-order,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+slower_device,arrival-order,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,arrival-order,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+slower_device,arrival-order,comparison references identical,True,ok
+slower_device,arrival-order,results reference only frozen requests and release times,True,ok
+slower_device,arrival-order,input unchanged by the run,True,ok
+slower_device,consecutive-pair,workload fingerprint identical,True,297bce99b96d0da6 vs 297bce99b96d0da6
+slower_device,consecutive-pair,request count identical,True,4491 / 4491 vs 4491
+slower_device,consecutive-pair,pair identities and multiplicities identical,True,identical
+slower_device,consecutive-pair,shot requirements identical,True,identical
+slower_device,consecutive-pair,release times identical,True,identical
+slower_device,consecutive-pair,planned measurement times identical,True,identical
+slower_device,consecutive-pair,total shot budget identical,True,8982 vs 8982
+slower_device,consecutive-pair,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+slower_device,consecutive-pair,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,consecutive-pair,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+slower_device,consecutive-pair,comparison references identical,True,ok
+slower_device,consecutive-pair,results reference only frozen requests and release times,True,ok
+slower_device,consecutive-pair,input unchanged by the run,True,ok
+slower_device,drift-aware,workload fingerprint identical,True,297bce99b96d0da6 vs 297bce99b96d0da6
+slower_device,drift-aware,request count identical,True,4491 / 4491 vs 4491
+slower_device,drift-aware,pair identities and multiplicities identical,True,identical
+slower_device,drift-aware,shot requirements identical,True,identical
+slower_device,drift-aware,release times identical,True,identical
+slower_device,drift-aware,planned measurement times identical,True,identical
+slower_device,drift-aware,total shot budget identical,True,8982 vs 8982
+slower_device,drift-aware,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+slower_device,drift-aware,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,drift-aware,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+slower_device,drift-aware,comparison references identical,True,ok
+slower_device,drift-aware,results reference only frozen requests and release times,True,ok
+slower_device,drift-aware,input unchanged by the run,True,ok
+slower_device,drift-aware-age,workload fingerprint identical,True,297bce99b96d0da6 vs 297bce99b96d0da6
+slower_device,drift-aware-age,request count identical,True,4491 / 4491 vs 4491
+slower_device,drift-aware-age,pair identities and multiplicities identical,True,identical
+slower_device,drift-aware-age,shot requirements identical,True,identical
+slower_device,drift-aware-age,release times identical,True,identical
+slower_device,drift-aware-age,planned measurement times identical,True,identical
+slower_device,drift-aware-age,total shot budget identical,True,8982 vs 8982
+slower_device,drift-aware-age,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+slower_device,drift-aware-age,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165) vs Device(start_time=21921.9, slot_seconds=0.8942322681215902, total_slots=8165)"
+slower_device,drift-aware-age,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+slower_device,drift-aware-age,comparison references identical,True,ok
+slower_device,drift-aware-age,results reference only frozen requests and release times,True,ok
+slower_device,drift-aware-age,input unchanged by the run,True,ok
+slower_device,consecutive-pair,offline simulator reproduces production,True,identical executions
+slower_device,drift-aware,offline simulator reproduces production,True,identical executions
+slower_device,drift-aware-age,pair atomicity preserved (consecutive slots),True,all pairs in consecutive slots
+slower_device,drift-aware-age,only Comparable pairs executed,True,ok
+slower_device,arrival-order,registry eligibility respected by every executed comparison,True,ok
+slower_device,consecutive-pair,registry eligibility respected by every executed comparison,True,ok
+slower_device,drift-aware,registry eligibility respected by every executed comparison,True,ok
+slower_device,drift-aware-age,registry eligibility respected by every executed comparison,True,ok
+slower_device,drift-aware-age,no shot reused; budget respected,True,ok
+faster_device,all,frozen workload fingerprint unchanged,True,aa86c09e72287a49 vs expected aa86c09e72287a49
+faster_device,all,slot timeline is the scenario's wall-clock-horizon grid,True,"9979 slots of 0.7316445830085737 s from 21921.9, last slot starts 29222.24964925955 <= 29222.9"
+faster_device,arrival-order,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+faster_device,arrival-order,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,arrival-order,same shot and request objects as the other policies,True,ok
+faster_device,consecutive-pair,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+faster_device,consecutive-pair,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,consecutive-pair,same shot and request objects as the other policies,True,ok
+faster_device,drift-aware,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+faster_device,drift-aware,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,drift-aware,same shot and request objects as the other policies,True,ok
+faster_device,drift-aware-age,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+faster_device,drift-aware-age,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,drift-aware-age,same shot and request objects as the other policies,True,ok
+faster_device,arrival-order,workload fingerprint identical,True,f6f75e2f4066c6a0 vs f6f75e2f4066c6a0
+faster_device,arrival-order,request count identical,True,4491 / 4491 vs 4491
+faster_device,arrival-order,pair identities and multiplicities identical,True,identical
+faster_device,arrival-order,shot requirements identical,True,identical
+faster_device,arrival-order,release times identical,True,identical
+faster_device,arrival-order,planned measurement times identical,True,identical
+faster_device,arrival-order,total shot budget identical,True,8982 vs 8982
+faster_device,arrival-order,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+faster_device,arrival-order,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,arrival-order,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+faster_device,arrival-order,comparison references identical,True,ok
+faster_device,arrival-order,results reference only frozen requests and release times,True,ok
+faster_device,arrival-order,input unchanged by the run,True,ok
+faster_device,consecutive-pair,workload fingerprint identical,True,f6f75e2f4066c6a0 vs f6f75e2f4066c6a0
+faster_device,consecutive-pair,request count identical,True,4491 / 4491 vs 4491
+faster_device,consecutive-pair,pair identities and multiplicities identical,True,identical
+faster_device,consecutive-pair,shot requirements identical,True,identical
+faster_device,consecutive-pair,release times identical,True,identical
+faster_device,consecutive-pair,planned measurement times identical,True,identical
+faster_device,consecutive-pair,total shot budget identical,True,8982 vs 8982
+faster_device,consecutive-pair,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+faster_device,consecutive-pair,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,consecutive-pair,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+faster_device,consecutive-pair,comparison references identical,True,ok
+faster_device,consecutive-pair,results reference only frozen requests and release times,True,ok
+faster_device,consecutive-pair,input unchanged by the run,True,ok
+faster_device,drift-aware,workload fingerprint identical,True,f6f75e2f4066c6a0 vs f6f75e2f4066c6a0
+faster_device,drift-aware,request count identical,True,4491 / 4491 vs 4491
+faster_device,drift-aware,pair identities and multiplicities identical,True,identical
+faster_device,drift-aware,shot requirements identical,True,identical
+faster_device,drift-aware,release times identical,True,identical
+faster_device,drift-aware,planned measurement times identical,True,identical
+faster_device,drift-aware,total shot budget identical,True,8982 vs 8982
+faster_device,drift-aware,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+faster_device,drift-aware,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,drift-aware,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+faster_device,drift-aware,comparison references identical,True,ok
+faster_device,drift-aware,results reference only frozen requests and release times,True,ok
+faster_device,drift-aware,input unchanged by the run,True,ok
+faster_device,drift-aware-age,workload fingerprint identical,True,f6f75e2f4066c6a0 vs f6f75e2f4066c6a0
+faster_device,drift-aware-age,request count identical,True,4491 / 4491 vs 4491
+faster_device,drift-aware-age,pair identities and multiplicities identical,True,identical
+faster_device,drift-aware-age,shot requirements identical,True,identical
+faster_device,drift-aware-age,release times identical,True,identical
+faster_device,drift-aware-age,planned measurement times identical,True,identical
+faster_device,drift-aware-age,total shot budget identical,True,8982 vs 8982
+faster_device,drift-aware-age,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+faster_device,drift-aware-age,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979) vs Device(start_time=21921.9, slot_seconds=0.7316445830085737, total_slots=9979)"
+faster_device,drift-aware-age,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+faster_device,drift-aware-age,comparison references identical,True,ok
+faster_device,drift-aware-age,results reference only frozen requests and release times,True,ok
+faster_device,drift-aware-age,input unchanged by the run,True,ok
+faster_device,consecutive-pair,offline simulator reproduces production,True,identical executions
+faster_device,drift-aware,offline simulator reproduces production,True,identical executions
+faster_device,drift-aware-age,pair atomicity preserved (consecutive slots),True,all pairs in consecutive slots
+faster_device,drift-aware-age,only Comparable pairs executed,True,ok
+faster_device,arrival-order,registry eligibility respected by every executed comparison,True,ok
+faster_device,consecutive-pair,registry eligibility respected by every executed comparison,True,ok
+faster_device,drift-aware,registry eligibility respected by every executed comparison,True,ok
+faster_device,drift-aware-age,registry eligibility respected by every executed comparison,True,ok
+faster_device,drift-aware-age,no shot reused; budget respected,True,ok
+recorded_cadence_reference,all,frozen workload fingerprint unchanged,True,aa86c09e72287a49 vs expected aa86c09e72287a49
+recorded_cadence_reference,all,slot timeline is the scenario's wall-clock-horizon grid,True,"20946 slots of 0.3485714285714286 s from 21921.9, last slot starts 29222.728571428575 <= 29222.9"
+recorded_cadence_reference,arrival-order,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+recorded_cadence_reference,arrival-order,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,arrival-order,same shot and request objects as the other policies,True,ok
+recorded_cadence_reference,consecutive-pair,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+recorded_cadence_reference,consecutive-pair,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,consecutive-pair,same shot and request objects as the other policies,True,ok
+recorded_cadence_reference,drift-aware,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+recorded_cadence_reference,drift-aware,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,drift-aware,same shot and request objects as the other policies,True,ok
+recorded_cadence_reference,drift-aware-age,request content identical to the frozen workload (device excluded),True,6d037f0748ebc740 vs 6d037f0748ebc740
+recorded_cadence_reference,drift-aware-age,slot grid equals the scenario grid,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,drift-aware-age,same shot and request objects as the other policies,True,ok
+recorded_cadence_reference,arrival-order,workload fingerprint identical,True,e2a042ddd9db1d6c vs e2a042ddd9db1d6c
+recorded_cadence_reference,arrival-order,request count identical,True,4491 / 4491 vs 4491
+recorded_cadence_reference,arrival-order,pair identities and multiplicities identical,True,identical
+recorded_cadence_reference,arrival-order,shot requirements identical,True,identical
+recorded_cadence_reference,arrival-order,release times identical,True,identical
+recorded_cadence_reference,arrival-order,planned measurement times identical,True,identical
+recorded_cadence_reference,arrival-order,total shot budget identical,True,8982 vs 8982
+recorded_cadence_reference,arrival-order,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+recorded_cadence_reference,arrival-order,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,arrival-order,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+recorded_cadence_reference,arrival-order,comparison references identical,True,ok
+recorded_cadence_reference,arrival-order,results reference only frozen requests and release times,True,ok
+recorded_cadence_reference,arrival-order,input unchanged by the run,True,ok
+recorded_cadence_reference,consecutive-pair,workload fingerprint identical,True,e2a042ddd9db1d6c vs e2a042ddd9db1d6c
+recorded_cadence_reference,consecutive-pair,request count identical,True,4491 / 4491 vs 4491
+recorded_cadence_reference,consecutive-pair,pair identities and multiplicities identical,True,identical
+recorded_cadence_reference,consecutive-pair,shot requirements identical,True,identical
+recorded_cadence_reference,consecutive-pair,release times identical,True,identical
+recorded_cadence_reference,consecutive-pair,planned measurement times identical,True,identical
+recorded_cadence_reference,consecutive-pair,total shot budget identical,True,8982 vs 8982
+recorded_cadence_reference,consecutive-pair,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+recorded_cadence_reference,consecutive-pair,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,consecutive-pair,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+recorded_cadence_reference,consecutive-pair,comparison references identical,True,ok
+recorded_cadence_reference,consecutive-pair,results reference only frozen requests and release times,True,ok
+recorded_cadence_reference,consecutive-pair,input unchanged by the run,True,ok
+recorded_cadence_reference,drift-aware,workload fingerprint identical,True,e2a042ddd9db1d6c vs e2a042ddd9db1d6c
+recorded_cadence_reference,drift-aware,request count identical,True,4491 / 4491 vs 4491
+recorded_cadence_reference,drift-aware,pair identities and multiplicities identical,True,identical
+recorded_cadence_reference,drift-aware,shot requirements identical,True,identical
+recorded_cadence_reference,drift-aware,release times identical,True,identical
+recorded_cadence_reference,drift-aware,planned measurement times identical,True,identical
+recorded_cadence_reference,drift-aware,total shot budget identical,True,8982 vs 8982
+recorded_cadence_reference,drift-aware,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+recorded_cadence_reference,drift-aware,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,drift-aware,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+recorded_cadence_reference,drift-aware,comparison references identical,True,ok
+recorded_cadence_reference,drift-aware,results reference only frozen requests and release times,True,ok
+recorded_cadence_reference,drift-aware,input unchanged by the run,True,ok
+recorded_cadence_reference,drift-aware-age,workload fingerprint identical,True,e2a042ddd9db1d6c vs e2a042ddd9db1d6c
+recorded_cadence_reference,drift-aware-age,request count identical,True,4491 / 4491 vs 4491
+recorded_cadence_reference,drift-aware-age,pair identities and multiplicities identical,True,identical
+recorded_cadence_reference,drift-aware-age,shot requirements identical,True,identical
+recorded_cadence_reference,drift-aware-age,release times identical,True,identical
+recorded_cadence_reference,drift-aware-age,planned measurement times identical,True,identical
+recorded_cadence_reference,drift-aware-age,total shot budget identical,True,8982 vs 8982
+recorded_cadence_reference,drift-aware-age,eligible pair set identical and Comparable-only,True,15 vs 15 pairs
+recorded_cadence_reference,drift-aware-age,device capacity and slot duration identical,True,"Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946) vs Device(start_time=21921.9, slot_seconds=0.3485714285714286, total_slots=20946)"
+recorded_cadence_reference,drift-aware-age,drift inputs identical,True,9b38399b6dfcc1b3 vs 9b38399b6dfcc1b3
+recorded_cadence_reference,drift-aware-age,comparison references identical,True,ok
+recorded_cadence_reference,drift-aware-age,results reference only frozen requests and release times,True,ok
+recorded_cadence_reference,drift-aware-age,input unchanged by the run,True,ok
+recorded_cadence_reference,consecutive-pair,offline simulator reproduces production,True,identical executions
+recorded_cadence_reference,drift-aware,offline simulator reproduces production,True,identical executions
+recorded_cadence_reference,drift-aware-age,pair atomicity preserved (consecutive slots),True,all pairs in consecutive slots
+recorded_cadence_reference,drift-aware-age,only Comparable pairs executed,True,ok
+recorded_cadence_reference,arrival-order,registry eligibility respected by every executed comparison,True,ok
+recorded_cadence_reference,consecutive-pair,registry eligibility respected by every executed comparison,True,ok
+recorded_cadence_reference,drift-aware,registry eligibility respected by every executed comparison,True,ok
+recorded_cadence_reference,drift-aware-age,registry eligibility respected by every executed comparison,True,ok
+recorded_cadence_reference,drift-aware-age,no shot reused; budget respected,True,ok
+all,all,frozen workload equals an independent rebuild from the production pipeline,True,aa86c09e72287a49
+all,drift-aware-age,age horizon selected from training data only,True,training partition only: 13509 requests released before the holdout boundary 21920.355064249998

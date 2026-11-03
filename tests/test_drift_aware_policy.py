@@ -185,8 +185,8 @@ def test_end_to_end_default_holdout_run(evaluation):
     assert (len(ev.split.train), len(ev.split.holdout)) == (63041, 20959)  # the split itself is unchanged
     assert ev.split.train_fraction == 0.75 and ev.priorities.metadata.window_seconds == 600.0
     assert [r.result.policy_name for r in ev.runs] == ["arrival-order", "consecutive-pair", "drift-aware"]
-    assert len(ev.eligible_pairs) == 29 and ev.excluded_pair_count == 62
-    assert ev.priorities.positive_count == 29 and ev.priorities.zero_count == 0
+    assert len(ev.eligible_pairs) == 15 and ev.excluded_pair_count == 76
+    assert ev.priorities.positive_count == 15 and ev.priorities.zero_count == 0
     assert {p.key for p in ev.priorities.priorities} == eligible_keys  # priorities only for Comparable pairs
     assert ev.priorities.metadata.train_shot_count == 63041  # the complete training portion
 
@@ -214,7 +214,7 @@ def test_end_to_end_default_holdout_run(evaluation):
     assert consecutive.slot_separation.maximum == drift.slot_separation.maximum == 1.0
     assert arrival.slot_separation.mean > 1.0
     assert ev.runs[0].result.schedule == ev.runs[2].result.schedule == ev.schedule
-    assert len(registry.eligible_pairs()) == 29 and len(registry.excluded_pairs()) == 62
+    assert len(registry.eligible_pairs()) == 15 and len(registry.excluded_pairs()) == 76
 
 
 def test_holdout_outcomes_do_not_change_end_to_end_priorities(evaluation):
@@ -246,9 +246,9 @@ def test_evaluation_json_is_complete_and_strict(evaluation):
     assert set(data["policies"]) == {"arrival-order", "consecutive-pair", "drift-aware"}
     assert data["split"]["train_shots"] == 63041 and data["split"]["holdout_shots"] == 20959
     assert "counterfactual" in data["limitation"] and "Priorities were learned" in data["leakage_check"]
-    assert len(data["priorities"]["priorities"]) == 29
-    assert data["eligibility"]["authority"] == "reviewer_decision" and len(data["eligibility"]["eligible_pairs"]) == 29
-    assert data["eligibility"]["excluded_pair_count"] == 62
+    assert len(data["priorities"]["priorities"]) == 15
+    assert data["eligibility"]["authority"] == "reviewer_decision" and len(data["eligibility"]["eligible_pairs"]) == 15
+    assert data["eligibility"]["excluded_pair_count"] == 76
     assert len(data["split"]["per_circuit"]) == 14
 
 
@@ -282,11 +282,11 @@ def test_cli_prints_report_and_writes_artifacts(tmp_path, capsys):
     )
     assert code == 0, err
     for needle in ("held-out replay scheduling metrics", "Split boundary", "Top 10 learned priorities",
-                   "29 pairs with positive score, 0 with zero score", "arrival-order", "consecutive-pair",
+                   "15 pairs with positive score, 0 with zero score", "arrival-order", "consecutive-pair",
                    "drift-aware", "Leakage check", "counterfactual hardware"):
         assert needle in out
     assert json.loads(out_json.read_text(encoding="utf-8"))["split"]["holdout_shots"] == 20959
-    assert len(load_priority_table(priorities).priorities) == 29
+    assert len(load_priority_table(priorities).priorities) == 15
 
 
 def test_cli_rejects_invalid_configuration(tmp_path, capsys):

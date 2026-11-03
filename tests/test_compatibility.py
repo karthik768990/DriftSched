@@ -22,13 +22,17 @@ from quantum_drift_scheduler.data.compatibility import (
 )
 from _sched_helpers import make_registry
 
+# The legacy-schema tests run on a frozen copy of the pre-automated registry (sha256 584620ac...), because
+# data/compatibility_registry.csv now uses the automated schema (see test_automated_registry.py).
+LEGACY_REGISTRY = Path(__file__).parent / "fixtures" / "legacy_compatibility_registry.csv"
+
 A = "Gx(Gw)Gy"
 B = "Gx(Gw)^2Gy"
 ALL_COLUMNS = REQUIRED_COLUMNS + OPTIONAL_COLUMNS
 
 
 def _default_rows() -> List[Dict[str, str]]:
-    with open(DEFAULT_CONFIG.compatibility_registry_path, encoding="utf-8", newline="") as f:
+    with open(LEGACY_REGISTRY, encoding="utf-8", newline="") as f:
         return list(csv.DictReader(f))
 
 
@@ -42,7 +46,7 @@ def _write(path: Path, rows: List[Dict[str, str]], columns=ALL_COLUMNS) -> Path:
 
 @pytest.fixture
 def registry():
-    return load_compatibility_registry()
+    return load_compatibility_registry(LEGACY_REGISTRY)
 
 
 @pytest.fixture
@@ -68,7 +72,7 @@ def test_default_path_is_data_registry():
 
 
 def test_default_csv_has_every_required_column_and_only_known_optional_ones():
-    with open(DEFAULT_CONFIG.compatibility_registry_path, encoding="utf-8", newline="") as f:
+    with open(LEGACY_REGISTRY, encoding="utf-8", newline="") as f:
         header = tuple(next(csv.reader(f)))
     assert set(REQUIRED_COLUMNS) <= set(header) and set(header) <= set(ALL_COLUMNS)
     assert "compatibility_status" not in REQUIRED_COLUMNS and "reviewer_decision" in REQUIRED_COLUMNS
@@ -147,7 +151,7 @@ def test_evidence_and_provenance_preserved(registry):
 
 
 def test_no_obsolete_workflow_language():
-    text = DEFAULT_CONFIG.compatibility_registry_path.read_text(encoding="utf-8")
+    text = LEGACY_REGISTRY.read_text(encoding="utf-8")
     assert "candidate_for_review" not in text
     assert "proposed" not in text.lower()
 

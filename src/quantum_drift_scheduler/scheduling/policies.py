@@ -26,6 +26,10 @@ CONSECUTIVE_PAIR = "consecutive-pair"
 DRIFT_AWARE = "drift-aware"
 BASELINE_POLICY_NAMES: Tuple[str, ...] = (ARRIVAL_ORDER, CONSECUTIVE_PAIR)
 POLICY_NAMES: Tuple[str, ...] = (ARRIVAL_ORDER, CONSECUTIVE_PAIR, DRIFT_AWARE)
+#: Default scheduling policy when none is selected explicitly. ``arrival-order`` is an evaluation
+#: baseline; ``drift-aware`` (research comparison) and ``drift-aware-age`` (experimental) are
+#: selected explicitly and are never the default.
+DEFAULT_POLICY = CONSECUTIVE_PAIR
 
 
 @runtime_checkable
@@ -96,8 +100,8 @@ class ConsecutivePairPolicy:
         return request_order_key(request)
 
 
-def make_baseline_policy(name: str):
-    """Build a baseline policy from its CLI name."""
+def make_baseline_policy(name: str = DEFAULT_POLICY):
+    """Build a baseline policy from its CLI name (default: ``DEFAULT_POLICY``)."""
     if name == ARRIVAL_ORDER:
         return ArrivalOrderPolicy()
     if name == CONSECUTIVE_PAIR:

@@ -1,0 +1,92 @@
+pair_id,circuit_a,circuit_b,k_a,k_b,automated_decision,decision_reason,eligible,correction_type,eligibility_reason,requests_generated,registry_sha256
+1,Gx(Gw)Gy,Gx(Gw)^2Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+2,Gx(Gw)Gy,Gx(Gw)^4Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+3,Gx(Gw)Gy,Gx(Gw)^8Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+4,Gx(Gw)Gy,Gx(Gw)^16Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+5,Gx(Gw)Gy,Gx(Gw)^32Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+6,Gx(Gw)Gy,Gx(Gw)^64Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+7,Gx(Gw)Gy,Gx(Gw)^128Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+8,Gx(Gw)Gy,Gx(Gw)^256Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+9,Gx(Gw)Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+10,Gx(Gw)Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+11,Gx(Gw)Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+12,Gx(Gw)Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+13,Gx(Gw)Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+14,Gx(Gw)^2Gy,Gx(Gw)^4Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+15,Gx(Gw)^2Gy,Gx(Gw)^8Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+16,Gx(Gw)^2Gy,Gx(Gw)^16Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+17,Gx(Gw)^2Gy,Gx(Gw)^32Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+18,Gx(Gw)^2Gy,Gx(Gw)^64Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+19,Gx(Gw)^2Gy,Gx(Gw)^128Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+20,Gx(Gw)^2Gy,Gx(Gw)^256Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+21,Gx(Gw)^2Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+22,Gx(Gw)^2Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+23,Gx(Gw)^2Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+24,Gx(Gw)^2Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+25,Gx(Gw)^2Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+26,Gx(Gw)^4Gy,Gx(Gw)^8Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+27,Gx(Gw)^4Gy,Gx(Gw)^16Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+28,Gx(Gw)^4Gy,Gx(Gw)^32Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+29,Gx(Gw)^4Gy,Gx(Gw)^64Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+30,Gx(Gw)^4Gy,Gx(Gw)^128Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+31,Gx(Gw)^4Gy,Gx(Gw)^256Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+32,Gx(Gw)^4Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+33,Gx(Gw)^4Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+34,Gx(Gw)^4Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+35,Gx(Gw)^4Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+36,Gx(Gw)^4Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+37,Gx(Gw)^8Gy,Gx(Gw)^16Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+38,Gx(Gw)^8Gy,Gx(Gw)^32Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+39,Gx(Gw)^8Gy,Gx(Gw)^64Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+40,Gx(Gw)^8Gy,Gx(Gw)^128Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+41,Gx(Gw)^8Gy,Gx(Gw)^256Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+42,Gx(Gw)^8Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+43,Gx(Gw)^8Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+44,Gx(Gw)^8Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+45,Gx(Gw)^8Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+46,Gx(Gw)^8Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+47,Gx(Gw)^16Gy,Gx(Gw)^32Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+48,Gx(Gw)^16Gy,Gx(Gw)^64Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+49,Gx(Gw)^16Gy,Gx(Gw)^128Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+50,Gx(Gw)^16Gy,Gx(Gw)^256Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+51,Gx(Gw)^16Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+52,Gx(Gw)^16Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+53,Gx(Gw)^16Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+54,Gx(Gw)^16Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+55,Gx(Gw)^16Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+56,Gx(Gw)^32Gy,Gx(Gw)^64Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+57,Gx(Gw)^32Gy,Gx(Gw)^128Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),167,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+58,Gx(Gw)^32Gy,Gx(Gw)^256Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+59,Gx(Gw)^32Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+60,Gx(Gw)^32Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+61,Gx(Gw)^32Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+62,Gx(Gw)^32Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+63,Gx(Gw)^32Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+64,Gx(Gw)^64Gy,Gx(Gw)^128Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+65,Gx(Gw)^64Gy,Gx(Gw)^256Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+66,Gx(Gw)^64Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+67,Gx(Gw)^64Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+68,Gx(Gw)^64Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+69,Gx(Gw)^64Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+70,Gx(Gw)^64Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+71,Gx(Gw)^128Gy,Gx(Gw)^256Gy,,,,,True,,eligible: reviewer_decision is Comparable (legacy registry schema),166,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+72,Gx(Gw)^128Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+73,Gx(Gw)^128Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+74,Gx(Gw)^128Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+75,Gx(Gw)^128Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+76,Gx(Gw)^128Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+77,Gx(Gw)^256Gy,Gx(Gw)^512Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+78,Gx(Gw)^256Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+79,Gx(Gw)^256Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+80,Gx(Gw)^256Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+81,Gx(Gw)^256Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+82,Gx(Gw)^512Gy,Gx(Gw)^1024Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+83,Gx(Gw)^512Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+84,Gx(Gw)^512Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+85,Gx(Gw)^512Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+86,Gx(Gw)^1024Gy,Gx(Gw)^2048Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+87,Gx(Gw)^1024Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+88,Gx(Gw)^1024Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+89,Gx(Gw)^2048Gy,Gx(Gw)^4096Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+90,Gx(Gw)^2048Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed
+91,Gx(Gw)^4096Gy,Gx(Gw)^8192Gy,,,,,False,,excluded: reviewer_decision is Not comparable (legacy registry schema),0,584620acd3d17e212b65e52ff587827aab185186192d9001da147e157048c1ed

@@ -1,0 +1,188 @@
+{
+ "provenance": "SIMULATED workload; no recorded observation or hardware measurement",
+ "fingerprint": "3ec7ed848e6bde6191e8618ed033717c78c03398a2f925fbe394836f1722d328",
+ "requests": 8256,
+ "shots": 16512,
+ "registry_content_sha256": "9204db00e4829446de402fbe8c87cd28cf4a44a810d2aa03b13712b24e33e709",
+ "eligible_pairs": 15,
+ "equations": {
+  "horizon_seconds": 18000.0,
+  "service_seconds_assumed": 1.0,
+  "total_slots": 18000,
+  "device_seconds": 18000.0,
+  "device_hours": 5.0,
+  "capacity_requests_per_second": 0.5,
+  "max_completable_requests": 9000,
+  "mean_offered_load": 0.8999999999999999,
+  "expected_requests": 8100.0,
+  "overloaded_blocks": [
+   2,
+   5,
+   6,
+   10,
+   13
+  ],
+  "note": "service_seconds is an assumed device parameter, not measured hardware capacity"
+ },
+ "blocks": [
+  {
+   "block": 0,
+   "start_s": 0.0,
+   "offered_load": 0.55,
+   "request_rate_per_s": 0.275,
+   "expected_requests": 330.0,
+   "realised_requests": 318,
+   "realised_offered_load": 0.53
+  },
+  {
+   "block": 1,
+   "start_s": 1200.0,
+   "offered_load": 0.8,
+   "request_rate_per_s": 0.4,
+   "expected_requests": 480.0,
+   "realised_requests": 468,
+   "realised_offered_load": 0.78
+  },
+  {
+   "block": 2,
+   "start_s": 2400.0,
+   "offered_load": 1.3,
+   "request_rate_per_s": 0.65,
+   "expected_requests": 780.0,
+   "realised_requests": 771,
+   "realised_offered_load": 1.285
+  },
+  {
+   "block": 3,
+   "start_s": 3600.0,
+   "offered_load": 0.6,
+   "request_rate_per_s": 0.3,
+   "expected_requests": 360.0,
+   "realised_requests": 334,
+   "realised_offered_load": 0.5566666666666666
+  },
+  {
+   "block": 4,
+   "start_s": 4800.0,
+   "offered_load": 0.9,
+   "request_rate_per_s": 0.45,
+   "expected_requests": 540.0,
+   "realised_requests": 504,
+   "realised_offered_load": 0.84
+  },
+  {
+   "block": 5,
+   "start_s": 6000.0,
+   "offered_load": 1.1,
+   "request_rate_per_s": 0.55,
+   "expected_requests": 660.0,
+   "realised_requests": 730,
+   "realised_offered_load": 1.2166666666666666
+  },
+  {
+   "block": 6,
+   "start_s": 7200.0,
+   "offered_load": 1.5,
+   "request_rate_per_s": 0.75,
+   "expected_requests": 900.0,
+   "realised_requests": 884,
+   "realised_offered_load": 1.4733333333333334
+  },
+  {
+   "block": 7,
+   "start_s": 8400.0,
+   "offered_load": 0.5,
+   "request_rate_per_s": 0.25,
+   "expected_requests": 300.0,
+   "realised_requests": 343,
+   "realised_offered_load": 0.5716666666666667
+  },
+  {
+   "block": 8,
+   "start_s": 9600.0,
+   "offered_load": 0.7,
+   "request_rate_per_s": 0.35,
+   "expected_requests": 420.0,
+   "realised_requests": 454,
+   "realised_offered_load": 0.7566666666666667
+  },
+  {
+   "block": 9,
+   "start_s": 10800.0,
+   "offered_load": 1.0,
+   "request_rate_per_s": 0.5,
+   "expected_requests": 600.0,
+   "realised_requests": 472,
+   "realised_offered_load": 0.7866666666666666
+  },
+  {
+   "block": 10,
+   "start_s": 12000.0,
+   "offered_load": 1.25,
+   "request_rate_per_s": 0.625,
+   "expected_requests": 750.0,
+   "realised_requests": 794,
+   "realised_offered_load": 1.3233333333333333
+  },
+  {
+   "block": 11,
+   "start_s": 13200.0,
+   "offered_load": 0.6,
+   "request_rate_per_s": 0.3,
+   "expected_requests": 360.0,
+   "realised_requests": 354,
+   "realised_offered_load": 0.59
+  },
+  {
+   "block": 12,
+   "start_s": 14400.0,
+   "offered_load": 0.85,
+   "request_rate_per_s": 0.425,
+   "expected_requests": 510.0,
+   "realised_requests": 479,
+   "realised_offered_load": 0.7983333333333333
+  },
+  {
+   "block": 13,
+   "start_s": 15600.0,
+   "offered_load": 1.15,
+   "request_rate_per_s": 0.575,
+   "expected_requests": 690.0,
+   "realised_requests": 837,
+   "realised_offered_load": 1.395
+  },
+  {
+   "block": 14,
+   "start_s": 16800.0,
+   "offered_load": 0.7,
+   "request_rate_per_s": 0.35,
+   "expected_requests": 420.0,
+   "realised_requests": 514,
+   "realised_offered_load": 0.8566666666666667
+  }
+ ],
+ "realised_mean_offered_load": 0.9173333333333333,
+ "requests_per_pair": {
+  "Gx(Gw)^2Gy | Gx(Gw)^8Gy": 482,
+  "Gx(Gw)Gy | Gx(Gw)^4Gy": 914,
+  "Gx(Gw)Gy | Gx(Gw)^8Gy": 717,
+  "Gx(Gw)Gy | Gx(Gw)^32Gy": 555,
+  "Gx(Gw)^4Gy | Gx(Gw)^32Gy": 372,
+  "Gx(Gw)^4Gy | Gx(Gw)^8Gy": 437,
+  "Gx(Gw)Gy | Gx(Gw)^2Gy": 1301,
+  "Gx(Gw)^8Gy | Gx(Gw)^16Gy": 366,
+  "Gx(Gw)^2Gy | Gx(Gw)^4Gy": 522,
+  "Gx(Gw)Gy | Gx(Gw)^16Gy": 626,
+  "Gx(Gw)^8Gy | Gx(Gw)^32Gy": 347,
+  "Gx(Gw)^16Gy | Gx(Gw)^32Gy": 318,
+  "Gx(Gw)^2Gy | Gx(Gw)^32Gy": 472,
+  "Gx(Gw)^2Gy | Gx(Gw)^16Gy": 448,
+  "Gx(Gw)^4Gy | Gx(Gw)^16Gy": 379
+ },
+ "repetitions": {
+  "100": 4150,
+  "400": 2874,
+  "1600": 1232
+ },
+ "numpy_version": "2.5.4"
+}

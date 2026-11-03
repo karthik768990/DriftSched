@@ -376,7 +376,6 @@ def test_cli_custom_input_and_outputs(tmp_path, capsys):
 def test_cli_rejects_bad_arguments(tmp_path, capsys):
     for stale in ("minimum-recorded-gap", "drift-aware", "bogus"):
         assert run_cli(capsys, "--policy", stale)[0] != 0
-    assert run_cli(capsys)[0] != 0
     code, _, err = run_cli(capsys, "--policy", "arrival-order", "--input", str(tmp_path / "nope.txt"))
     assert code == 1 and "not found" in err
     bad = tmp_path / "bad.txt"

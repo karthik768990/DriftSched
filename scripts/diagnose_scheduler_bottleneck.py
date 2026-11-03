@@ -87,7 +87,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     workloads = {"holdout": holdout, "training": training}
     refs = {n: sd.run_reference_policies(w, registry, pri) for n, w in workloads.items()}
     S: Dict[str, Any] = {"scope": "timing/queue diagnostics only; no drift model; no reliability claim",
-                         "eligibility": {"authority": "reviewer_decision", "comparable_pairs": len(ev.eligible_pairs),
+                         "eligibility": {"authority": "reviewer_decision", "registry": ev.registry_provenance, "comparable_pairs": len(ev.eligible_pairs),
                                          "excluded_pairs": ev.excluded_pair_count}}
 
     # ---- fidelity: the replayed holdout equals the production three-policy numbers

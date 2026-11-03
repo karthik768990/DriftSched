@@ -1,6 +1,10 @@
 """Data models and validation subpackage for quantum drift datasets."""
 
 from quantum_drift_scheduler.data.compatibility import (
+    AutomatedDecision,
+    CorrectionType,
+    IMPLEMENTED_CORRECTIONS,
+    decide_eligibility,
     CompatibilityError,
     CompatibilityPair,
     CompatibilityRegistry,
@@ -19,6 +23,10 @@ __all__ = [
     "DatasetParser",
     "parse_dataset_file",
     "validate_record",
+    "AutomatedDecision",
+    "CorrectionType",
+    "IMPLEMENTED_CORRECTIONS",
+    "decide_eligibility",
     "CompatibilityError",
     "CompatibilityPair",
     "CompatibilityRegistry",

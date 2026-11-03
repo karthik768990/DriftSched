@@ -23,6 +23,7 @@ from quantum_drift_scheduler.config import DEFAULT_CONFIG
 from quantum_drift_scheduler.data.compatibility import CompatibilityError, load_compatibility_registry
 from quantum_drift_scheduler.scheduling import (
     BASELINE_POLICY_NAMES,
+    DEFAULT_POLICY,
     DEFAULT_SLOTS_PER_SHOT,
     SchedulingError,
     SimulationMetrics,
@@ -123,7 +124,12 @@ def build_parser() -> argparse.ArgumentParser:
         epilog=LIMITATION,
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
-    parser.add_argument("--policy", required=True, choices=BASELINE_POLICY_NAMES, help="Scheduling policy.")
+    parser.add_argument(
+        "--policy",
+        default=DEFAULT_POLICY,
+        choices=BASELINE_POLICY_NAMES,
+        help="Scheduling policy (default: %(default)s).",
+    )
     parser.add_argument(
         "--input",
         type=Path,

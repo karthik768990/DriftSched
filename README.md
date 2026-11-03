@@ -8,6 +8,58 @@ Quantum processors suffer from dynamic physical drift (e.g. fluctuating qubit fr
 
 This prototype investigates drift-aware scheduling strategies to minimize drift error and improve the statistical fidelity of comparisons under realistic experimental drift.
 
+### Status at a glance
+
+- **Default policy: `consecutive-pair`.** It dispatches the two shots of a comparison in consecutive slots (atomic pair), earliest-ready first. `arrival-order` is the evaluation baseline, `drift-aware` is kept for research comparison, and `drift-aware-age` is optional and experimental. A hybrid policy was evaluated on a separate branch and is not integrated.
+- **Eligibility comes from one file.** `data/compatibility_registry.csv` holds an automated decision for all 91 circuit pairs. Only the 15 pairs marked `Comparable: additive correction` can be scheduled (section 18).
+- **Every evaluation is a replay of recorded data**, not a QPU experiment, and every policy sees an identical workload. Each run audits this (302 checks in the latest run, none failed).
+- **Latest result** (section 19): `drift-aware-age` bounds the starvation that strict `drift-aware` causes under overload, but it shows no measured benefit over `consecutive-pair`. That is why `consecutive-pair` is the default.
+- **Tests:** 497 pass (`python -m pytest tests -q`).
+
+---
+
+## Quick start: commands at a glance
+
+Run everything from the project root. Commands are PowerShell/bash compatible. Setup is in section 3 (`pip install -r requirements.txt`).
+
+| # | Goal | Command | Writes | Time |
+|---|---|---|---|---|
+| 1 | Check the dataset parses | `python scripts/inspect_dataset.py` | console | seconds |
+| 2 | Run the scheduler with the **default** policy on the recorded trace | `python scripts/run_scheduler_replay.py` | console report | seconds |
+| 3 | Run a specific baseline policy | `python scripts/run_scheduler_replay.py --policy arrival-order` (or `consecutive-pair`) | console report | seconds |
+| 4 | Save per-comparison results | `python scripts/run_scheduler_replay.py --output result.json` (or `.csv`) | `result.json` | seconds |
+| 5 | Run on your own input | `python scripts/run_scheduler_replay.py --input data/inputs/input.txt --slots-per-shot 1.5` | console report | seconds |
+| 6 | **Compare all four policies** on the current registry | `python scripts/run_age_aware_evaluation.py --regenerate-workload` | `results/registry_integrated_evaluation/` | about 1 min |
+| 7 | Reproduce the earlier (legacy registry) results | `python scripts/run_age_aware_evaluation.py --registry tests/fixtures/legacy_compatibility_registry.csv --output-dir results/my_legacy_check` | the chosen directory | about 1 min |
+| 8 | Holdout evaluation (arrival-order, consecutive-pair, drift-aware) | `python scripts/run_holdout_evaluation.py --train-fraction 0.75 --window-seconds 600` | console, `data/derived/` | about 1 min |
+| 9 | Inspect the learned drift priorities | `python scripts/run_priority_analysis.py` | `results/priority_analysis/` | seconds |
+| 10 | Check whether priorities persist over time | `python scripts/run_priority_persistence_validation.py --output-dir <new dir>` | the chosen directory | not timed |
+| 11 | Capacity sensitivity on the frozen (legacy) workload | `python scripts/run_capacity_sensitivity_evaluation.py` | `results/capacity_sensitivity_evaluation/` | about 1 min |
+| 12 | **Run all tests** | `python -m pytest tests -q` | console | about 70 s |
+| 13 | Run only the tests that do not read the real dataset | `python -m pytest tests -m "not real_data" -q` | console (481 tests) | about 40 s |
+| 14 | **Generate the SIMULATED five-hour workload** | `python scripts/generate_five_hour_workload.py` | `results/five_hour_synthetic_workload/` | under 1 s |
+| 15 | Check the workload regenerates identically | `python scripts/generate_five_hour_workload.py --verify` | console | under 1 s |
+| 16 | **Evaluate all four policies on it (controlled simulated drift)** | `python scripts/run_five_hour_evaluation.py` | `results/five_hour_synthetic_evaluation/` | about 80 s |
+| 17 | Run only the default policy (`consecutive-pair`) on it | `python scripts/run_five_hour_evaluation.py --policies consecutive-pair --output-dir results/five_hour_consecutive_pair_only` | the chosen directory | seconds |
+
+Existing result directories are never overwritten: pass a new `--output-dir`, or `--overwrite` deliberately.
+
+### Command details
+
+- **Commands 2 to 5** use `scripts/run_scheduler_replay.py`. It builds the comparison requests from the trace and the registry, runs one policy through the slot simulator, and prints completed comparisons, idle slots, the gap between the two shots of each comparison, queue waiting time and per-circuit-pair counts. Choices are `arrival-order` and `consecutive-pair`; with no `--policy` it uses `consecutive-pair`. `drift-aware` and `drift-aware-age` need training-derived priorities, so only the evaluation scripts (commands 6, 8, 11) run them.
+- **Command 6** is the main evaluation. It loads the registry, regenerates the workload from the 15 eligible pairs, replays it through `arrival-order`, `consecutive-pair`, `drift-aware` and `drift-aware-age` in four capacity scenarios, and runs the fairness audits. It exits non-zero if an audit fails. Read `summary.json`, `policy_metrics_by_scenario.csv` (one row per scenario and policy), `fairness_audit.csv`, `registry_eligibility.csv` (all 91 pairs with their reason) and the plots. The written analysis is `results/registry_integrated_evaluation_analysis/evaluation_analysis.md`.
+- **Command 7** replays the old frozen workload with the old registry; the committed age-aware results were reproduced with zero differing cells, which shows the age policy's behaviour is unchanged.
+- **Commands 8 to 11** are the earlier studies described in sections 8, 11, 13 and 16. Priorities there are learned from the first 75% of the timeline only.
+- **Commands 12 and 13** run the test suite. Targeted runs:
+
+```powershell
+python -m pytest tests/test_automated_registry.py -q   # registry loading, exclusions, queue integration
+python -m pytest tests/test_default_policy.py -q       # default policy and explicit selection
+python -m pytest tests/test_scheduler_simulator.py tests/test_scheduler_policies.py -q   # simulator, pair atomicity, CLI
+python -m pytest tests/test_age_aware_policy.py -q     # age formula, starvation metrics
+python -m pytest tests/test_compatibility.py -q        # legacy-schema registry tests (frozen fixture)
+```
+
 ---
 
 ## 2. Folder Structure
@@ -22,7 +74,7 @@ quantum-drift-scheduler/
 │   ├── README.md                  # Dataset documentation & layout notes
 │   ├── dataset.txt                # Raw experimental observations
 │   ├── README.txt                 # Dataset origin documentation
-│   ├── compatibility_registry.csv # 91-pair registry; reviewer_decision decides eligibility
+│   ├── compatibility_registry.csv # 91-pair registry; automated_decision decides eligibility (section 18)
 │   ├── inputs/
 │   │   └── input.txt.example      # Example custom replay input
 │   └── 1_8.md                     # Research notes & project plan
@@ -36,8 +88,9 @@ quantum-drift-scheduler/
 │       │   ├── models.py          # ShotArrival, SlotSchedule, PairRequest, CompletedComparison, results
 │       │   ├── trace.py           # Recorded and custom replay trace loaders
 │       │   ├── workload.py        # Round-robin pair-request workload and slot schedule
-│       │   ├── policies.py        # arrival-order and consecutive-pair policies
+│       │   ├── policies.py        # arrival-order and consecutive-pair policies, DEFAULT_POLICY
 │       │   ├── drift_aware.py     # DriftAwarePairPolicy (frozen-priority pair dispatch)
+│       │   ├── age_aware_policy.py # Experimental drift-aware-age policy
 │       │   ├── simulator.py       # Slot-based simulator (run_simulation)
 │       │   └── metrics.py         # compute_metrics and report formatting
 │       ├── analysis/
@@ -60,10 +113,15 @@ quantum-drift-scheduler/
 │   ├── test_holdout.py            # Chronological split
 │   ├── test_priorities.py         # Training-only priority learning
 │   ├── test_drift_aware_policy.py # Drift-aware policy, evaluation and holdout CLI
+│   ├── test_automated_registry.py # Automated-registry loading, eligibility and queue integration
+│   ├── test_default_policy.py     # consecutive-pair default; other policies explicitly selectable
+│   ├── test_age_aware_policy.py   # Age policy, calibration, starvation metrics
+│   ├── fixtures/                  # Frozen legacy registry for legacy-schema tests
 │   └── test_validation.py         # Unit tests for data validation rules
 └── scripts/
     ├── inspect_dataset.py         # Dataset inspection and summary CLI tool
-    ├── run_scheduler_replay.py    # Baseline slot-based replay CLI
+    ├── run_scheduler_replay.py    # Slot-based replay CLI (default policy: consecutive-pair)
+    ├── run_age_aware_evaluation.py # Four-policy comparison on the current registry (--regenerate-workload)
     ├── run_holdout_evaluation.py  # Holdout learning + three-policy evaluation CLI
     ├── run_full_evaluation.py     # QCS drift-model evaluation
     ├── run_priority_analysis.py   # Standalone priority analysis
@@ -163,6 +221,8 @@ Record & Observation Metrics:
 
 ## 6. Compatibility Registry
 
+> **The current `data/compatibility_registry.csv` uses the automated pair-decision schema (section 18).** The text below describes the legacy `reviewer_decision` schema, which the loader still accepts; a frozen copy lives in `tests/fixtures/legacy_compatibility_registry.csv` (sha256 `584620ac...`, the registry of every result produced before section 18).
+
 `data/compatibility_registry.csv` lists all 91 unordered pairs of the 14 Ramsey circuits. **`reviewer_decision` is the only authority on eligibility:**
 
 | `reviewer_decision` | Meaning |
@@ -189,7 +249,7 @@ Unknown pairs raise `UnknownPairError` and self-pairs raise `ValueError`; nothin
 
 ## 7. Recorded-trace scheduler replay
 
-A slot-based simulator replays recorded shots through a scheduling policy. The device executes **one logical shot per service slot**. A prebuilt, policy-independent workload of comparison requests (round-robin over the circuits that appear in at least one `Comparable` pair) defines which two shots are compared; only pairs whose `reviewer_decision` is `Comparable` in `data/compatibility_registry.csv` can complete, and shots that cannot belong to such a pair are left out for every policy, and every shot is executed and consumed at most once. Details: `docs/scheduler_replay_design.md`.
+A slot-based simulator replays recorded shots through a scheduling policy. The device executes **one logical shot per service slot**. A prebuilt, policy-independent workload of comparison requests (round-robin over the circuits that appear in at least one `Comparable` pair) defines which two shots are compared; only pairs the registry marks eligible (section 18; in the legacy schema, `reviewer_decision` = `Comparable`) can complete, and shots that cannot belong to such a pair are left out for every policy, and every shot is executed and consumed at most once. Details: `docs/scheduler_replay_design.md`.
 
 **Limitation:**
 
@@ -199,11 +259,22 @@ separation and queue behaviour; it does not predict outcomes under a
 counterfactual reordered physical experiment.
 ```
 
+### How the scheduler's input is generated
+
+1. **Shot trace.** `data/dataset.txt` (Proctor et al. Ramsey data) holds 14 circuits with about 6,000 timestamped 0/1 outcomes each (84,000 shots). The loader turns it into one list of shots (arrival time, circuit, outcome), or you supply a custom file (schema below).
+2. **Eligibility.** The registry (`data/compatibility_registry.csv`, section 18) decides which circuit pairs may be compared. Only the 15 additive-comparable pairs are eligible.
+3. **Rounds.** The i-th shot of every circuit is acquisition round i.
+4. **Round-robin matching.** Round `r` uses matching `r mod 13` of a round-robin tournament over the 14 circuits (the 13 matchings partition all 91 pairs). Each matched pair that is eligible becomes one comparison request pairing the two circuits' round-`r` shots; a pair that is not eligible produces no request.
+5. **Pruning.** Shots that belong to no eligible request are dropped for every policy, so no service slot is wasted on them.
+6. **Same workload for all policies.** No policy and no drift information takes part in building requests, so every policy receives identical requests, release times and slot budget. The evaluation scripts audit this on every run.
+7. **Evaluation workload.** `run_age_aware_evaluation.py --regenerate-workload` applies a chronological split (train first 75%, holdout last 25%), builds the holdout requests from the loaded registry, and takes the slot duration from the workload itself (mean inter-arrival gap, 0.8129 s). Capacity scenarios are that duration times 1.0, 1.1 and 0.9, plus the recorded 0.3486 s cadence. Drift priorities are learned from the training part only.
+
 ### Policies
 
 - `arrival-order`: individual-shot FIFO baseline. A comparison completes when both of its shots have executed; they are generally not adjacent.
 - `consecutive-pair`: pair-aware baseline. Dispatches the ready request with the earliest request arrival time as an atomic two-slot block (lower wait length first, the second circuit in the immediately following slot, nothing in between). If no pair is ready the slot idles.
 - `drift-aware`: same atomic dispatch, ranked by learned priority. It needs training-derived priorities, so it runs through the holdout evaluation (section 8).
+- `drift-aware-age`: drift priority plus an age bonus that grows with waiting time (section 17). Optional and experimental.
 
 ### Custom input schema
 
@@ -228,10 +299,23 @@ arrival_time,circuit,outcome,repetitions
 
 Invalid files are rejected with line-specific errors. A copyable example is `data/inputs/input.txt.example`.
 
+### Policy roles and default
+
+| Policy | Role |
+|---|---|
+| `consecutive-pair` | **Default** scheduling policy (`DEFAULT_POLICY`). Atomic two-slot pairs, earliest-ready first. |
+| `arrival-order` | Evaluation baseline (individual-shot FIFO, pairs not synchronized). |
+| `drift-aware` | Strict drift priority; kept for research comparisons, never the default. Can starve low-priority requests under overload. |
+| `drift-aware-age` | Optional experimental policy (drift priority plus age escalation). Not the default. |
+
+The default follows the registry-integrated evaluation (`results/registry_integrated_evaluation_analysis/evaluation_analysis.md`): `drift-aware-age` showed no benefit over `consecutive-pair` in completion, synchronization or reliability, and its drift priority is not scientifically validated. The hybrid policy is not promoted or integrated. Selecting a non-default policy is always explicit. The replay CLI accepts `arrival-order` and `consecutive-pair`; `drift-aware` and `drift-aware-age` need training-derived priorities and are run by the evaluation scripts.
+
 ### Running
 
 ```powershell
-# Default: replay data/dataset.txt (84,000 shots)
+# Default policy (consecutive-pair): replay data/dataset.txt (84,000 shots)
+python scripts/run_scheduler_replay.py
+# Explicit selection
 python scripts/run_scheduler_replay.py --policy arrival-order
 python scripts/run_scheduler_replay.py --policy consecutive-pair
 
@@ -266,16 +350,24 @@ python scripts/run_holdout_evaluation.py --output data/derived/holdout_evaluatio
 
 ## 9. Running Tests
 
-Execute unit tests using `pytest`:
+Execute the tests using `pytest` (497 tests, about 70 s; 481 without the real-dataset tests):
 
 ```bash
-python -m pytest tests
+python -m pytest tests -q                      # everything
+python -m pytest tests -v                      # verbose
+python -m pytest tests -m "not real_data" -q   # skip tests that read the real dataset
 ```
 
-To run with verbose output:
-```bash
-python -m pytest -v tests
-```
+What the suite covers (selection):
+
+| Area | Test file | Edge cases |
+|---|---|---|
+| Registry (automated schema) | `test_automated_registry.py` | all 91 pairs retained; exact counts 15/4/6/10/56; decision strings preserved; conditional pairs need explicit approval; scaled-only, unresolved and not-comparable excluded; `previous_csv_decision` has no effect; non-empty human decision rejected; duplicate ids, bad k values, non-numeric statistics, inconsistent rows rejected; (A,B) equals (B,A); CRLF-independent fingerprint |
+| Registry (legacy schema) | `test_compatibility.py` | frozen legacy CSV; blank or misspelt decisions rejected; unknown pairs raise |
+| Queue integration | `test_automated_registry.py`, `test_scheduler_simulator.py` | an excluded pair never enters the queue, even between two eligible circuits; hand-built excluded requests are rejected; identical workload across policies; pair atomicity; strict idling |
+| Policies | `test_scheduler_policies.py`, `test_drift_aware_policy.py`, `test_age_aware_policy.py` | ordering keys and ties; no leakage of holdout data into priorities; age formula at extreme parameters; starvation metrics |
+| Default policy | `test_default_policy.py` | default is `consecutive-pair`; other policies stay explicitly selectable; no hybrid policy exists |
+| Input | `test_scheduling_trace.py`, `test_parser.py`, `test_validation.py` | malformed rows, unknown circuits, non-monotone times, bad outcomes |
 
 ---
 
@@ -383,3 +475,105 @@ python scripts/run_age_aware_evaluation.py   # results/age_aware_scheduler_evalu
 ```
 
 Read `results/age_aware_scheduler_evaluation/experiment_report.md`.
+
+---
+
+## 18. Automated pair-decision registry
+
+`data/compatibility_registry.csv` now carries the automated decision for all 91 pairs. Columns: `pair_id, circuit_a, circuit_b, k_a, k_b, automated_decision, decision_reason`, the test statistics (`train_offset`, `*_chi2_df`, `*_p`, `scaled_slope`, `median_exec_gap_s`, `max_exec_gap_s`), `human_reviewer_decision` and `previous_csv_decision`. The loader detects the schema from the header and validates unique ids, unique unordered pairs, valid Ramsey labels, `k_a`/`k_b` against the labels, supported decision strings and numeric statistics; pairs are stored with the smaller `k` first so `(A, B)` and `(B, A)` are one pair.
+
+| `automated_decision` | pairs | default treatment |
+|---|---|---|
+| `Comparable: additive correction` | 15 | eligible (additive correction is what the pipeline implements) |
+| `Conditional: additive correction` | 4 | retained, excluded unless approved by pair id: `load_compatibility_registry(approved_conditional_pair_ids=[...])` |
+| `Comparable: scaled correction only` | 6 | retained, excluded: no scaled correction exists in the pipeline (`E_AB = abs(Delta_measured - Delta_reference)` is additive), and asking for it raises an error |
+| `Unresolved` | 10 | retained, excluded |
+| `Not comparable` | 56 | retained, excluded |
+
+Every pair has an explicit `eligibility_reason`. The scheduler-facing `reviewer_decision` is derived from `automated_decision` by `decide_eligibility`, so the simulator, workload builder, priority learning and every policy keep using the single `registry.eligible_pairs()` / `is_eligible` gate, and an excluded pair cannot reach the queue by another path. `previous_csv_decision` is history and is never consulted. `human_reviewer_decision` has no override precedence: it is empty in the file, and a non-empty value is rejected rather than guessed at. The CSV test statistics are provenance only and never refit the drift model or the priority function.
+
+**Age-based scheduling** is unchanged (`effective = drift_priority + R * max(0, wait) / H`, atomic pairs, same tie-breaking). It simply receives requests for the 15 eligible pairs (6 circuits). The workload and its slot grid depend on the eligible circuits, so the old frozen workload (29 pairs, fingerprint `16efca32...`) is not valid for this registry and is left untouched; a new workload is regenerated and identical for every policy.
+
+**Reproducibility.** Each evaluation loads the CSV once and records `registry.provenance()` (path, schema, sha256 of the bytes, sha256 of the canonical decisions, counts per decision, eligible pairs per correction type) in its outputs. `registry_eligibility.csv` lists all 91 pairs with their reason and the number of requests generated.
+
+**Limitation.** The automated decisions were generated using held-out observations. They are not independently validated against that held-out data, and results here must not be read as independent evidence of scheduler accuracy. The drift priority is not scientifically validated (the persistence validation was inconclusive), and nothing here is a hardware result.
+
+```powershell
+python scripts/run_age_aware_evaluation.py --regenerate-workload            # results/registry_integrated_evaluation/ (about 60 s)
+# reproduce the earlier frozen-workload results with the legacy registry:
+python scripts/run_age_aware_evaluation.py --registry tests/fixtures/legacy_compatibility_registry.csv --output-dir <new dir>
+python -m pytest tests -q
+```
+
+---
+
+## 19. Latest evaluation results and conclusions
+
+Source: `results/registry_integrated_evaluation/` (command 6); full analysis in `results/registry_integrated_evaluation_analysis/evaluation_analysis.md`. Replay of recorded data on one regenerated workload: 4,491 requests over the 15 eligible pairs, slot duration 0.8129 s, identical for all policies. **302 of 302 fairness audits pass**, and no request uses an ineligible pair (also re-checked independently from the per-request file).
+
+**Primary scenario (0.8129 s):**
+
+| | arrival-order | consecutive-pair | drift-aware-age |
+|---|---|---|---|
+| Completed / requests | 4488 / 4491 | 4488 / 4491 | 4488 / 4491 |
+| Mean / P99 / max wait (s) | 1.55 / 3.96 / 4.09 | 2.09 / 4.08 / 4.14 | 2.09 / 4.08 / 4.14 |
+| Requests waiting > 10 s | 0 | 0 | 0 |
+| Mean gap between the two shots | 2.33 slots (max 5) | 1 slot | 1 slot |
+| Reliable comparisons per device-hour | 2212.71 | 2212.71 | 2212.71 |
+
+The 3 unfinished requests are the last released, cut off by the horizon, not starved.
+
+**Overloaded scenario (assumed 10% slower device, 0.8942 s):** strict `drift-aware` starves requests (max wait 2,591 s, one request overtaken 4,071 times). `drift-aware-age` bounds this (max wait 668 s, overtaken at most 4 times) and matches `consecutive-pair` on completion (4,082 each), synchronization and reliability; its tail wait is slightly longer (668 s versus 663 s).
+
+**Conclusions**
+- The registry integration works: the right pairs are eligible, all others are excluded, and the registry fingerprint is recorded in every output.
+- All pair policies run both shots of a comparison in consecutive slots; `arrival-order` does not.
+- `drift-aware-age` fixes the starvation of strict `drift-aware`, but shows **no measured advantage over `consecutive-pair`**, which is why `consecutive-pair` is the default.
+- The reliability threshold (`E_AB <= 0.05`) is saturated (worst model-derived error about 1.6e-3), so reliable comparisons per device-hour only reflects throughput and cannot tell the policies apart. Policy differences in the error metric are about 1e-6 and not meaningful.
+- At the primary capacity the queue never builds up, so the age term never changes an ordering there.
+
+**Limitations (stated plainly)**
+- The automated decisions were generated using held-out observations, so these results cannot independently validate them.
+- The drift priority is not scientifically validated (the persistence validation was inconclusive).
+- This is a replay/simulation of one deterministic workload, not a QPU experiment. Capacities are modelling assumptions, not hardware measurements.
+- The workload changed with the registry (29 to 15 pairs), so old and new absolute numbers are not one experiment; the legacy run reproduces the earlier results exactly.
+- Conditional (4) and scaled-only (6) pairs are retained but unused; no scaled correction exists.
+
+
+---
+
+## 20. Five-hour simulated experiment (simulated workload and controlled drift)
+
+The recorded dataset has no request layer, no hardware service time and drift that the fitted model does not forecast, so replaying it in a different order cannot show whether scheduling pairs close together improves comparison accuracy. This experiment therefore builds a **simulated** five-hour workload (18,000 s of *simulated device time*; the run takes about a minute of computer time) and a **simulated, documented** drift process, and generates every outcome at the execution time the policy actually produced. Nothing in it is a hardware measurement, and no recorded observation is replayed.
+
+**Sizing from the capacity equations** (`src/quantum_drift_scheduler/synthetic/workload.py`): `total_slots = ceil(horizon / service_seconds)`; a comparison needs two slots, so capacity is `1 / (2 * service_seconds)` requests per second; each 1200 s block has a declared offered load (`request rate * 2 * service_seconds`, where 1.0 is exactly at capacity), and the request count is the realised Poisson draw around `sum(load_b * 1200 / (2 * service_seconds))`. With the **assumed** 1.0 s slot (not measured hardware) that is 18,000 slots = 5.00 device-hours, mean offered load 0.90, five overload blocks (loads 1.10 to 1.50) and 8,256 requests (8,100 expected). Arrivals are a Markov-modulated Poisson process (quiet periods, sustained overload, short bursts) over the 15 eligible registry pairs with non-uniform popularity and three measurement requirements (100, 400 or 1600 repetitions; one slot is one logical job whatever its repetition count).
+
+**Drift** (`synthetic/drift.py`): the project's Ramsey form `p_k(t) = A + B exp(-k decay) sin(2 pi k t_w Omega(t))` with the fitted constants and an assumed fluctuation spectrum (12 sinusoids, periods 600 s to 6 h). `--drift-rate-factors` (default 1, 10, 100, 1000) speeds the same process up: 1 is the fitted-scale slow drift and the rest are labelled synthetic stress scenarios. `--drift-seeds` (default 5) draws independent drift realisations. The measured value is `Binomial(repetitions, p_k(t_exec))` with common random numbers across policies, so reordering changes execution times and can change outcomes.
+
+**No future information.** Priorities are learned from a simulated pre-horizon campaign (all times before the horizon, enforced by `LeakageError`); the age horizon is calibrated on a separate pre-horizon workload with the existing protocol, unchanged; no policy reads an outcome or a drift value.
+
+**Error measures** (all continuous): `E_AB` (drift-induced, reference = the request's ready time), `E_sync` (reference = the comparison's own earlier execution, isolating the effect of pair separation) and `E_outcome` (from the generated outcomes, includes shot noise), each with mean, median, P95, P99 and maximum. Reliable counts are reported at 0.05 (the project's pre-registered level) and at 0.02 and 0.01 (labelled sensitivity levels), because 0.05 is saturated. Paired differences against `consecutive-pair` use only requests completed under both policies, with block-bootstrap intervals per drift realisation.
+
+```powershell
+python scripts/generate_five_hour_workload.py                    # 1. workload + fingerprint -> results/five_hour_synthetic_workload/
+python scripts/run_five_hour_evaluation.py                       # 2. all four policies   -> results/five_hour_synthetic_evaluation/
+python scripts/run_five_hour_evaluation.py --policies consecutive-pair --output-dir results/five_hour_consecutive_pair_only   # default policy alone
+python scripts/generate_five_hour_workload.py --verify           # reproducibility check of the saved workload
+python scripts/run_five_hour_evaluation.py --output-dir results/five_hour_repro_check                                         # rerun; outputs are byte-identical
+python -m pytest tests/test_synthetic_five_hour.py -q            # 25 tests for this experiment
+```
+
+Options (verified against the scripts): generator `--output-dir --overwrite --seed --service-seconds --registry --verify`; evaluation `--workload --output-dir --overwrite --registry --policies --drift-rate-factors --drift-seeds --bootstrap-reps`. Existing result directories are never overwritten without `--overwrite`.
+
+Outputs in `results/five_hour_synthetic_evaluation/`: `experiment_report.md` (tables per drift rate), `summary.json`, `policy_metrics.csv` (every drift realisation), `aggregate_by_rate_factor.csv`, `paired_differences.csv`, `paired_summary.csv`, `fairness_audit.csv` (820 checks), `age_calibration.csv`, `age_horizon_sensitivity.csv` (labelled, non-selecting), `per_request_first_drift_seed.csv`, and `queue_length.png`, `error_vs_drift_rate.png`, `waiting_tails.png`. The workload directory holds `five_hour_workload.json`, `five_hour_workload_fingerprint.txt`, `workload_summary.json` and `arrival_profile.png`.
+
+**Results of the default run** (simulated; one workload, 5 drift realisations per rate):
+- **Integrity.** 820 of 820 audits pass (identical workload, slot grid and horizon for every policy, slot accounting, no shot reused, only eligible pairs, pair atomicity, priorities strictly pre-horizon). Re-running reproduces every output byte for byte.
+- **Queue.** Mean utilisation 0.899, backlog peaks at 456 requests in the overload blocks, and every policy completes the same 8,092 of 8,256 requests (164 unfinished, 162 of them not served in time).
+- **Pair separation.** The pair policies always execute the two shots in consecutive slots; arrival-order averages 1.165 slots and reaches 7. That separation raises `E_sync` for arrival-order in all 5 drift realisations at every drift rate (about +16% at rates 1 and 10, +14% at 100, +6% at 1000), but the absolute values are small (below 3.3e-3).
+- **Headline error `E_AB`.** Dominated by queue delay (hundreds of seconds), so arrival-order and `consecutive-pair` are practically equal (differences of order 1e-6). The generated-outcome error is dominated by shot noise (about 0.04) and does not reliably separate the policies.
+- **Strict `drift-aware`** lowers mean `E_AB` (about 39%, 58%, 35% and 4% at rates 1, 10, 100 and 1000) but starves requests: P99 wait about 3,070 s versus 900 s and up to about 2,200 requests overtaken. Its benefit on shot-noise-limited outcomes is negligible.
+- **`drift-aware-age`** matches `consecutive-pair` on every error and wait metric. The existing calibration protocol found no qualifying horizon on the overloaded training workload (it falls back to the smallest, `provisional = True`), so the policy behaves like FIFO here and keeps starvation bounded (max overtaken about 5) without any measured accuracy gain.
+- **Reliability.** The 0.05 level is saturated (largest `E_AB` 0.045, even at rate 1000), so reliable comparisons per device-hour is 1,618 for every policy; at the 0.01 level the reliable share falls from 99.5% to about 87% as drift speeds up.
+
+**Limitations.** Simulated workload, drift and outcomes; the 1.0 s slot and the drift spectrum are assumptions; one workload realisation; the registry decisions were generated from held-out recorded data and are not validated here; priorities are learned from simulated, not real, drift, and the recorded-data persistence validation was inconclusive. These results show how the policies behave in the stated model, not that any policy improves real hardware results.

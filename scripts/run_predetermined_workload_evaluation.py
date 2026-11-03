@@ -100,6 +100,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "dataset_sha256": sha256_file(DEFAULT_CONFIG.default_dataset_path),
         "registry": str(DEFAULT_CONFIG.compatibility_registry_path.relative_to(DEFAULT_CONFIG.base_dir).as_posix()),
         "registry_sha256": sha256_file(DEFAULT_CONFIG.compatibility_registry_path),
+        "registry_provenance": registry.provenance(),
         "eligibility_authority": "reviewer_decision == Comparable (compatibility_status is informational)",
         "train_fraction": ev.split.train_fraction, "split_boundary": ev.split.boundary,
         "slots_per_shot": ev.slots_per_shot, "device_note": "slot grid identical to the previous evaluation (capacity unchanged)",

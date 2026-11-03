@@ -603,7 +603,7 @@ def build_results(result: ThreePolicyResult) -> Dict[str, Any]:
         "split": {"train_fraction": cfg.train_fraction, "boundary_seconds": sched.split.boundary,
                   "train_shots": len(sched.split.train), "holdout_shots": len(sched.split.holdout),
                   "train_range": sched.split.train_range, "holdout_range": sched.split.holdout_range},
-        "eligibility": {"authority": "reviewer_decision", "eligible_pairs": [list(p) for p in sched.eligible_pairs],
+        "eligibility": {"authority": "reviewer_decision", "registry": sched.registry_provenance, "eligible_pairs": [list(p) for p in sched.eligible_pairs],
                         "excluded_pair_count": sched.excluded_pair_count,
                         "ineligible_circuit_shots_excluded": sched.ineligible_circuit_shots,
                         "unrequested_shots_excluded": sched.unrequested_shots,
